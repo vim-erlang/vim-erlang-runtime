@@ -28,15 +28,15 @@ endif
 " line: the line to be examined
 " return: the indentation level of the examined line
 function s:ErlangIndentAfterLine(line)
-    let linelen = strlen(a:line) " the length of the line
-    let i       = 0 " the index of the current character in the line
-    let ind = 0 " how much should be the difference between the indentation of
+    let linelen = strlen(a:line) " The length of the line
+    let i = 0 " The index of the current character in the line
+    let ind = 0 " How much should be the difference between the indentation of
                 " the current line and the indentation of the next line?
                 " e.g. +1: the indentation of the next line should be equal to
                 " the indentation of the current line plus one shiftwidth
-    let last_fun      = 0 " the last token was a 'fun'
-    let last_receive  = 0 " the last token was a 'receive'; needed for 'after'
-    let last_hash_sym = 0 " the last token was a '#'
+    let last_fun = 0 " The last token was a 'fun'
+    let last_receive = 0 " The last token was a 'receive'; needed for 'after'
+    let last_hash_sym = 0 " The last token was a '#'
 
     " Ignore comments
     if a:line =~# '^\s*%'
@@ -44,7 +44,8 @@ function s:ErlangIndentAfterLine(line)
     endif
 
     " Partial function head where the guard is missing
-    if a:line =~# "\\(^\\l[[:alnum:]_]*\\)\\|\\(^'[^']\\+'\\)(" && a:line !~# '->'
+    if a:line =~# "\\(^\\l[[:alnum:]_]*\\)\\|\\(^'[^']\\+'\\)(" &&
+     \ a:line !~# '->'
         return 2
     endif
 
@@ -53,80 +54,81 @@ function s:ErlangIndentAfterLine(line)
         return -1
     endif
 
-    while 0<=i && i<linelen
+    while 0 <= i && i < linelen
         " m: the next value of the i
         if a:line[i] == '"'
-            let m = matchend(a:line,'"\%([^"\\]\|\\.\)*"',i)
+            let m = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
             let last_receive = 0
         elseif a:line[i] == "'"
-            let m = matchend(a:line,"'[^']*'",i)
+            let m = matchend(a:line, "'[^']*'",i)
             let last_receive = 0
         elseif a:line[i] =~# "[a-z]"
-            let m = matchend(a:line,".[[:alnum:]_]*",i)
+            let m = matchend(a:line, "[[:alnum:]_]*", i + 1)
             if last_fun
-                let ind = ind - 1
+                let ind -= 1
                 let last_fun = 0
                 let last_receive = 0
-            elseif a:line[(i):(m-1)] =~# '^\%(case\|if\|try\)$'
-                let ind = ind + 1
-            elseif a:line[(i):(m-1)] =~# '^receive$'
-                let ind = ind + 1
+            elseif a:line[(i):(m - 1)] =~# '^\%(case\|if\|try\)$'
+                let ind += 1
+            elseif a:line[(i):(m - 1)] =~# '^receive$'
+                let ind += 1
                 let last_receive = 1
             elseif a:line[(i):(m-1)] =~# '^begin$'
                 let ind = ind + 2
                 let last_receive = 0
-            elseif a:line[(i):(m-1)] =~# '^end$'
+            elseif a:line[(i):(m - 1)] =~# '^end$'
                 let ind = ind - 2
                 let last_receive = 0
-            elseif a:line[(i):(m-1)] =~# '^after$'
+            elseif a:line[(i):(m - 1)] =~# '^after$'
                 if last_receive == 0
-                    let ind = ind - 1
+                    let ind -= 1
                 else
                     let ind = ind + 0
                 endif
                 let last_receive = 0
-            elseif a:line[(i):(m-1)] =~# '^fun$'
-                let ind = ind + 1
+            elseif a:line[(i):(m - 1)] =~# '^fun$'
+                let ind += 1
                 let last_fun = 1
                 let last_receive = 0
             endif
         elseif a:line[i] =~# "[A-Z_]"
-            let m = matchend(a:line,".[[:alnum:]_]*",i)
+            let m = matchend(a:line, "[[:alnum:]_]*", i + 1)
             let last_receive = 0
         elseif a:line[i] == '$'
-            let m = i+2
+            let m = i + 2
             let last_receive = 0
-        elseif a:line[i] == "." && (i+1>=linelen || a:line[i+1]!~ "[0-9]")
-            let m = i+1
+        elseif a:line[i] == "." &&
+             \ (i + 1 >= linelen || a:line[i + 1] !~# "[0-9]")
+            let m = i + 1
             if last_hash_sym
                 let last_hash_sym = 0
             else
-                let ind = ind - 1
+                let ind -= 1
             endif
             let last_receive = 0
         elseif a:line[i] == '-' && (i+1<linelen && a:line[i+1]=='>')
-            let m = i+2
-            let ind = ind + 1
+            let m = i + 2
+            let ind += 1
             let last_receive = 0
         elseif a:line[i] == ';' && a:line[(i):(linelen)] !~# '.*->.*'
-            let m = i+1
-            let ind = ind - 1
+            let m = i + 1
+            let ind -= 1
             let last_receive = 0
         elseif a:line[i] == '#'
-            let m = i+1
+            let m = i + 1
             let last_hash_sym = 1
         elseif a:line[i] =~# '[({[]'
-            let m = i+1
-            let ind = ind + 1
+            let m = i + 1
+            let ind += 1
             let last_fun = 0
             let last_receive = 0
             let last_hash_sym = 0
         elseif a:line[i] =~# '[)}\]]'
-            let m = i+1
-            let ind = ind - 1
+            let m = i + 1
+            let ind -= 1
             let last_receive = 0
         else
-            let m = i+1
+            let m = i + 1
         endif
 
         let i = m
@@ -185,28 +187,28 @@ function ErlangIndent()
         let ind = ind - 2*&sw
     endif
     if currline =~# '^\s*after\>'
-        let plnum = s:FindPrevNonBlankNonComment(v:lnum-1)
+        let plnum = s:FindPrevNonBlankNonComment(v:lnum - 1)
         if getline(plnum) =~# '^[^%]*\<receive\>\s*\%(%.*\)\=$'
             " If the 'receive' is not in the same line as the 'after'
-            let ind = ind - 1*&sw
+            let ind -= &sw
         else
-            let ind = ind - 2*&sw
+            let ind -= 2 * &sw
         endif
     endif
     if prevline =~# '^\s*[)}\]]'
-        let ind = ind + 1*&sw
+        let ind += &sw
     endif
     if currline =~# '^\s*[)}\]]'
-        let ind = ind - 1*&sw
+        let ind -= &sw
     endif
     if prevline =~# '^\s*\%(catch\)\s*\%(%\|$\)'
-        let ind = ind + 1*&sw
+        let ind += &sw
     endif
     if currline =~# '^\s*\%(catch\)\s*\%(%\|$\)'
-        let ind = ind - 1*&sw
+        let ind -= &sw
     endif
 
-    if ind<0
+    if ind < 0
         let ind = 0
     endif
     return ind
