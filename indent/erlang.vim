@@ -27,7 +27,7 @@ endif
 "
 " line: the line to be examined
 " return: the indentation level of the examined line
-function s:ErlangIndentAfterLine(line)
+function! s:ErlangIndentAfterLine(line)
     let linelen = strlen(a:line) " The length of the line
     let i = 0 " The index of the current character in the line
     let ind = 0 " How much should be the difference between the indentation of
@@ -37,11 +37,17 @@ function s:ErlangIndentAfterLine(line)
     let last_fun = 0 " The last token was a 'fun'
     let last_receive = 0 " The last token was a 'receive'; needed for 'after'
     let last_hash_sym = 0 " The last token was a '#'
+    let last = ''
 
     " Ignore comments
     if a:line =~# '^\s*%'
         return 0
     endif
+
+"    " Go to column 0 after a period
+"    if a:line =~# '\.$'
+"        return ['abs', 0]
+"    endif
 
     " Partial function head where the guard is missing
     if a:line =~# "\\(^\\l[[:alnum:]_]*\\)\\|\\(^'[^']\\+'\\)(" &&
@@ -103,7 +109,7 @@ function s:ErlangIndentAfterLine(line)
             if last_hash_sym
                 let last_hash_sym = 0
             else
-                let ind -= 1
+                let last = 'period'
             endif
             let last_receive = 0
         elseif a:line[i] == '-' && (i+1<linelen && a:line[i+1]=='>')
@@ -134,10 +140,14 @@ function s:ErlangIndentAfterLine(line)
         let i = m
     endwhile
 
-    return ind
+    if last == 'period'
+        return ['abs', 0]
+    else
+        return ind
+    endif
 endfunction
 
-function s:FindPrevNonBlankNonComment(lnum)
+function! s:FindPrevNonBlankNonComment(lnum)
     let lnum = prevnonblank(a:lnum)
     let line = getline(lnum)
     " Continue to search above if the current line begins with a '%'
@@ -156,11 +166,11 @@ endfunction
 "
 " lnum: line number
 " return: the indentation level of the line
-function s:GetLineIndent(lnum)
+function! s:GetLineIndent(lnum)
     return (indent(a:lnum) / &sw) * &sw
 endfunction
 
-function ErlangIndent()
+function! ErlangIndent()
     " Find a non-blank line above the current line
     let lnum = prevnonblank(v:lnum - 1)
 
@@ -173,7 +183,10 @@ function ErlangIndent()
     let currline = getline(v:lnum)
 
     let ind_after = s:ErlangIndentAfterLine(prevline)
-    if ind_after != 0
+    if type(ind_after) == type([])
+        let [_abs, column] = ind_after
+        return column
+    elseif ind_after != 0
         let ind = s:GetLineIndent(lnum) + ind_after * &sw
     else
         let ind = indent(lnum) + ind_after * &sw
