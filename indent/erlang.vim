@@ -75,7 +75,7 @@ function! s:ErlangIndentAfterLine(line)
 
         " Keyword or atom token
         elseif a:line[i] =~# "[a-z]"
-            let m = matchend(a:line, "[[:alnum:]_]*", i + 1)
+            let m = matchend(a:line, "[[:alnum:]_@]*", i + 1)
             if last_fun
                 let ind -= 1
                 let last_fun = 0
@@ -106,7 +106,7 @@ function! s:ErlangIndentAfterLine(line)
 
         " Variable token
         elseif a:line[i] =~# "[A-Z_]"
-            let m = matchend(a:line, "[[:alnum:]_]*", i + 1)
+            let m = matchend(a:line, "[[:alnum:]_@]*", i + 1)
             let last_receive = 0
 
         " Character token

@@ -5,6 +5,15 @@
 -attr().
 
 %%%%%%%%%%
+% Tokens %
+%%%%%%%%%%
+
+f() ->
+    SimpleAtom = case@case,
+    SimpleVar = Var@case,
+    ok.
+
+%%%%%%%%%%
 % Period %
 %%%%%%%%%%
 
