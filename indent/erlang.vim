@@ -62,12 +62,18 @@ function! s:ErlangIndentAfterLine(line)
 
     while 0 <= i && i < linelen
         " m: the next value of the i
+
+        " String token: "..."
         if a:line[i] == '"'
             let m = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
             let last_receive = 0
+
+        " Atom token: '...'
         elseif a:line[i] == "'"
             let m = matchend(a:line, "'[^']*'",i)
             let last_receive = 0
+
+        " Keyword or atom token
         elseif a:line[i] =~# "[a-z]"
             let m = matchend(a:line, "[[:alnum:]_]*", i + 1)
             if last_fun
@@ -97,12 +103,18 @@ function! s:ErlangIndentAfterLine(line)
                 let last_fun = 1
                 let last_receive = 0
             endif
+
+        " Variable token
         elseif a:line[i] =~# "[A-Z_]"
             let m = matchend(a:line, "[[:alnum:]_]*", i + 1)
             let last_receive = 0
+
+        " Character token
         elseif a:line[i] == '$'
             let m = i + 2
             let last_receive = 0
+
+        " Period token: .
         elseif a:line[i] == "." &&
              \ (i + 1 >= linelen || a:line[i + 1] !~# "[0-9]")
             let m = i + 1
@@ -112,27 +124,39 @@ function! s:ErlangIndentAfterLine(line)
                 let last = 'period'
             endif
             let last_receive = 0
-        elseif a:line[i] == '-' && (i+1<linelen && a:line[i+1]=='>')
+
+        " Arrow token: ->
+        elseif a:line[i] == '-' && (i+1<linelen && a:line[i + 1] == '>')
             let m = i + 2
             let ind += 1
             let last_receive = 0
+
+        " Semicolon token: ;
         elseif a:line[i] == ';' && a:line[(i):(linelen)] !~# '.*->.*'
             let m = i + 1
             let ind -= 1
             let last_receive = 0
+
+        " Hash mark token: #
         elseif a:line[i] == '#'
             let m = i + 1
             let last_hash_sym = 1
+
+        " Opening paren token: (, {, [
         elseif a:line[i] =~# '[({[]'
             let m = i + 1
             let ind += 1
             let last_fun = 0
             let last_receive = 0
             let last_hash_sym = 0
+
+        " Closing paren token: ), }, ]
         elseif a:line[i] =~# '[)}\]]'
             let m = i + 1
             let ind -= 1
             let last_receive = 0
+
+        " Other character
         else
             let m = i + 1
         endif
