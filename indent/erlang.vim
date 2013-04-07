@@ -36,12 +36,14 @@ function! s:ErlangAnalyzeLine(line)
                 " the indentation of the current line plus one shiftwidth
     let last_fun = 0 " The last token was a 'fun'
 
-    " The last analyzed token. Possibilities:
+    " Within the while loop: the currently analyzed token.
+    " After the loop: the last analyzed token.
+    " Possibilities:
     " - 'receive': used by the line containing 'after' in case of a
     "   receive-after structure with no branches.
     " - 'end_of_clause': used to indent the line after the end of a clause
     "   (marked by a period) to column 1.
-    let last_token = 'none'
+    let current_token = 'none'
 
     " Partial function head where the guard is missing
     if a:line =~# "\\(^\\l[[:alnum:]_]*\\)\\|\\(^'[^']\\+'\\)(" &&
@@ -57,18 +59,18 @@ function! s:ErlangAnalyzeLine(line)
     while 0 <= i && i < linelen
         " m: the next value of the i
 
-        let prev_token = last_token
-        let last_token = ''
+        let prev_token = current_token
+        let current_token = ''
 
         " Blanks
         if a:line[i] =~# '\s'
             let m = matchend(a:line, '\s*', i + 1)
-            let last_token = prev_token
+            let current_token = prev_token
 
         " Comment
         elseif a:line[i] == '%'
             let m = linelen
-            let last_token = prev_token
+            let current_token = prev_token
 
         " String token: "..."
         elseif a:line[i] == '"'
@@ -88,7 +90,7 @@ function! s:ErlangAnalyzeLine(line)
                 let ind += 1
             elseif a:line[(i):(m - 1)] =~# '^receive$'
                 let ind += 1
-                let last_token = 'receive'
+                let current_token = 'receive'
             elseif a:line[(i):(m-1)] =~# '^begin$'
                 let ind = ind + 2
             elseif a:line[(i):(m - 1)] =~# '^end$'
@@ -119,7 +121,7 @@ function! s:ErlangAnalyzeLine(line)
 
             " Period token (end of clause): . (as in: f() -> ok.)
             if i + 1 == linelen || a:line[i + 1] =~# '[[:blank:]%]'
-                let last_token = 'end_of_clause'
+                let current_token = 'end_of_clause'
                 let ind = 0
             endif
 
@@ -160,10 +162,10 @@ function! s:ErlangAnalyzeLine(line)
         let i = m
     endwhile
 
-    if last_token == 'end_of_clause'
+    if current_token == 'end_of_clause'
         return ['abs', 0, 'end_of_clause']
     else
-        return ['rel', ind, last_token]
+        return ['rel', ind, current_token]
     endif
 endfunction
 
