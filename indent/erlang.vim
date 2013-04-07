@@ -36,18 +36,7 @@ function! s:ErlangIndentAfterLine(line)
                 " the indentation of the current line plus one shiftwidth
     let last_fun = 0 " The last token was a 'fun'
     let last_receive = 0 " The last token was a 'receive'; needed for 'after'
-    let last_hash_sym = 0 " The last token was a '#'
-    let last = ''
-
-    " Ignore comments
-    if a:line =~# '^\s*%'
-        return 0
-    endif
-
-"    " Go to column 0 after a period
-"    if a:line =~# '\.$'
-"        return ['abs', 0]
-"    endif
+    let last_token = ''
 
     " Partial function head where the guard is missing
     if a:line =~# "\\(^\\l[[:alnum:]_]*\\)\\|\\(^'[^']\\+'\\)(" &&
@@ -63,8 +52,21 @@ function! s:ErlangIndentAfterLine(line)
     while 0 <= i && i < linelen
         " m: the next value of the i
 
+        let prev_token = last_token
+        let last_token = ''
+
+        " Blanks
+        if a:line[i] =~# '\s'
+            let m = matchend(a:line, '\s*', i + 1)
+            let last_token = prev_token
+
+        " Comment
+        elseif a:line[i] == '%'
+            let m = linelen
+            let last_token = prev_token
+
         " String token: "..."
-        if a:line[i] == '"'
+        elseif a:line[i] == '"'
             let m = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
             let last_receive = 0
 
@@ -109,24 +111,28 @@ function! s:ErlangIndentAfterLine(line)
             let m = matchend(a:line, "[[:alnum:]_@]*", i + 1)
             let last_receive = 0
 
-        " Character token
+        " Character token: $<char> (as in: $a)
         elseif a:line[i] == '$'
             let m = i + 2
             let last_receive = 0
 
         " Period token: .
-        elseif a:line[i] == "." &&
-             \ (i + 1 >= linelen || a:line[i + 1] !~# "[0-9]")
+        elseif a:line[i] == "."
+            
             let m = i + 1
-            if last_hash_sym
-                let last_hash_sym = 0
-            else
-                let last = 'period'
+
+            " Period token (end of clause): . (as in: f() -> ok.)
+            if i + 1 == linelen || a:line[i + 1] =~# '[[:blank:]%]'
+                let last_token = 'end_of_clause'
+                let ind = 0
             endif
-            let last_receive = 0
+
+            " Other possibilities:
+            " - Period token in float: . (as in: 3.14)
+            " - Period token in record: . (as in: #myrec.myfield)
 
         " Arrow token: ->
-        elseif a:line[i] == '-' && (i+1<linelen && a:line[i + 1] == '>')
+        elseif a:line[i] == '-' && (i + 1 < linelen && a:line[i + 1] == '>')
             let m = i + 2
             let ind += 1
             let last_receive = 0
@@ -140,7 +146,6 @@ function! s:ErlangIndentAfterLine(line)
         " Hash mark token: #
         elseif a:line[i] == '#'
             let m = i + 1
-            let last_hash_sym = 1
 
         " Opening paren token: (, {, [
         elseif a:line[i] =~# '[({[]'
@@ -148,7 +153,6 @@ function! s:ErlangIndentAfterLine(line)
             let ind += 1
             let last_fun = 0
             let last_receive = 0
-            let last_hash_sym = 0
 
         " Closing paren token: ), }, ]
         elseif a:line[i] =~# '[)}\]]'
@@ -164,7 +168,7 @@ function! s:ErlangIndentAfterLine(line)
         let i = m
     endwhile
 
-    if last == 'period'
+    if last_token == 'end_of_clause'
         return ['abs', 0]
     else
         return ind

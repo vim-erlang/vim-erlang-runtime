@@ -25,14 +25,46 @@ f() ->
     (
         . % xx
 
-% bad
 f() ->
-    A . B,
-ok.
-        ok.
+    (
+        .% xx
 
 f() ->
+    A . B, % not valid Erlang, but why not behave nicely
     ok.
+
+% bad
+ok.
+        f() ->
+            ok.
+
+f() ->
+    A = #a{},
+
+    %A#a . f1, % syntax error
+    A#a .f1,   % valid Erlang
+
+    %A#a.      % syntax error
+    %f1,
+
+    A#a
+    .f1,   % valid Erlang
+
+    _ = 1.2,   % valid Erlang
+    %_ = 1 .2,  % syntax error
+    %_ = 1 . 2, % syntax error
+    %_ = 1. 2,  % syntax error
+
+    _ = " .
+    ", % valid Erlang
+
+    _ = ' .
+    ', % valid Erlang
+
+    ok.
+
+f() -> 1. f() -> 2. f() ->
+    3.
 
 %%%%%%%%%%%%
 % Comments %
@@ -166,9 +198,8 @@ f() ->
 % Records %
 %%%%%%%%%%%
 
-% bad
 f() ->
     A#rec.field,
     A#rec
     .field,
-bad_indent.
+    ok.
