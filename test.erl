@@ -94,6 +94,81 @@ f() ->
         ,
         ok.
 
+%%%%%%%%%%%%%
+% begin-end %
+%%%%%%%%%%%%%
+
+f() ->
+    begin A, % [{BeginCol, 1}, {ACol, 0}]
+            B % [{BCol, 0}]
+    end, % [{EndCol, -1}]
+    begin % [{BeginCol, 1}]
+            A, % [{ACol, 0}]
+            B % [{BCol, 0}]
+    end, % [{EndCol, -1}]
+    begin A, % [{BeginCol, 1}, {ACol, 0}]
+            begin B % [{BeginCol, 1}, {BCol, 0}]
+            end, % [{EndCol, -1}]
+            C % [{CCol, 0}]
+    end, % [{EndCol, -1}]
+    begin
+            A,
+            begin % [{BeginCol, 1}]
+                    B % [{BCol, 0}]
+            end, % [{EndCol, -1}]
+            C, D, % [{CCol, 0}, {DCol, 0}]
+            E
+    end,
+    begin
+            A, % [{BCol, 0}]
+            B, begin % [{BCol, 0}, {BeginCol, 1}]
+                    C % [{CCol, 0}]
+            end, % [{EndCol, -1}]
+            D
+    end,
+    ok.
+
+f() ->
+
+    % [{BeginCol, 1}, {ACol, 0}, {EndCol, 1}]
+    % We don't need BCol
+    begin A, B end,
+
+    % [{BeginCol, 1}, {ACol, 0}, {BeginCol, 1}, {BCol, 0}, {EndCol, 1}, {CCol, 0}, {EndCol, 1}]
+    begin A, begin B end, C end,
+    ok.
+
+%%%%%%%%
+% case %
+%%%%%%%%
+
+f() ->
+    case A of A -> case B of B -> B end end,
+    ok.
+
+f() ->
+    case A of
+        A ->
+            case B of
+                B -> B
+            end
+    end,
+    ok.
+
+f() ->
+    f(case X of
+            A -> A
+        end),
+    ok.
+
+f() ->
+    ffffff(case X of
+            A -> fffffff(case X of
+                        B -> B
+                    end)
+        end),
+    ok.
+
 %%%%%%%%%%%%%%%%%%%
 % Basic functions %
 %%%%%%%%%%%%%%%%%%%
@@ -107,9 +182,12 @@ f() ->
 
 % bad
 f() ->
-    g(A,
-        B,
-        C).
+    % No BCol
+    g(A, B, % [{FCol, 0}, {'OpenParCol', 1}, {ACol, 0}]
+        C, % [{CCol, 0}]
+        D),
+    ok.
+
 
 %%%%%%%
 % fun %
