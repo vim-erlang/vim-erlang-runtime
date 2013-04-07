@@ -27,7 +27,7 @@ endif
 "
 " line: the line to be examined
 " return: the indentation level of the examined line
-function! s:ErlangIndentAfterLine(line)
+function! s:ErlangAnalyzeLine(line)
     let linelen = strlen(a:line) " The length of the line
     let i = 0 " The index of the current character in the line
     let ind = 0 " How much should be the difference between the indentation of
@@ -46,12 +46,12 @@ function! s:ErlangIndentAfterLine(line)
     " Partial function head where the guard is missing
     if a:line =~# "\\(^\\l[[:alnum:]_]*\\)\\|\\(^'[^']\\+'\\)(" &&
      \ a:line !~# '->'
-        return 2
+        return ['rel', 2, '']
     endif
 
     " The missing guard from the split function head
     if a:line =~# '^\s*when\s\+.*->'
-        return -1
+        return ['rel', -1, '']
     endif
 
     while 0 <= i && i < linelen
@@ -161,9 +161,9 @@ function! s:ErlangIndentAfterLine(line)
     endwhile
 
     if last_token == 'end_of_clause'
-        return ['abs', 0]
+        return ['abs', 0, 'end_of_clause']
     else
-        return ind
+        return ['rel', ind, last_token]
     endif
 endfunction
 
@@ -202,10 +202,9 @@ function! ErlangIndent()
     let prevline = getline(lnum)
     let currline = getline(v:lnum)
 
-    let ind_after = s:ErlangIndentAfterLine(prevline)
-    if type(ind_after) == type([])
-        let [_abs, column] = ind_after
-        return column
+    let [absrel, ind_after, last_token] = s:ErlangAnalyzeLine(prevline)
+    if absrel == 'abs'
+        return ind_after
     elseif ind_after != 0
         let ind = s:GetLineIndent(lnum) + ind_after * &sw
     else
