@@ -128,28 +128,120 @@ f() ->
 % receive %
 %%%%%%%%%%%
 
+% receive -- with linebreaks
 f() ->
+
+    % receive with 0 branch
+    receive end, % not valid Erlang, but why not behave nicely
+
+% receive with 1 branch
+receive
+        A -> A
+    end,
+
+    receive
+        A ->
+            A
+    end,
+
+    % receive with 2 branches
+    receive
+        A -> A;
+        B -> B
+    end,
+
     receive
         A ->
             A;
         B ->
             B
     end,
-    receive
-        X -> X
-    after
-        X -> X
-    end,
+
     ok.
 
+% receive + after -- with linebreaks
+f() ->
+
+    % receive with 0 branch
+    receive
+    after
+        T -> T
+    end,
+
+    % receive with 1 branch
+    receive
+        A -> A
+    after
+        T -> T
+    end,
+
+    receive
+        A ->
+            A
+    after
+        T ->
+            T
+    end,
+
+    % receive with 2 branches
+    receive
+        A -> A;
+        B -> B
+    after
+        T -> T
+    end,
+
+    receive
+        A ->
+            A;
+        B ->
+            B
+    after
+        T -> T
+    end,
+
+    ok.
+
+% receive -- one-liners
 % bad
 f() ->
     receive A -> A end,
     receive A -> A; B -> B end,
-        receive A -> A; B -> B end,
-            receive X -> X after X -> X end,
-            receive A -> A; B -> B after X -> X end,
+
+        % half-liners
+        receive A -> A end, receive A -> A end,
+        receive A -> A; B -> B end, receive A -> A; B -> B end,
                 ok.
+
+% receive + after -- one-liners
+% bad
+f() ->
+
+    receive after T -> T end,
+    receive A -> A after T -> T end,
+    receive A -> A; B -> B after T -> T end, 
+
+        % half-liners
+        receive after T -> T end, receive after T -> T end,
+        receive A -> A after T -> T end, receive A -> A after T -> T end,
+        receive A -> A; B -> B after T -> T end, receive A -> A; B -> B after T -> T end, 
+                ok.
+
+% tricky scenarios which may catch some heuristics
+f() ->
+    receive
+        A ->
+            "receive"
+    after
+        T -> T
+    end.
+
+f() ->
+    ok, receive
+    after
+        T -> T
+    end.
+
 %%%%%%%
 % try %
 %%%%%%%
