@@ -8,6 +8,7 @@ endif
 
 " Automatic comments are not always helpful for test.erl
 setlocal fo-=ro
+setlocal debug=msg,throw
 
 " Automatic indentkeys are not always helpful for developing the indentation
 " script
@@ -17,10 +18,16 @@ setlocal indentkeys-==after,=end,=catch,=),=],=}
 noremap <buffer> <F1> :call RereadIndent()<cr>
 
 " Indent the whole buffer
-noremap <buffer> <F2> :call ClearDebugLog()<cr>mkHmlggvG=`lzt`k:call PrintDebugLog()<cr>
+noremap <buffer> <F2> mkHmlggvG=`lzt`k:echo "Whole buffer indented."<cr>
 
 " Indent the current line
 noremap <buffer> <F3> :call ClearDebugLog()<cr>==:call PrintDebugLog()<cr>
+
+" Unit tests
+noremap <buffer> <F4> :call TestErlangIndent()<cr>
+
+" Show tokens in current line
+noremap <buffer> <F5> :call ErlangAnalyzeCurrentLine()<cr>
 
 function! RereadIndent()
     delfunction ErlangIndent
@@ -34,12 +41,8 @@ endfunction
 
 let g:debug_log = ''
 
-function! Log(line)
+function! ErlangIndentLog(line)
     let g:debug_log .= a:line . "\n"
-endfunction
-
-function! Log2(line)
-    let g:debug_log .= a:line
 endfunction
 
 function! ClearDebugLog()
