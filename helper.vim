@@ -1,6 +1,17 @@
+if &ft != 'erlang'
+    throw 'This helper script should be called only on an Erlang file!'
+endif
+
 " ----------- "
 " Indentation "
 " ----------- "
+
+" Automatic comments are not always helpful for test.erl
+setlocal fo-=ro
+
+" Automatic indentkeys are not always helpful for developing the indentation
+" script
+setlocal indentkeys-==after,=end,=catch,=),=],=}
 
 " Reread indentation file
 noremap <buffer> <F1> :call RereadIndent()<cr>
@@ -14,7 +25,6 @@ noremap <buffer> <F3> :call ClearDebugLog()<cr>==:call PrintDebugLog()<cr>
 function! RereadIndent()
     delfunction ErlangIndent
     unlet b:did_indent
-    setlocal fo-=ro
     so indent/erlang.vim
 endfunction
 
