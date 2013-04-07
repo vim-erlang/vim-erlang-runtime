@@ -35,7 +35,12 @@ function! s:ErlangIndentAfterLine(line)
                 " e.g. +1: the indentation of the next line should be equal to
                 " the indentation of the current line plus one shiftwidth
     let last_fun = 0 " The last token was a 'fun'
-    let last_receive = 0 " The last token was a 'receive'; needed for 'after'
+
+    " The last analyzed token. Possibilities:
+    " - 'receive': used by the line containing 'after' in case of a
+    "   receive-after structure with no branches.
+    " - 'end_of_clause': used to indent the line after the end of a clause
+    "   (marked by a period) to column 1.
     let last_token = ''
 
     " Partial function head where the guard is missing
@@ -68,12 +73,10 @@ function! s:ErlangIndentAfterLine(line)
         " String token: "..."
         elseif a:line[i] == '"'
             let m = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
-            let last_receive = 0
 
         " Atom token: '...'
         elseif a:line[i] == "'"
             let m = matchend(a:line, "'[^']*'",i)
-            let last_receive = 0
 
         " Keyword or atom token
         elseif a:line[i] =~# "[a-z]"
@@ -81,40 +84,33 @@ function! s:ErlangIndentAfterLine(line)
             if last_fun
                 let ind -= 1
                 let last_fun = 0
-                let last_receive = 0
             elseif a:line[(i):(m - 1)] =~# '^\%(case\|if\|try\)$'
                 let ind += 1
             elseif a:line[(i):(m - 1)] =~# '^receive$'
                 let ind += 1
-                let last_receive = 1
+                let last_token = 'receive'
             elseif a:line[(i):(m-1)] =~# '^begin$'
                 let ind = ind + 2
-                let last_receive = 0
             elseif a:line[(i):(m - 1)] =~# '^end$'
                 let ind = ind - 2
-                let last_receive = 0
             elseif a:line[(i):(m - 1)] =~# '^after$'
-                if last_receive == 0
-                    let ind -= 1
-                else
+                if prev_token == 'receive'
                     let ind = ind + 0
+                else
+                    let ind -= 1
                 endif
-                let last_receive = 0
             elseif a:line[(i):(m - 1)] =~# '^fun$'
                 let ind += 1
                 let last_fun = 1
-                let last_receive = 0
             endif
 
         " Variable token
         elseif a:line[i] =~# "[A-Z_]"
             let m = matchend(a:line, "[[:alnum:]_@]*", i + 1)
-            let last_receive = 0
 
         " Character token: $<char> (as in: $a)
         elseif a:line[i] == '$'
             let m = i + 2
-            let last_receive = 0
 
         " Period token: .
         elseif a:line[i] == "."
@@ -135,13 +131,11 @@ function! s:ErlangIndentAfterLine(line)
         elseif a:line[i] == '-' && (i + 1 < linelen && a:line[i + 1] == '>')
             let m = i + 2
             let ind += 1
-            let last_receive = 0
 
         " Semicolon token: ;
         elseif a:line[i] == ';' && a:line[(i):(linelen)] !~# '.*->.*'
             let m = i + 1
             let ind -= 1
-            let last_receive = 0
 
         " Hash mark token: #
         elseif a:line[i] == '#'
@@ -152,13 +146,11 @@ function! s:ErlangIndentAfterLine(line)
             let m = i + 1
             let ind += 1
             let last_fun = 0
-            let last_receive = 0
 
         " Closing paren token: ), }, ]
         elseif a:line[i] =~# '[)}\]]'
             let m = i + 1
             let ind -= 1
-            let last_receive = 0
 
         " Other character
         else
