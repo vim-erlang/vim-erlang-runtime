@@ -41,7 +41,7 @@ function! s:ErlangAnalyzeLine(line)
     "   receive-after structure with no branches.
     " - 'end_of_clause': used to indent the line after the end of a clause
     "   (marked by a period) to column 1.
-    let last_token = ''
+    let last_token = 'none'
 
     " Partial function head where the guard is missing
     if a:line =~# "\\(^\\l[[:alnum:]_]*\\)\\|\\(^'[^']\\+'\\)(" &&
@@ -167,18 +167,20 @@ function! s:ErlangAnalyzeLine(line)
     endif
 endfunction
 
-function! s:FindPrevNonBlankNonComment(lnum)
-    let lnum = prevnonblank(a:lnum)
-    let line = getline(lnum)
-    " Continue to search above if the current line begins with a '%'
-    while line =~# '^\s*%.*$'
-        let lnum = prevnonblank(lnum - 1)
+function! s:AnalyzePrevNonBlankNonComment(lnum)
+    let lnum = a:lnum
+    while 1
+        let lnum = prevnonblank(lnum)
         if 0 == lnum
-            return 0
+            return [0, 'abs', 0, 'beginning_of_file']
         endif
         let line = getline(lnum)
+        let [absrel, ind_after, last_token] = s:ErlangAnalyzeLine(line)
+        if last_token != 'none'
+            return [lnum, absrel, ind_after, last_token]
+        endif
+        let lnum -= 1
     endwhile
-    return lnum
 endfunction
 
 " The function returns the indentation level of the line adjusted to a mutiple
@@ -219,9 +221,11 @@ function! ErlangIndent()
         let ind = ind - 2*&sw
     endif
     if currline =~# '^\s*after\>'
-        let plnum = s:FindPrevNonBlankNonComment(v:lnum - 1)
-        if getline(plnum) =~# '^[^%]*\<receive\>\s*\%(%.*\)\=$'
-            " If the 'receive' is not in the same line as the 'after'
+        let [plnum, absrel, ind_after, last_token] =
+          \ s:AnalyzePrevNonBlankNonComment(v:lnum - 1)
+       if last_token == 'receive'
+            " If we have a 'receive-after' structure without a branch, and the
+            " 'receive' is not in the same line as the 'after'
             let ind -= &sw
         else
             let ind -= 2 * &sw
