@@ -9,7 +9,7 @@ noremap <buffer> <F1> :call RereadIndent()<cr>
 noremap <buffer> <F2> :call ClearDebugLog()<cr>mkHmlggvG=`lzt`k:call PrintDebugLog()<cr>
 
 " Indent the current line
-noremap <buffer> <F3> :call ClearDebugLog()<cr>==<cr>:call PrintDebugLog()<cr>
+noremap <buffer> <F3> :call ClearDebugLog()<cr>==:call PrintDebugLog()<cr>
 
 function! RereadIndent()
     delfunction ErlangIndent
