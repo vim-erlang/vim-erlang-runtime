@@ -28,7 +28,7 @@ endif
 
 function! s:Log(s)
     if exists("*ErlangIndentLog")
-        return
+        call ErlangIndentLog(a:s)
     endif
 endfunction
 
