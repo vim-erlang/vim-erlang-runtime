@@ -212,7 +212,6 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line)
 
         " Closing bracket: }, ]
         elseif a:line[i] =~# '[}\]]'
-            call s:AddIndToken(indtokens, 'close_bracket', 'rel', -&sw, 0)
             call s:AddIndToken(indtokens, 'close_bracket', 'abs', i, -1)
             let next_i = i + 1
 
@@ -370,11 +369,14 @@ endfunction
 function! ErlangIndent()
 
     let currline = getline(v:lnum)
+    call s:Log('Indenting line ' . v:lnum . ': ' . currline)
 
-    if currline =~# '^\s*\%(end\|of\|catch\|after\)\>'
+    if currline =~# '^\s*\%\(\%(end\|of\|catch\|after\)\>\|[)\]}]\)'
+        call s:Log("  Line type = 'end'")
         let new_col = s:ErlangCalcIndent(v:lnum - 1, -1, 'end')
     else
-        let new_col = s:ErlangCalcIndent(v:lnum - 1, 0, 'type')
+        call s:Log("  Line type = 'normal'")
+        let new_col = s:ErlangCalcIndent(v:lnum - 1, 0, 'normal')
     endif
 
     if new_col < 0
