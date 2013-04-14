@@ -220,7 +220,7 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuatio
         " Opening bracket: {, [
         elseif a:line[i] =~# '[{[]'
             call s:AddIndToken(indtokens, 'open_bracket', 'abs', i, 1)
-            call s:AddIndToken(indtokens, 'open_bracket', 'rel', &sw, 0)
+            call s:AddIndToken(indtokens, 'open_bracket', 'rel', 1, 0)
             let next_i = i + 1
             let last_fun = 0
 
