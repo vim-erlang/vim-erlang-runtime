@@ -48,6 +48,12 @@ f() ->
     },
     ok.
 
+f() ->
+    1
+    ,
+    2
+    .
+
 %%%%%%%%%%
 % Period %
 %%%%%%%%%%
@@ -117,19 +123,35 @@ f() ->
 % Strings %
 %%%%%%%%%%%
 
-% bad
 f() ->
     x("foo
-      bar")
-      ,
-      ok.
+  bar((("), % string continuation lines like this one are level changed
+    x("foo
+         bar((("),
+    x("foo
+         bar\\"),
+    f("foo
+         bar
+         spam"),
+    "foo
+         bar",
+    ok,
+    "foo
+         bar
+         spam",
+    ok,
+    "foo
+         bar", [a,
+                b]
+    [a,
+     b]
+    ok.
 
-% bad
 f() ->
     x("foo
       %        bar")
-      ,
-      ok.
+    ,
+    ok.
 
 %%%%%%%%%%%%%
 % begin-end %

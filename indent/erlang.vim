@@ -93,11 +93,25 @@ endfunction
 " first_token_of_next_line = indtoken
 " result = integer: the indentation level of the examined line
 
-function! s:ErlangAnalyzeLine(line, first_token_of_next_line)
+function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuation)
 
     let linelen = strlen(a:line) " The length of the line
     let i = 0 " The index of the current character in the line
     let indtokens = []
+
+    if a:string_continuation
+        call s:AddIndToken(indtokens, 'string_continuation', 'special', i, 0)
+        let i = matchend(a:line, '^\%([^"\\]\|\\.\)*"', 0)
+        call s:Log("xxxx")
+        call s:Log(i)
+        call s:Log(a:line)
+
+        if i == -1
+            " We found a whole line that is just string continuation. From
+            " the indentation perspective, we can ignore this line.
+            return []
+        endif
+    endif
 
     while 0 <= i && i < linelen
 
@@ -249,6 +263,17 @@ endfunction
 "  ErlangCalcIndent "
 " ----------------- "
 
+" Return whether the given line starts with a string continuation:
+"
+"     f () ->          % IsLineStringContinuation = false
+"         "This is a   % IsLineStringContinuation = false
+"         multiline    % IsLineStringContinuation = true
+"         string".     % IsLineStringContinuation = true
+function! s:IsLineStringContinuation(lnum)
+    return (synIDattr(synID(a:lnum, 1, 0), 'name') =~#
+         \  '^\%(erlangString\|erlangModifier\)$')
+endfunction
+
 " Calculate the indentation of the given line.
 "
 " Types:
@@ -283,7 +308,8 @@ function! s:ErlangCalcIndent(lnum, level, type)
         let line = getline(lnum)
         call s:Log('Analysing line ' . lnum . ': ' . line)
 
-        let indtokens = s:ErlangAnalyzeLine(line, first_token_of_next_line)
+        let string_continuation = s:IsLineStringContinuation(lnum)
+        let indtokens = s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuation)
         call s:Log("  Tokens in the line:\n    - " . join(indtokens, "\n    - "))
         if len(indtokens) > 0
             let first_token_of_next_line = indtokens[0]
@@ -312,7 +338,6 @@ function! s:ErlangCalcIndent(lnum, level, type)
                     let abscol = curr_col + shift
                 endif
                 call s:Log('    Token with higher level reached, so returning abscol ' . abscol)
-                call s:Log('    (curr_col=' . curr_col . ', shift=' . shift)
                 return abscol
 
             elseif absrel == 'abs' && level == 0 && a:type == 'end'
@@ -320,20 +345,11 @@ function! s:ErlangCalcIndent(lnum, level, type)
                     let abscol = curr_col + shift
                 endif
                 call s:Log('    Pair for "end" token found, returning abscol ' . abscol)
-                call s:Log('    (curr_col=' . curr_col . ', shift=' . shift)
                 return abscol
 
             elseif absrel == 'abs' && level == 0
                 let abscol = curr_col + shift
                 call s:Log('    Abs token on level 0: setting abscol to ' . abscol)
-                "if token == 'arrow'
-                "    let abscol = curr_col + shift
-                "    call s:Log('    Abs "arrow" token on level 0: setting abscol to ' . abscol')
-                "endif
-                "else
-                "    call s:Log('    Abs token on level 0: not sure wh')
-                "    let shift = 0
-                "    call s:Log('    Abs token on level 0: setting abscol to ' . abscol . ' and shift to 0')
 
             elseif absrel == 'rel' && level == 0
                 let shift += curr_col
@@ -351,7 +367,7 @@ function! s:ErlangCalcIndent(lnum, level, type)
 
         call s:Log('  Line analyzed. abscol=' . abscol . ', shift=' . shift)
 
-        if level == 0 && abscol != -1
+        if level == 0 && abscol != -1 && !string_continuation
             call s:Log('    Token with level 0 reached, so returning abscol ' . abscol)
             return abscol
         endif
@@ -370,6 +386,12 @@ function! ErlangIndent()
 
     let currline = getline(v:lnum)
     call s:Log('Indenting line ' . v:lnum . ': ' . currline)
+
+    let string_continuation = s:IsLineStringContinuation(v:lnum)
+    if string_continuation
+        call s:Log('String continuation found, no indentation.')
+        return -1
+    endif
 
     if currline =~# '^\s*\%\(\%(end\|of\|catch\|after\)\>\|[)\]}]\)'
         call s:Log("  Line type = 'end'")
@@ -443,20 +465,20 @@ endfunction
 
 function! s:TestErlangAnalyzeLine()
 
-    call s:AssertEqual(s:ErlangAnalyzeLine('', 0), [])
+    call s:AssertEqual(s:ErlangAnalyzeLine('', 0, 0), [])
 
-    call s:AssertEqual(s:ErlangAnalyzeLine('A, B', 0), [
+    call s:AssertEqual(s:ErlangAnalyzeLine('A, B', 0, 0), [
                 \ ['var', 'abs', 0, 0]])
 
-    call s:AssertEqual(s:ErlangAnalyzeLine(' A, B', 0), [
+    call s:AssertEqual(s:ErlangAnalyzeLine(' A, B', 0, 0), [
                 \ ['var', 'abs', 1, 0]])
 
-    call s:AssertEqual(s:ErlangAnalyzeLine('begin X end', 0), [
+    call s:AssertEqual(s:ErlangAnalyzeLine('begin X end', 0, 0), [
                 \ ['begin', 'abs', 0, 1], ['begin', 'rel', &sw, 0],
                 \ ['var', 'abs', 6, 0],
                 \ ['end', 'abs', 8, -1]])
 
-    call s:AssertEqual(s:ErlangAnalyzeLine('A.', 0), [
+    call s:AssertEqual(s:ErlangAnalyzeLine('A.', 0, 0), [
                 \ ['var', 'abs', 0, 0],
                 \ ['end_of_clause', 'special', 1, 0]])
 
@@ -470,7 +492,7 @@ endfunction
 
 function! ErlangAnalyzeLine(line)
     echo "Line: " . a:line
-    let indtokens = s:ErlangAnalyzeLine(a:line, 0)
+    let indtokens = s:ErlangAnalyzeLine(a:line, 0, 0)
     echo "Tokens:"
     for it in indtokens
         echo it
