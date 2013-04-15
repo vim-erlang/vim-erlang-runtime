@@ -6,4 +6,7 @@ It can be tested in the following way:
   Erlang code is indented by the script – not how it should be.)
 - Source `helper.vim` (`:source helper.vim`)
 - Press F1 to load the new indentation (`indent/erlang.vim`).
-- Press F2 to reindent the current buffer.
+- Press F2 to run the unit tests.
+- Press F3 to reindent the current line. Press shift-F3 to print a log.
+- Press F4 to reindent the current buffer. Press shift-F4 to print a log.
+- Press F5 to show the tokens of the current line.

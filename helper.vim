@@ -28,8 +28,8 @@ endfunction
 noremap <buffer> <F2> :call TestErlangIndent()<cr>
 
 " Indent the current line
-noremap <buffer> <F3> :call IndentCurrentLineLog()<cr>
-noremap <buffer> <s-F3> :call IndentCurrentLinePerf()<cr>
+noremap <buffer> <F3> :call IndentCurrentLinePerf()<cr>
+noremap <buffer> <s-F3> :call IndentCurrentLineLog()<cr>
 
 function! IndentCurrentLineLog()
     let g:hcs1 = exists("*ErlangIndentLog")
@@ -49,8 +49,8 @@ endfunction
 
 
 " Indent the whole buffer
-noremap <buffer> <F4> :call IndentCurrentBufferLog()<cr>
-noremap <buffer> <s-F4> :call IndentCurrentBufferPerf()<cr>
+noremap <buffer> <F4> :call IndentCurrentBufferPerf()<cr>
+noremap <buffer> <s-F4> :call IndentCurrentBufferLog()<cr>
 
 function! IndentCurrentBufferLog()
     call DefineErlangLog()
