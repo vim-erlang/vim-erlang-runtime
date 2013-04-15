@@ -64,19 +64,7 @@ function! s:GetTokentypeFromIndtokens(indtokens)
     return a:indtokens[0]
 endfunction
 
-" Add a new token, except if the both the previous and current tokens are
-" absolute tokens and neither change the indentation level
 function! s:AddIndToken(indtokens, tokentype, absrel, col, level)
-    if !(len(a:indtokens) > 0 &&
-     \   a:indtokens[-1][1] == 'abs' &&
-     \   a:indtokens[-1][3] == 0 &&
-     \   a:absrel == 'abs' &&
-     \   a:level == 0)
-        call add(a:indtokens, [a:tokentype, a:absrel, a:col, a:level])
-    endif
-endfunction
-
-function! s:AddIndToken2(indtokens, tokentype, absrel, col, level)
     call add(a:indtokens, [a:tokentype, a:absrel, a:col, a:level])
 endfunction
 
@@ -174,7 +162,7 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuatio
             let next_i = i + 1
             " Dot token (end of clause): . (as in: f() -> ok.)
             if i + 1 == linelen || a:line[i + 1] =~# '[[:blank:]%]'
-                call s:AddIndToken2(indtokens, 'end_of_clause', 'special', i, 0)
+                call s:AddIndToken(indtokens, 'end_of_clause', 'special', i, 0)
             else
                 " Possibilities:
                 " - Dot token in float: . (as in: 3.14)
@@ -425,44 +413,6 @@ function! s:AssertEqual(a, b)
     endif
 endfunction
 
-function! s:TestAddIndToken()
-
-    " Consecutive absolute, 0-level tokens should be skipped
-    let indtokens = []
-    call s:AddIndToken(indtokens, 'x', 'abs', 5, 0)
-    call s:AssertEqual([['x', 'abs', 5, 0]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 1, 0)
-    call s:AssertEqual([['x', 'abs', 5, 0]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 2, 1)
-    call s:AssertEqual([['x', 'abs', 5, 0], ['x', 'abs', 2, 1]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 3, 1)
-    call s:AssertEqual([['x', 'abs', 5, 0], ['x', 'abs', 2, 1], ['x', 'abs', 3, 1]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 4, 0)
-    call s:AssertEqual([['x', 'abs', 5, 0], ['x', 'abs', 2, 1], ['x', 'abs', 3, 1], ['x', 'abs', 4, 0]], indtokens)
-
-    " Other combinations should not be skipped
-    let indtokens = []
-    call s:AddIndToken(indtokens, 'x', 'rel', 5, 0)
-    call s:AssertEqual([['x', 'rel', 5, 0]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'rel', 6, 0)
-    call s:AssertEqual([['x', 'rel', 5, 0], ['x', 'rel', 6, 0]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 7, 0)
-    call s:AssertEqual([['x', 'rel', 5, 0], ['x', 'rel', 6, 0], ['x', 'abs', 7, 0]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 8, 0)
-    call s:AssertEqual([['x', 'rel', 5, 0], ['x', 'rel', 6, 0], ['x', 'abs', 7, 0]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'rel', 9, 0)
-    call s:AssertEqual([['x', 'rel', 5, 0], ['x', 'rel', 6, 0], ['x', 'abs', 7, 0], ['x', 'rel', 9, 0]], indtokens)
-
-    let indtokens = []
-    call s:AddIndToken(indtokens, 'x', 'abs', 5, 1)
-    call s:AssertEqual([['x', 'abs', 5, 1]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 6, 1)
-    call s:AssertEqual([['x', 'abs', 5, 1], ['x', 'abs', 6, 1]], indtokens)
-    call s:AddIndToken(indtokens, 'x', 'abs', 0, -1)
-    call s:AssertEqual([['x', 'abs', 5, 1], ['x', 'abs', 6, 1], ['x', 'abs', 0, -1]], indtokens)
-
-endfunction
-
 function! s:TestErlangAnalyzeLine()
 
     call s:AssertEqual(s:ErlangAnalyzeLine('', 0, 0), [])
@@ -485,7 +435,6 @@ function! s:TestErlangAnalyzeLine()
 endfunction
 
 function! TestErlangIndent()
-    call s:TestAddIndToken()
     call s:TestErlangAnalyzeLine()
     echo "Test finished."
 endfunction

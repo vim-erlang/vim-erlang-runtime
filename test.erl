@@ -582,14 +582,14 @@ f() ->
 rand_pprint_slice() ->
     F = fun pprint/3,
     Rand = fun() ->
-        Bytes = crypto:rand_bytes(random:uniform(?MAX_BIN_SIZE)),
-        Pos = random:uniform(byte_size(Bytes)),
-        Len = random:uniform(byte_size(Bytes)),
-        {Bytes, Pos, Len}
-end,
-   Tests = [ Rand() || _ <- lists:seq(1, ?RUNS) ],
-   Title = fun(Size, Slice) ->
-       iolist_to_binary(io_lib:format("Random pprint w/ slice: (~p) ~p", [Size, Slice]))
-end,
-   [ { Title(byte_size(Bytes), {Pos, Len}), fun() -> ?assertEqual(ok, F(Bytes, {Pos, Len}, [])) end }
-   || { Bytes, Pos, Len } <- Tests ].
+                  Bytes = crypto:rand_bytes(random:uniform(?MAX_BIN_SIZE)),
+                  Pos = random:uniform(byte_size(Bytes)),
+                  Len = random:uniform(byte_size(Bytes)),
+                  {Bytes, Pos, Len}
+           end,
+    Tests = [ Rand() || _ <- lists:seq(1, ?RUNS) ],
+    Title = fun(Size, Slice) ->
+                   iolist_to_binary(io_lib:format("Random pprint w/ slice: (~p) ~p", [Size, Slice]))
+            end,
+    [ { Title(byte_size(Bytes), {Pos, Len}), fun() -> ?assertEqual(ok, F(Bytes, {Pos, Len}, [])) end }
+      || { Bytes, Pos, Len } <- Tests ].
