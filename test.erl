@@ -105,6 +105,10 @@ f() ->
     2
     .
 
+f() ->
+    function_call), % not valid Erlang, but we should handle it well anyway
+                  ok.
+
 %%%%%%%%%%
 % Period %
 %%%%%%%%%%
@@ -593,3 +597,26 @@ rand_pprint_slice() ->
             end,
     [ { Title(byte_size(Bytes), {Pos, Len}), fun() -> ?assertEqual(ok, F(Bytes, {Pos, Len}, [])) end }
       || { Bytes, Pos, Len } <- Tests ].
+
+rand_pprint_opts() ->
+    F = fun pprint/2,
+    CustomPrinter = fun(B) when is_list(B) -> works end,
+    OptsMap = [
+               %% Option                          %% Predicate
+               { {return,  binary},               fun erlang:is_binary/1  },
+               { {return,  iolist},               fun erlang:is_list/1    },
+
+               { {printer, CustomPrinter},        fun(works) -> true; (_) -> false end  },
+               { {invalid, option},               fun({'EXIT', {badarg, _}}) -> true; (O) -> O end }
+              ],
+    Range = lengthOptsMap,
+    Rand = fun() ->
+                  Input = crypto:rand_bytes(random:uniform(?MAX_BIN_SIZE)),
+                  {Opt, Predicate} = lists:nth(random:uniform(Range), OptsMap),
+                  {Input, Opt, Predicate}
+           end,
+    Tests = [ Rand() || _ <- lists:seq(1, ?RUNS) ],
+    Title = fun(Opt) ->
+                   iolist_to_binary([ "Random pprint w/ opt: ", io_lib:format("~p", [Opt]) ]) end,
+    [ { Title(Opt), fun() -> ?assertEqual(true, Pred( catch( F(I, [Opt]) ) )) end }
+      || {I, Opt, Pred} <- Tests ].
