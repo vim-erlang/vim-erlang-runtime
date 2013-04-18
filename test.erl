@@ -180,27 +180,27 @@ f() ->
 
 f() ->
     x("foo
-  bar((("), % string continuation lines like this one are level changed
+      bar((("), % string continuation lines like this one are level changed
     x("foo
-         bar((("),
+      bar((("),
     x("foo
          bar\\"),
     f("foo
-         bar
-         spam"),
-    "foo
-         bar",
-    ok,
-    "foo
-         bar
-         spam",
-    ok,
-    "foo
-         bar", [a,
-                b]
-    [a,
-     b]
-    ok.
+      bar
+      spam"),
+      "foo
+      bar",
+      ok,
+      "foo
+      bar
+      spam",
+      ok,
+      "foo
+      bar", [a,
+             b],
+      [a,
+       b]),
+          ok.
 
 f() ->
     x("foo
