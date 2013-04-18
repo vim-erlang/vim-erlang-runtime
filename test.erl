@@ -258,8 +258,8 @@ f() ->
 
 f() ->
     case X of % [{CaseCol, 1}, {+1sw, 0}, {XCol, 0}, {OfCol, 0}]
-         A -> % [{ACol, 0}, {+1sw, 0}]
-             A % [{ACol, 0}]
+        A -> % [{ACol, 0}, {+1sw, 0}]
+            A % [{ACol, 0}]
     end,
 
     case % [{CaseCol, 1}, {+1sw, 0}]
@@ -277,16 +277,16 @@ f() ->
     end,
 
     case X of
-         A -> % [{ACol, 0}, {+1sw, 0}]
-             A; % [{ACol, 0}, {-1sw, 0}]
-         B -> % [{BCol, 0}, {+1sw, 0}]
-             B % [{BCol, 0}]
+        A -> % [{ACol, 0}, {+1sw, 0}]
+            A; % [{ACol, 0}, {-1sw, 0}]
+        B -> % [{BCol, 0}, {+1sw, 0}]
+            B % [{BCol, 0}]
     end,
 
     case X of
-         A % [{ACol, 0}]
-         -> % [{+1sw, 0}]
-             A % [{ACol, 0}, {-1sw, 0}]
+        A % [{ACol, 0}]
+        -> % [{+1sw, 0}]
+            A % [{ACol, 0}, {-1sw, 0}]
     end,
 
     ok.
@@ -297,24 +297,24 @@ f() ->
 
 f() ->
     case A of
-         A -> % [{ACol, 1}, {+1sw, 0}, {}]
-             case B of
-                  B -> B
-             end
+        A -> % [{ACol, 1}, {+1sw, 0}, {}]
+            case B of
+                B -> B
+            end
     end,
     ok.
 
 f() ->
     f(case X of
-           A -> A
+          A -> A
       end),
     ok.
 
 f() ->
     ffffff(case X of
-                A -> fffffff(case X of
-                                  B -> B
-                             end)
+               A -> fffffff(case X of
+                                B -> B
+                            end)
            end),
     ok.
 

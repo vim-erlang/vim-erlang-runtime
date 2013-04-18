@@ -322,7 +322,7 @@ function! s:ErlangCalcIndent(lnum, level, type)
             endif
 
             if level > 0
-                if abscol == -1
+                if abscol == -1 || token == 'case'
                     let abscol = curr_col + shift
                 endif
                 call s:Log('    Token with higher level reached, so returning abscol ' . abscol)
