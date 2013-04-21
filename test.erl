@@ -180,7 +180,12 @@ f() ->
 
 f() ->
     x("foo
-      bar((("), % string continuation lines like this one are level changed
+f
+        bar((("). % string continuation lines like this one are level changed
+
+f() ->
+    x("foo
+        bar((("), % string continuation lines like this one are level changed
     x("foo
       bar((("),
     x("foo

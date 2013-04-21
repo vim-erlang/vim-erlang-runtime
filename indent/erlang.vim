@@ -212,8 +212,12 @@ endfunction
 "         multiline    % IsLineStringContinuation = true
 "         string".     % IsLineStringContinuation = true
 function! s:IsLineStringContinuation(lnum)
-    return (synIDattr(synID(a:lnum, 1, 0), 'name') =~#
-         \  '^\%(erlangString\|erlangModifier\)$')
+    if has('syntax_items')
+        return (synIDattr(synID(a:lnum, 1, 0), 'name') =~#
+             \  '^\%(erlangString\|erlangModifier\)$')
+    else
+        return 0
+    endif
 endfunction
 
 function! s:UnexpectedToken(token, stack)
