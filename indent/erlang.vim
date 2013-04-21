@@ -66,11 +66,11 @@ endfunction
 " Types:
 "
 " line = string: the line to be examined
-" first_token_of_next_line = indtoken
 " string_continuation = bool
+" atom_continuation = bool
 " result = [indtoken]
 
-function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuation)
+function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
 
     let linelen = strlen(a:line) " The length of the line
     let i = 0 " The index of the current character in the line
@@ -79,12 +79,15 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuatio
     if a:string_continuation
         call s:AddIndToken(indtokens, 'string_continuation', i)
         let i = matchend(a:line, '^\%([^"\\]\|\\.\)*"', 0)
-        call s:Log("Sting continuation:")
-        call s:Log(a:line)
-
         if i == -1
-            " We found a whole line that is just string continuation. From
-            " the indentation perspective, we can ignore this line.
+            call s:Log("    Whole line is string continuation -> ignore")
+            return []
+        endif
+    elseif a:atom_continuation
+        call s:AddIndToken(indtokens, 'atom_continuation', i)
+        let i = matchend(a:line, "^\\%([^'\\\\]\\|\\\\.\\)*'", 0)
+        if i == -1
+            call s:Log("    Whole line is quoted atom continuation -> ignore")
             return []
         endif
     endif
@@ -104,10 +107,10 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuatio
             call s:AddIndToken(indtokens, 'string', i)
             let next_i = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
 
-        " Atom token: '...'
+        " Quoted atom token: '...'
         elseif a:line[i] == "'"
-            call s:AddIndToken(indtokens, 'atom_quote', i)
-            let next_i = matchend(a:line, "'[^']*'",i)
+            call s:AddIndToken(indtokens, 'quoted_atom', i)
+            let next_i = matchend(a:line, "'\\%([^'\\\\]\\|\\\\.\\)*'",i)
 
         " Keyword or atom or variable token
         elseif a:line[i] =~# "[a-zA-Z_@]"
@@ -213,8 +216,15 @@ endfunction
 "         string".     % IsLineStringContinuation = true
 function! s:IsLineStringContinuation(lnum)
     if has('syntax_items')
-        return (synIDattr(synID(a:lnum, 1, 0), 'name') =~#
-             \  '^\%(erlangString\|erlangModifier\)$')
+        return synIDattr(synID(a:lnum, 1, 0), 'name') =~# '^erlangString'
+    else
+        return 0
+    endif
+endfunction
+
+function! s:IsLineAtomContinuation(lnum)
+    if has('syntax_items')
+        return synIDattr(synID(a:lnum, 1, 0), 'name') =~# '^erlangQuotedAtom'
     else
         return 0
     endif
@@ -321,7 +331,6 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
     let lnum = a:lnum
     let abscol = -1
-    let first_token_of_next_line = []
     let mode = 'normal'
     let stack = a:stack
     let semicolon_abscol = ''
@@ -353,10 +362,10 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
         let line = getline(lnum)
         call s:Log('Analysing line ' . lnum . ': ' . line)
         let string_continuation = s:IsLineStringContinuation(lnum)
-        let indtokens = s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuation)
+        let atom_continuation = s:IsLineAtomContinuation(lnum)
+        let indtokens = s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
         call s:Log("  Tokens in the line:\n    - " . join(reverse(copy(indtokens)), "\n    - "))
         if len(indtokens) > 0
-            let first_token_of_next_line = indtokens[0]
             call insert(all_tokens, indtokens)
         endif
 
@@ -545,7 +554,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
         call s:Log('  Line analyzed. abscol=' . abscol)
 
-        if s:IsEmptyButShift(stack) && abscol != -1 && !string_continuation
+        if s:IsEmptyButShift(stack) && abscol != -1 && !string_continuation && !atom_continuation
             call s:Log('    Empty stack at the beginning of the line -> return')
             return abscol + s:PopShift(stack)
         endif
@@ -565,9 +574,8 @@ function! ErlangIndent()
     let currline = getline(v:lnum)
     call s:Log('Indenting line ' . v:lnum . ': ' . currline)
 
-    let string_continuation = s:IsLineStringContinuation(v:lnum)
-    if string_continuation
-        call s:Log('String continuation found, no indentation.')
+    if s:IsLineStringContinuation(v:lnum) || s:IsLineAtomContinuation(v:lnum)
+        call s:Log('String or atom continuation found -> leaving indentation unchanged')
         return -1
     endif
 

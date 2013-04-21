@@ -41,11 +41,14 @@ if ! exists ("erlang_characters")
     syn match   erlangAnnotation       " \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|private\|equiv\|spec\|throws\)" contained
     syn match   erlangAnnotation       "`[^']*'" contained
     syn keyword erlangTodo             TODO FIXME XXX contained
-    syn match   erlangModifier         "\~\a\|\\\a\|\\\\" contained
     syn match   erlangSpecialCharacter ":\|_\|@\|\\\|\"\|\."
     syn match   erlangSeparator        "(\|)\|{\|}\|\[\|]\||\|||\|;\|,\|?\|->\|#" contained
-    syn region  erlangString           start=+"+ skip=+\\.+ end=+"+ contains=erlangModifier
-    syn region  erlangAtom             start=+'+ skip=+\\'+ end=+'+
+
+    " Strings and atoms
+    syn match   erlangStringModifier     "\~\a\|\\\a\|\\\\" contained
+    syn match   erlangQuotedAtomModifier "\~\a\|\\\a\|\\\\" contained
+    syn region  erlangString           start=+"+ skip=+\\.+ end=+"+ contains=erlangStringModifier
+    syn region  erlangQuotedAtom       start=+'+ skip=+\\.+ end=+'+ contains=erlangQuotedAtomModifier
 
     " Operators
     syn match   erlangOperator         "+\|-\|\*\|\/"
@@ -192,10 +195,10 @@ if version >= 508 || !exists ("did_erlang_inits")
     HiLink erlangTodo Todo
     HiLink erlangSpecialCharacter Special
     HiLink erlangSeparator Normal
-    HiLink erlangModifier Special
+    HiLink erlangStringModifier Special
     HiLink erlangOperator Operator
     HiLink erlangString String
-    HiLink erlangAtom Type
+    HiLink erlangQuotedAtom Type
 
     HiLink erlangNumberInteger Number
     HiLink erlangNumberFloat1 Float
