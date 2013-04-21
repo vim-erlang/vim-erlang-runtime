@@ -639,21 +639,6 @@ function! s:TestErlangAnalyzeLine()
 
     call s:AssertEqual(s:ErlangAnalyzeLine('', 0, 0), [])
 
-    call s:AssertEqual(s:ErlangAnalyzeLine('A, B', 0, 0), [
-                \ ['var', 'abs', 0, 0]])
-
-    call s:AssertEqual(s:ErlangAnalyzeLine(' A, B', 0, 0), [
-                \ ['var', 'abs', 1, 0]])
-
-    call s:AssertEqual(s:ErlangAnalyzeLine('begin X end', 0, 0), [
-                \ ['begin', 'abs', 0, 1], ['begin', 'rel', &sw, 0],
-                \ ['var', 'abs', 6, 0],
-                \ ['end', 'abs', 8, -1]])
-
-    call s:AssertEqual(s:ErlangAnalyzeLine('A.', 0, 0), [
-                \ ['var', 'abs', 0, 0],
-                \ ['end_of_clause', 'special', 1, 0]])
-
 endfunction
 
 function! TestErlangIndent()
