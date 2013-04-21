@@ -263,6 +263,9 @@ f() ->
 %%%%%%%%
 
 f() ->
+                                        end. % syntax error
+
+f() ->
     case X,
          Y of
         A ->
@@ -368,14 +371,12 @@ f
 % Actual parameters %
 %%%%%%%%%%%%%%%%%%%%%
 
-% bad
 f() ->
     g(A, B,
       C,
       D),
     ok.
 
-% bad
 f() ->
     long_function(
                    A, B,
@@ -577,6 +578,51 @@ f() ->
     end,
     ok.
 
+%%%%%%
+% if %
+%%%%%%
+
+% if -- with linebreaks
+f() ->
+
+    % if with 0 branch
+    if end, % not valid Erlang, but why not behave nicely
+
+    % if with 1 branch
+    if
+        A -> A
+    end,
+
+    if
+        A ->
+            A
+    end,
+
+    % if with 2 branches
+    if
+        A -> A;
+        B -> B
+    end,
+
+    if
+        A ->
+            A;
+        B ->
+            B
+    end,
+
+    ok.
+
+% if -- one-liners
+f() ->
+    if A -> A end,
+    if A -> A; B -> B end,
+
+    % half-liners
+    if A -> A end, if A -> A end,
+    if A -> A; B -> B end, if A -> A; B -> B end,
+    ok.
+
 %%%%%%%%%%%
 % receive %
 %%%%%%%%%%%
@@ -656,7 +702,6 @@ f() ->
     ok.
 
 % receive -- one-liners
-% bad
 f() ->
     receive A -> A end,
     receive A -> A; B -> B end,
@@ -667,7 +712,6 @@ f() ->
     ok.
 
 % receive + after -- one-liners
-% bad
 f() ->
 
     receive after T -> T end,

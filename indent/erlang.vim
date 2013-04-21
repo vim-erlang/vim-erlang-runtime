@@ -270,7 +270,7 @@ function! s:CheckForArrow(stack, token, abscol)
             call s:Log('    "->" found -> return')
             return [1, a:abscol + &sw]
         else
-            return s:UnexpectedToken(a:token, a:stack)
+            return [1, s:UnexpectedToken(a:token, a:stack)]
         endif
     else
         return [0, 0]
@@ -385,7 +385,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, 'end', &sw)
                 if ret | return res | endif
 
-            elseif token == 'case' || token == 'try' || token == 'receive'
+            elseif token == 'case' || token == 'if' || token == 'try' || token == 'receive'
 
                 " stack = []  =>  LTI is a condition
                 " stack = ['->']  =>  LTI is a branch
@@ -393,6 +393,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 if empty(stack)
                     " pass
                 elseif (token == 'case' && stack[0] == 'of') ||
+                     \ (token == 'if') ||
                      \ (token == 'try' && (stack[0] == 'catch' || stack[0] == 'after')) ||
                      \ (token == 'receive')
 
@@ -402,18 +403,18 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     endif
 
                     if empty(stack)
-                        call s:Log('    LTI is in a condition; matching "case/try/receive" found')
+                        call s:Log('    LTI is in a condition; matching "case/if/try/receive" found')
                         let abscol = curr_col + &sw
                     elseif stack[0] == 'align_to_begin_element'
                         call s:Pop(stack)
                         let abscol = curr_col
                     elseif len(stack) > 1 && stack[0] == '->' && stack[1] == ';'
-                        call s:Log('    LTI is in a condition; matching "case/try/receive" found')
+                        call s:Log('    LTI is in a condition; matching "case/if/try/receive" found')
                         call s:Pop(stack)
                         call s:Pop(stack)
                         let abscol = curr_col + &sw
                     elseif stack[0] == '->'
-                        call s:Log('    LTI is in a branch; matching "case/try/receive" found')
+                        call s:Log('    LTI is in a branch; matching "case/if/try/receive" found')
                         call s:Pop(stack)
                         let abscol = curr_col + 2 * &sw
                     endif
