@@ -106,8 +106,8 @@ f() ->
     .
 
 f() ->
-    function_call), % not valid Erlang, but we should handle it well anyway
-                  ok.
+    function_call),
+                  ok. % syntax error in prev.line
 
 %%%%%%%%%%
 % Period %
@@ -184,23 +184,29 @@ f() ->
     x("foo
       bar((("),
     x("foo
-         bar\\"),
+      bar\\"),
     f("foo
       bar
       spam"),
-      "foo
-      bar",
-      ok,
-      "foo
+    "foo
+       bar",
+    ok,
+    "foo
       bar
       spam",
-      ok,
-      "foo
+
+    "foo
+      bar
+      spam begin
+      end",
+
+    ok,
+    "foo
       bar", [a,
              b],
-      [a,
-       b]),
-          ok.
+    [a,
+     b]),
+        ok. % syntax error in the prev.line
 
 f() ->
     x("foo
@@ -213,42 +219,37 @@ f() ->
 %%%%%%%%%%%%%
 
 f() ->
-    begin A, % [{BeginCol, 1}, {+sw, 0}, {ACol, 0}]
-          B % [{BCol, 0}]
-    end, % [{EndCol, -1}]
-    begin % [{BeginCol, 1}, {+sw, 0}]
-        A, % [{ACol, 0}]
-        B % [{BCol, 0}]
-    end, % [{EndCol, -1}]
-    begin A, % [{BeginCol, 1}, {+sw, 0}, {ACol, 0}]
-          begin B % [{BeginCol, 1},  {+sw, 0}, {BCol, 0}]
-          end, % [{EndCol, -1}]
-          C % [{CCol, 0}]
-    end, % [{EndCol, -1}]
+    begin A,
+          B
+    end,
     begin
         A,
-        begin % [{BeginCol, 1}]
-            B % [{BCol, 0}]
-        end, % [{EndCol, -1}]
-        C, D, % [{CCol, 0}, {DCol, 0}]
+        B
+    end,
+    begin A,
+          begin B
+          end,
+          C
+    end,
+    begin
+        A,
+        begin
+            B
+        end,
+        C, D,
         E
     end,
     begin
-        A, % [{BCol, 0}]
-        B, begin % [{BCol, 0}, {BeginCol, 1}]
-               C % [{CCol, 0}]
-           end, % [{EndCol, -1}]
+        A,
+        B, begin
+               C
+           end,
         D
     end,
     ok.
 
 f() ->
-
-    % [{BeginCol, 1}, {ACol, 0}, {EndCol, 1}]
-    % We don't need BCol
     begin A, B end,
-
-    % [{BeginCol, 1}, {ACol, 0}, {BeginCol, 1}, {BCol, 0}, {EndCol, 1}, {CCol, 0}, {EndCol, 1}]
     begin A, begin B end, C end,
     ok.
 
@@ -257,36 +258,42 @@ f() ->
 %%%%%%%%
 
 f() ->
-    case X of % [{CaseCol, 1}, {+1sw, 0}, {XCol, 0}, {OfCol, 0}]
-        A -> % [{ACol, 0}, {+1sw, 0}]
-            A % [{ACol, 0}]
-    end,
-
-    case % [{CaseCol, 1}, {+1sw, 0}]
-        X % [{XCol, 0}]
-    of % [{OfCol, 0}] % when starting from 'of', start with level = -1
-        A -> % [{ACol, 0}, {+1sw, 0}]
-            A % [{ACol, 0}]
-    end,
-
-    case % [{CaseCol, 1}, {+1sw, 0}]
-        X % [{XCol, 0}]
-    of % [{-1sw, 0}, {OfCol, 0}, {+1sw, 0}]
-        A -> % [{ACol, 0}, {+1sw, 0}]
-            A % [{ACol, 0}]
+    case X,
+        Y of
+        A ->
+            A
     end,
 
     case X of
-        A -> % [{ACol, 0}, {+1sw, 0}]
-            A; % [{ACol, 0}, {-1sw, 0}]
-        B -> % [{BCol, 0}, {+1sw, 0}]
-            B % [{BCol, 0}]
+        A ->
+            A
+    end,
+
+    case
+        X
+    of
+        A ->
+            A
+    end,
+
+    case
+        X
+    of
+        A ->
+            A
     end,
 
     case X of
-        A % [{ACol, 0}]
-        -> % [{+1sw, 0}]
-            A % [{ACol, 0}, {-1sw, 0}]
+        A ->
+            A;
+        B ->
+            B
+    end,
+
+    case X of
+        A
+        ->
+            A
     end,
 
     ok.
@@ -297,7 +304,7 @@ f() ->
 
 f() ->
     case A of
-        A -> % [{ACol, 1}, {+1sw, 0}, {}]
+        A ->
             case B of
                 B -> B
             end
@@ -318,6 +325,27 @@ f() ->
            end),
     ok.
 
+% case and when
+
+f() ->
+    case A of
+        B when B > 0 ->
+            ok;
+        B
+        when
+        B > 0 ->
+            ok;
+
+        B
+        when
+        B > 0;
+    B < 0
+    ->
+        ok
+    end,
+    ok.
+
+
 %%%%%%%%%%%%%%%%%%%
 % Basic functions %
 %%%%%%%%%%%%%%%%%%%
@@ -337,20 +365,54 @@ f
 
 % bad
 f() ->
-    % No BCol
-    g(A, B, % [{FCol, 0}, {'OpenParCol', 1}, {ACol, 0}]
-      C, % [{CCol, 0}]
+    g(A, B,
+      C,
       D),
     ok.
 
 % bad
 f() ->
-    long_function(% [{FCol, 0}, {'OpenParCol', 1}, {+2, 0}]
-                   A, B, % [{ACol, 0}]
-                   C, % [{CCol, 0}]
+    long_function(
+                   A, B,
+                   C,
                    D),
     ok.
 
+%%%%%%%%%%%%%%%%%%%%%
+% Formal parameters %
+%%%%%%%%%%%%%%%%%%%%%
+
+% One expression after "when"
+f(A) when A == 0 ->
+    ok.
+
+f(A)
+when A == 0
+->
+    ok.
+
+f(A)
+when
+A == 0
+->
+    ok.
+
+% Two expressions after "when"
+f(A) when A == 0; B == 0 ->
+    ok.
+
+f(A)
+when A == 0;
+       B == 0
+       ->
+           ok.
+
+f(A)
+when
+A == 0;
+      B == 0
+      ->
+          ok.
 
 %%%%%%%
 % fun %
@@ -363,7 +425,17 @@ f() ->
     fun (A) -> A; (B) -> B end,
     ok.
 
-% fun - with linebreaks
+% fun - with some linebreaks
+f() ->
+    fun a/0,
+    fun (A) -> A
+    end,
+    fun (A) -> A;
+        (B) -> B
+    end,
+    ok.
+
+% fun - with more linebreaks
 f() ->
     fun a/0,
     fun (A) ->
@@ -376,7 +448,17 @@ f() ->
     end,
     ok.
 
-% fun - with linebreaks with less space
+% fun - with some linebreaks with less space
+f() ->
+    fun a/0,
+    fun(A) -> A
+    end,
+    fun(A) -> A;
+       (B) -> B
+    end,
+    ok.
+
+% fun - with more linebreaks with less space
 f() ->
     fun a/0,
     fun(A) ->
@@ -392,10 +474,10 @@ f() ->
 % fun - with extra linebreaks
 f() ->
 
-    fun 
+    fun
     a/0,
 
-    fun 
+    fun
     a
     /
     0,
@@ -409,6 +491,83 @@ f() ->
     (A) ->
         A;
     (B) ->
+        B
+    end,
+    ok.
+
+% fun - without linebreaks + when
+f() ->
+    fun a/0,
+    fun (A) when A > 0 -> A end,
+    fun (A) when A > 0 -> A; (B) when B > 0 -> B end,
+    ok.
+
+% fun - with some linebreaks + when
+f() ->
+    fun a/0,
+    fun (A) when A > 0 -> A
+    end,
+    fun (A) when A > 0 -> A;
+        (B) when B > 0 -> B
+    end,
+    ok.
+
+% fun - with more linebreaks + when
+f() ->
+    fun a/0,
+    fun (A) when A > 0 ->
+            A
+    end,
+    fun  (A) when A > 0 ->
+             A;
+         (B) when B > 0 ->
+             B
+    end,
+    ok.
+
+% fun - with some linebreaks with less space + when
+f() ->
+    fun a/0,
+    fun(A) when A > 0 -> A
+    end,
+    fun(A) when A > 0 -> A;
+       (B) when B > 0 -> B
+    end,
+    ok.
+
+% fun - with more linebreaks with less space + when
+f() ->
+    fun a/0,
+    fun(A) when A > 0 ->
+           A
+    end,
+    fun(A) when A > 0 ->
+           A;
+       (B) when B > 0 ->
+           B
+    end,
+    ok.
+
+% fun - with extra linebreaks + when
+f() ->
+
+    fun
+    a/0,
+
+    fun
+    a
+    /
+    0,
+
+    fun
+    (A) when A > 0 ->
+        A
+    end,
+
+    fun
+    (A) when A > 0 ->
+        A;
+    (B) when B > 0 ->
         B
     end,
     ok.
@@ -508,12 +667,12 @@ f() ->
 
     receive after T -> T end,
     receive A -> A after T -> T end,
-    receive A -> A; B -> B after T -> T end, 
+    receive A -> A; B -> B after T -> T end,
 
     % half-liners
     receive after T -> T end, receive after T -> T end,
     receive A -> A after T -> T end, receive A -> A after T -> T end,
-    receive A -> A; B -> B after T -> T end, receive A -> A; B -> B after T -> T end, 
+    receive A -> A; B -> B after T -> T end, receive A -> A; B -> B after T -> T end,
     ok.
 
 % tricky scenarios which may catch some heuristics
