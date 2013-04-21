@@ -281,7 +281,7 @@ f({A,
 % Multiple clauses
 f() ->
     ok;
-                                        f() ->
+f() ->
     ok.
 
 % One expression after "when"

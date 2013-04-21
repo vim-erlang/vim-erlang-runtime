@@ -276,13 +276,21 @@ function! s:BeginElementFound(stack, token, curr_col, abscol, end_token, sw)
     endif
 endfunction
 
-function! s:CheckForArrow(stack, token, abscol)
+function! s:CheckForFuncDefArrow(stack, token, abscol)
     if !empty(a:stack) && a:stack[0] == '->'
-        call s:Log('    CheckForArrow: "->" found')
+        call s:Log('    CheckForFuncDefArrow: "->" found in stack')
         call s:Pop(a:stack)
         if s:IsEmptyButShift(a:stack)
-            call s:Log('    "->" found -> return')
+            call s:Log('    Stack is ["->"], so LTI is in function body -> return')
             return [1, a:abscol + &sw]
+        elseif a:stack[0] == ';'
+            call s:Pop(a:stack)
+            if s:IsEmptyButShift(a:stack)
+                call s:Log('    Stack is ["->", ";"], so LTI is in a function head -> return')
+                return [0, a:abscol]
+            else
+                return [1, s:UnexpectedToken(a:token, a:stack)]
+            endif
         else
             return [1, s:UnexpectedToken(a:token, a:stack)]
         endif
@@ -356,7 +364,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
         " Hit the start of the file
         if lnum == 0
-            let [ret, res] = s:CheckForArrow(stack, 'beginning_of_file', abscol)
+            let [ret, res] = s:CheckForFuncDefArrow(stack, 'beginning_of_file', abscol)
             if ret | return res | endif
 
             return 0
@@ -383,7 +391,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             let leave_abscol = 0
 
             if token == 'end_of_clause'
-                let [ret, res] = s:CheckForArrow(stack, token, abscol)
+                let [ret, res] = s:CheckForFuncDefArrow(stack, token, abscol)
                 if ret | return res | endif
 
                 if abscol == -1
