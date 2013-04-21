@@ -12,3 +12,10 @@ It can be tested in the following way:
 - Press F3 to reindent the current line. Press shift-F3 to print a log.
 - Press F4 to reindent the current buffer. Press shift-F4 to print a log.
 - Press F5 to show the tokens of the current line.
+
+*Note:*
+
+- When the indentation scripts detects a syntax error, it indents the line to
+  column 40. This behavior is useful for developing and testing the script, but
+  the production version will not change the indentation of a line when it
+  detects syntax error.
