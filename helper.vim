@@ -51,14 +51,6 @@ endfunction
 
 " Indent the whole buffer
 noremap <buffer> <F4> :call IndentCurrentBufferPerf()<cr>
-noremap <buffer> <s-F4> :e<cr>:call IndentCurrentBufferPerf()<cr>
-
-function! IndentCurrentBufferLog()
-    call DefineErlangLog()
-    call ClearDebugLog()
-    normal mkHmlggvG=`lzt`k
-    call PrintDebugLog()
-endfunction
 
 function! IndentCurrentBufferPerf()
     call DeleteErlangLog()
