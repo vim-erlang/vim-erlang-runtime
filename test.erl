@@ -174,14 +174,14 @@ f() ->
     ok.
 % Comment
 
-%%%%%%%%%%%
-% Strings %
-%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Multiline strings and atoms %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 f() ->
     x("foo
 f
-        bar((("). % string continuation lines like this one are level changed
+        bar(((").
 
 f() ->
     x("foo
@@ -218,6 +218,29 @@ f() ->
       %        bar")
     ,
     ok.
+
+f() ->
+    x("foo ',
+f,
+    '
+      %        bar")
+    ,
+    ok.
+
+f() ->
+    x('foo
+      f
+      bar(((').
+
+            f() ->
+                                        ok,
+                                        'foo
+                                        bar', [a,
+                                        b],
+                                        [a,
+                                         b]), 'my
+                                        atom',
+                                        ok.
 
 %%%%%%%%%%%%%
 % begin-end %
