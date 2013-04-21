@@ -61,6 +61,9 @@ f
   atom',
     ok.
 
+'my function'() ->
+ok.
+
 %%% ===========================================================================
 %%% 2.9 Tuple
 %%% 2.10 List
@@ -316,15 +319,170 @@ f(A)
       ->
     ok.
 
+% Multiple clauses + when
+f({X,
+   Y})
+  when A == 0;
+       B == 0
+       ->
+    {X,
+     Y};
+f({X,
+   Y})
+  when A == 0;
+       B == 0
+       ->
+    ok.
+
+f({X, Y}) when A == 0; B == 0 -> {X, Y};
+f({X, Y}) when A == 0; B == 0 -> ok.
+
+f({X, Y}) when A == 0 -> {X, Y}; f({X, Y}) when A == 0 -> ok.
+
+%%% ===========================================================================
+%%% 6 Types and Function Specifications
+%%% ===========================================================================
+
+%%% ===========================================================================
+%%% 6.3  Type declarations of user-defined types
+%%% ===========================================================================
+
+-type my_struct_type() :: Type.
+-opaque my_opaq_type() :: Type.
+-type orddict(Key, Val) :: [{Key, Val}].
+
+-type orddict(Key, Val) :: [{Key,
+                             Val}].
+
+-type my_fun_type() :: fun()                  %% any function
+                           | fun((...) -> Type)     %% any arity, returning Type
+                                        | fun(() -> Type)
+                                        | fun((A) -> Type)
+                                        | fun((A, B) -> Type).
+-type my_bitstring_type :: <<>>
+| <<_:1>>
+| <<_:_*1>>
+| <<_:1, _:_*1>>.
+
+%%% ===========================================================================
+%%% 6.4  Type information in record declarations
+%%% ===========================================================================
 
 
+-record(rec, {f1 = 42 :: integer(),
+              f2      :: 'undefined' | float(),
+              f3      :: 'undefined' |
+              'a' | 'b'}).
 
+-record(rec, {f1 = 42 :: integer(),
+              f2      :: float(),
+              f3      :: 'a' | fun() |
+                                   'b'}).
 
+%%% ===========================================================================
+%%% 6.5  Specifications for functions
+%%% ===========================================================================
 
+-spec func(A, B) -> ReturnType.
+func() ->
+    ok.
 
+-spec module:func(A, B) -> ReturnType.
+func() ->
+    ok.
 
+-spec func(A,
+           B) -> ReturnType.
+func() ->
+    ok.
 
+% Overloading
+-spec func(A, B) -> ReturnType;
+(A,
+ B) -> ReturnType.
+func() ->
+    ok.
 
+-spec func(A, B) -> ReturnType
+    ; (A,
+       B) -> ReturnType.
+func() ->
+    ok.
+
+% Guards
+-spec id(A) -> A when A :: tuple().
+-spec id(A) -> A when A :: tuple(), B :: tuple().
+
+-spec id(A)
+->
+    A
+      when
+          A
+          ::
+          tuple().
+-spec id(A)
+->
+    A
+      when
+          A;
+          B
+          ::
+          tuple().
+
+% One guard + overloading
+-spec func(A, B) -> ReturnType when A :: t();
+                                    (A,
+                                     B) -> ReturnType when A :: t().
+func() ->
+    ok.
+
+-spec func(A, B) ->
+    ReturnType
+      when
+          A
+          ::
+          t()
+          ;
+          (A,
+           B) -> ReturnType
+      when
+          A
+          ::
+          t().
+func() ->
+    ok.
+
+% Two guards + overloading
+-spec func(A, B) -> ReturnType when A :: t(), B :: t();
+                                    (A,
+                                     B) -> ReturnType when A :: t(), B :: t().
+func() ->
+    ok.
+
+-spec func(A, B)
+->
+    ReturnType
+      when
+          A
+          ::
+          t(),
+          B
+          ::
+          t()
+          ;
+          (A,
+           B)
+          ->
+    ReturnType
+      when
+          A
+          ::
+          t(),
+          B
+          ::
+          t().
+func() ->
+    ok.
 
 %%% ===========================================================================
 %%% Uncategorized
