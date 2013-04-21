@@ -15,7 +15,7 @@ else
 endif
 
 setlocal indentexpr=ErlangIndent()
-setlocal indentkeys+==after,=end,=catch,=),=],=}
+setlocal indentkeys+=0=end,0=of,0=catch,0=after,0=),0=],0=}
 
 " Only define the functions once
 if exists("*ErlangIndent")
