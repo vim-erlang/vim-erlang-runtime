@@ -219,15 +219,6 @@ f() ->
     ,
     ok.
 
-% This function tests that we handle string quotes and atom quotes separately
-f() ->
-    x("foo ',
-f,
-    '
-      %        bar")
-    ,
-    ok.
-
 f() ->
     x('foo
       f
@@ -241,6 +232,15 @@ f() ->
     [a,
      b], 'my
   atom',
+    ok.
+
+% This function tests that we handle string quotes and atom quotes separately
+f() ->
+    x("foo ',
+f,
+    '
+      %        bar")
+    ,
     ok.
 
 %%%%%%%%%%%%%
