@@ -107,7 +107,7 @@ f() ->
 
 f() ->
     function_call),
-                  ok. % syntax error in prev.line
+                                        ok. % syntax error in prev.line
 
 %%%%%%%%%%
 % Period %
@@ -206,7 +206,7 @@ f() ->
              b],
     [a,
      b]),
-        ok. % syntax error in the prev.line
+                                        ok. % syntax error in the prev.line
 
 f() ->
     x("foo
@@ -259,7 +259,7 @@ f() ->
 
 f() ->
     case X,
-        Y of
+         Y of
         A ->
             A
     end,
@@ -332,16 +332,16 @@ f() ->
         B when B > 0 ->
             ok;
         B
-        when
-        B > 0 ->
+          when
+              B > 0 ->
             ok;
 
         B
-        when
-        B > 0;
-    B < 0
-    ->
-        ok
+          when
+              B > 0;
+              B < 0
+              ->
+            ok
     end,
     ok.
 
@@ -387,14 +387,14 @@ f(A) when A == 0 ->
     ok.
 
 f(A)
-when A == 0
-->
+  when A == 0
+       ->
     ok.
 
 f(A)
-when
-A == 0
-->
+  when
+      A == 0
+      ->
     ok.
 
 % Two expressions after "when"
@@ -402,17 +402,17 @@ f(A) when A == 0; B == 0 ->
     ok.
 
 f(A)
-when A == 0;
+  when A == 0;
        B == 0
        ->
-           ok.
+    ok.
 
 f(A)
-when
-A == 0;
+  when
+      A == 0;
       B == 0
       ->
-          ok.
+    ok.
 
 %%%%%%%
 % fun %
@@ -462,12 +462,12 @@ f() ->
 f() ->
     fun a/0,
     fun(A) ->
-           A
+            A
     end,
     fun(A) ->
-           A;
+            A;
        (B) ->
-           B
+            B
     end,
     ok.
 
@@ -483,15 +483,15 @@ f() ->
     0,
 
     fun
-    (A) ->
-        A
+        (A) ->
+            A
     end,
 
     fun
-    (A) ->
-        A;
-    (B) ->
-        B
+        (A) ->
+            A;
+        (B) ->
+            B
     end,
     ok.
 
@@ -519,9 +519,9 @@ f() ->
             A
     end,
     fun  (A) when A > 0 ->
-             A;
+            A;
          (B) when B > 0 ->
-             B
+            B
     end,
     ok.
 
@@ -539,12 +539,12 @@ f() ->
 f() ->
     fun a/0,
     fun(A) when A > 0 ->
-           A
+            A
     end,
     fun(A) when A > 0 ->
-           A;
+            A;
        (B) when B > 0 ->
-           B
+            B
     end,
     ok.
 
@@ -560,15 +560,15 @@ f() ->
     0,
 
     fun
-    (A) when A > 0 ->
-        A
+        (A) when A > 0 ->
+            A
     end,
 
     fun
-    (A) when A > 0 ->
-        A;
-    (B) when B > 0 ->
-        B
+        (A) when A > 0 ->
+            A;
+        (B) when B > 0 ->
+            B
     end,
     ok.
 
@@ -745,14 +745,14 @@ f() ->
 rand_pprint_slice() ->
     F = fun pprint/3,
     Rand = fun() ->
-                  Bytes = crypto:rand_bytes(random:uniform(?MAX_BIN_SIZE)),
-                  Pos = random:uniform(byte_size(Bytes)),
-                  Len = random:uniform(byte_size(Bytes)),
-                  {Bytes, Pos, Len}
+                   Bytes = crypto:rand_bytes(random:uniform(?MAX_BIN_SIZE)),
+                   Pos = random:uniform(byte_size(Bytes)),
+                   Len = random:uniform(byte_size(Bytes)),
+                   {Bytes, Pos, Len}
            end,
     Tests = [ Rand() || _ <- lists:seq(1, ?RUNS) ],
     Title = fun(Size, Slice) ->
-                   iolist_to_binary(io_lib:format("Random pprint w/ slice: (~p) ~p", [Size, Slice]))
+                    iolist_to_binary(io_lib:format("Random pprint w/ slice: (~p) ~p", [Size, Slice]))
             end,
     [ { Title(byte_size(Bytes), {Pos, Len}), fun() -> ?assertEqual(ok, F(Bytes, {Pos, Len}, [])) end }
       || { Bytes, Pos, Len } <- Tests ].
@@ -770,12 +770,12 @@ rand_pprint_opts() ->
               ],
     Range = lengthOptsMap,
     Rand = fun() ->
-                  Input = crypto:rand_bytes(random:uniform(?MAX_BIN_SIZE)),
-                  {Opt, Predicate} = lists:nth(random:uniform(Range), OptsMap),
-                  {Input, Opt, Predicate}
+                   Input = crypto:rand_bytes(random:uniform(?MAX_BIN_SIZE)),
+                   {Opt, Predicate} = lists:nth(random:uniform(Range), OptsMap),
+                   {Input, Opt, Predicate}
            end,
     Tests = [ Rand() || _ <- lists:seq(1, ?RUNS) ],
     Title = fun(Opt) ->
-                   iolist_to_binary([ "Random pprint w/ opt: ", io_lib:format("~p", [Opt]) ]) end,
+                    iolist_to_binary([ "Random pprint w/ opt: ", io_lib:format("~p", [Opt]) ]) end,
     [ { Title(Opt), fun() -> ?assertEqual(true, Pred( catch( F(I, [Opt]) ) )) end }
       || {I, Opt, Pred} <- Tests ].

@@ -32,54 +32,43 @@ function! s:Log(s)
     endif
 endfunction
 
+function! s:L2s(list)
+    return ''.join([a:list])
+endfunction
+
 " ---------------- "
 " Indtoken library "
 " ---------------- "
 
-" Indtokens are "indentation tokens". They are similar to lexical tokens, but
-" they:
-" - include virtual tokens that just increase or descrease the indentation;
-"   and
-" - omit lexical tokens that are not useful for indentation calculations.
+" Indtokens are "indentation tokens".
 "
 " Types:
 "
-" indtoken = [tokentype, absrel, col, level]
-" tokentype = string: see ErlangAnalyzeLine
-" absrel = 'abs' | 'rel' | 'special'
-" col = integer
-" level = integer
-"
-" Examples:
-"
-" - {+2, 0} = ['x', 'rel', 2, 0]
-" - {-4, 0} = ['x', 'rel', -4, 0]
-" - {1, 0} = ['x', 'abs', 1, 0]
+" indtoken = [token, col]
+" token = string: see ErlangAnalyzeLine
+" col = integer (the column of the first character of the token)
 
-function! s:SetLevelInIndtokens(indtokens, level)
-    let a:indtokens[3] = a:level
-endfunction
-
-function! s:GetTokentypeFromIndtokens(indtokens)
+function! s:GetTokenFromIndtokens(indtokens)
     return a:indtokens[0]
 endfunction
 
-function! s:AddIndToken(indtokens, tokentype, absrel, col, level)
-    call add(a:indtokens, [a:tokentype, a:absrel, a:col, a:level])
+function! s:AddIndToken(indtokens, token, col)
+    call add(a:indtokens, [a:token, a:col])
 endfunction
 
 " -------------------------- "
 " ErlangAnalyzeLine function "
 " -------------------------- "
 
-" The function goes through the whole line, analyses it and returns the
+" The function goes through the whole line, analyzes it and returns the
 " indentation level.
 "
 " Types:
 "
 " line = string: the line to be examined
 " first_token_of_next_line = indtoken
-" result = integer: the indentation level of the examined line
+" string_continuation = bool
+" result = [indtoken]
 
 function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuation)
 
@@ -88,10 +77,9 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuatio
     let indtokens = []
 
     if a:string_continuation
-        call s:AddIndToken(indtokens, 'string_continuation', 'special', i, 0)
+        call s:AddIndToken(indtokens, 'string_continuation', i)
         let i = matchend(a:line, '^\%([^"\\]\|\\.\)*"', 0)
-        call s:Log("xxxx")
-        call s:Log(i)
+        call s:Log("Sting continuation:")
         call s:Log(a:line)
 
         if i == -1
@@ -113,47 +101,22 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuatio
 
         " String token: "..."
         elseif a:line[i] == '"'
-            call s:AddIndToken(indtokens, 'string', 'abs', i, 0)
+            call s:AddIndToken(indtokens, 'string', i)
             let next_i = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
 
         " Atom token: '...'
         elseif a:line[i] == "'"
-            call s:AddIndToken(indtokens, 'atom_quote', 'abs', i, 0)
+            call s:AddIndToken(indtokens, 'atom_quote', i)
             let next_i = matchend(a:line, "'[^']*'",i)
 
-        " Keyword or atom token
-        elseif a:line[i] =~# "[a-z]"
+        " Keyword or atom or variable token
+        elseif a:line[i] =~# "[a-zA-Z_@]"
             let next_i = matchend(a:line, "[[:alnum:]_@]*", i + 1)
-            let word = a:line[(i):(next_i - 1)]
-
-            if word == 'fun'
-                call s:AddIndToken(indtokens, 'fun', 'abs', i, 0)
-
-            elseif word =~# '^\%(begin\|case\|if\|try\|receive\)$'
-                call s:AddIndToken(indtokens, word, 'abs', i, 1)
-                call s:AddIndToken(indtokens, word, 'rel', &sw, 0)
-
-            elseif word =~# '^\%(after\|of\|catch\)$'
-                call s:AddIndToken(indtokens, word, 'rel', -&sw, 0)
-                call s:AddIndToken(indtokens, word, 'abs', i, 0)
-                call s:AddIndToken(indtokens, word, 'rel', &sw, 0)
-
-            elseif word == 'end'
-                call s:AddIndToken(indtokens, 'end', 'abs', i, -1)
-
-            " Plain atom or function name
-            else
-                call s:AddIndToken(indtokens, 'atom_plain', 'abs', i, 0)
-            endif
-
-        " Variable token (as in: MyVariable)
-        elseif a:line[i] =~# "[A-Z_]"
-            call s:AddIndToken(indtokens, 'var', 'abs', i, 0)
-            let next_i = matchend(a:line, "[[:alnum:]_@]*", i + 1)
+            call s:AddIndToken(indtokens, a:line[(i):(next_i - 1)], i)
 
         " Character token: $<char> (as in: $a)
         elseif a:line[i] == '$'
-            call s:AddIndToken(indtokens, 'char', 'abs', i, 0)
+            call s:AddIndToken(indtokens, 'char', i)
             let next_i = i + 2
 
         " Dot token: .
@@ -162,94 +125,85 @@ function! s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuatio
             let next_i = i + 1
             " Dot token (end of clause): . (as in: f() -> ok.)
             if i + 1 == linelen || a:line[i + 1] =~# '[[:blank:]%]'
-                call s:AddIndToken(indtokens, 'end_of_clause', 'special', i, 0)
+                call s:AddIndToken(indtokens, 'end_of_clause', i)
             else
                 " Possibilities:
                 " - Dot token in float: . (as in: 3.14)
                 " - Dot token in record: . (as in: #myrec.myfield)
-                call s:AddIndToken(indtokens, 'dot', 'abs', i, 0)
+                call s:AddIndToken(indtokens, 'dot', i)
             endif
 
         " Arrow token: ->
         elseif a:line[i] == '-' && (i + 1 < linelen && a:line[i + 1] == '>')
-            call s:AddIndToken(indtokens, 'arrow', 'abs', i, 0)
-            call s:AddIndToken(indtokens, 'arrow', 'rel', &sw, 0)
+            call s:AddIndToken(indtokens, '->', i)
             let next_i = i + 2
-
-        " Semicolon token: ;
-        elseif a:line[i] == ';' && a:line[(i):(linelen)] !~# '.*->.*'
-            call s:AddIndToken(indtokens, ';', 'abs', i, 0)
-            call s:AddIndToken(indtokens, ';', 'rel', -&sw, 0)
-            let next_i = i + 1
-
-        " Opening paren token: (
-        elseif a:line[i] == '('
-
-            " If the previous token was 'fun' and the current token is '(', then
-            " we are at the definition of an anonymous function, so we should
-            " increase the indent level. (If the current token is not '(',
-            " then we just have a function reference like "fun f/0".)
-            if len(indtokens) > 0 && s:GetTokentypeFromIndtokens(indtokens[-1]) == 'fun'
-                call s:SetLevelInIndtokens(indtokens[-1], 1)
-                call s:AddIndToken(indtokens, 'fun', 'rel', &sw, 0)
-            endif
-
-            call s:AddIndToken(indtokens, '(', 'abs', i, 1)
-            call s:AddIndToken(indtokens, '(', 'rel', 2, 0)
-            let next_i = i + 1
-            let last_fun = 0
-
-        " Closing paren token: )
-        elseif a:line[i] == ')'
-            call s:AddIndToken(indtokens, ')', 'rel', -2, 0)
-            call s:AddIndToken(indtokens, ')', 'abs', i, -1)
-            let next_i = i + 1
-
-        " Opening bracket: {, [
-        elseif a:line[i] =~# '[{[]'
-            call s:AddIndToken(indtokens, 'open_bracket', 'abs', i, 1)
-            call s:AddIndToken(indtokens, 'open_bracket', 'rel', 1, 0)
-            let next_i = i + 1
-            let last_fun = 0
-
-        " Closing bracket: }, ]
-        elseif a:line[i] =~# '[}\]]'
-            call s:AddIndToken(indtokens, 'close_bracket', 'abs', i, -1)
-            let next_i = i + 1
 
         " Other character
         else
-            call s:AddIndToken(indtokens, 'other', 'abs', i, 0)
+            call s:AddIndToken(indtokens, a:line[i], i)
             let next_i = i + 1
         endif
 
         let i = next_i
     endwhile
 
-    if len(indtokens) != 0
-
-        let last_token_type = s:GetTokentypeFromIndtokens(indtokens[-1])
-
-        " If the last token of the current line is 'fun' and the first token
-        " of the next line is '(', then we are at the definition of an
-        " anonymous function, so we should increase the indent level. (If the
-        " first token of the next line is not '(', then we just have a
-        " function reference like "fun f/0".)
-        if last_token_type == 'fun' &&
-         \ len(a:first_token_of_next_line) > 0 &&
-         \ s:GetTokentypeFromIndtokens(a:first_token_of_next_line) == '('
-            call s:SetLevelInIndtokens(indtokens[-1], 1)
-            call s:AddIndToken(indtokens, 'fun', 'rel', &sw, 0)
-        endif
-    endif
-
     return indtokens
 
 endfunction
 
-" ----------------- "
-"  ErlangCalcIndent "
-" ----------------- "
+" ------------- "
+" Stack library "
+" ------------- "
+
+function! s:Push(stack, token)
+    call s:Log('    Stack Push: ' . a:token . ' -> ' . s:L2s(a:stack))
+    call insert(a:stack, a:token)
+endfunction
+
+function! s:Pop(stack)
+    let head = remove(a:stack, 0)
+    call s:Log('    Stack Pop: ' . head . ' <- ' . s:L2s(a:stack))
+    return head
+endfunction
+
+" TODO Remove - Currently not used
+function! s:PushShift(stack, shift)
+    if len(a:stack) > 0 && type(a:stack[0]) == type(0)
+        call s:Log('    Shift on stack updated: ' . a:stack[0] . ' -> ' . a:stack[0] + a:shift)
+        let a:stack[0] += a:shift
+    else
+        call s:Push(a:stack, a:shift)
+    endif
+endfunction
+
+" TODO Remove - Currently not used
+function! s:PopShift(stack)
+    if len(a:stack) > 0 && type(a:stack[0]) == type(0)
+        let head = remove(a:stack, 0)
+        call s:Log('    Stack PopShift: ' . head . ' <- ' . s:L2s(a:stack))
+        return head
+    else
+        call s:Log('    Stack PopShift: 0')
+        return 0
+    endif
+endfunction
+
+" TODO Use empty() instead - shift are currently not used
+function! s:IsEmptyButShift(stack)
+    return empty(a:stack) || type(a:stack[0]) == type(0)
+endfunction
+
+function! s:Get(list, i)
+    if len(a:list) > a:i
+        return a:list[a:i]
+    else
+        return ''
+    endif
+endfunction
+
+" --------------------------------- "
+" ErlangCalcIndent helper functions "
+" --------------------------------- "
 
 " Return whether the given line starts with a string continuation:
 "
@@ -261,6 +215,85 @@ function! s:IsLineStringContinuation(lnum)
     return (synIDattr(synID(a:lnum, 1, 0), 'name') =~#
          \  '^\%(erlangString\|erlangModifier\)$')
 endfunction
+
+function! s:UnexpectedToken(token, stack)
+    call s:Log('    Unexpected token ' . a:token . ', stack = ' . s:L2s(a:stack) . ' -> return')
+    return 40
+endfunction
+
+function! s:BeginElementFoundIfEmpty(stack, token, curr_col, abscol, sw)
+    if empty(a:stack)
+        if a:abscol == -1
+            call s:Log('    "' . a:token . '" directly preceeds LTI -> return')
+            return [1, a:curr_col + a:sw]
+        else
+            call s:Log('    "' . a:token . '" token (whose expression includes LTI) found -> return')
+            return [1, a:abscol]
+        endif
+    else
+        return [0, 0]
+    endif
+endfunction
+
+function! s:BeginElementFound(stack, token, curr_col, abscol, end_token, sw)
+
+    " Return 'return' if the stack is empty
+    let [ret, res] = s:BeginElementFoundIfEmpty(a:stack, a:token, a:curr_col, a:abscol, a:sw)
+    if ret | return [ret, res] | endif
+
+    if a:stack[0] == a:end_token
+        call s:Log('    "' . a:token . '" pops "' . a:end_token . '"')
+        call s:Pop(a:stack)
+        if !empty(a:stack) && a:stack[0] == 'align_to_begin_element'
+            call s:Pop(a:stack)
+            if empty(a:stack)
+                return [1, a:curr_col]
+            else
+                return [1, s:UnexpectedToken(a:token, a:stack)]
+            endif
+        endif
+        return [0, 0]
+    else
+        return [1, s:UnexpectedToken(a:token, a:stack)]
+    endif
+endfunction
+
+function! s:CheckForArrow(stack, token, abscol)
+    if !empty(a:stack) && a:stack[0] == '->'
+        call s:Log('    CheckForArrow: "->" found')
+        call s:Pop(a:stack)
+        if s:IsEmptyButShift(a:stack)
+            call s:Log('    "->" found -> return')
+            return [1, a:abscol + &sw]
+        else
+            return s:UnexpectedToken(a:token, a:stack)
+        endif
+    else
+        return [0, 0]
+    endif
+endfunction
+
+function! s:NextToken(all_tokens, i)
+    " If the current line has a next token, return that
+    if len(a:all_tokens[0]) > a:i + 1
+        return a:all_tokens[0][a:i + 1]
+
+    " If the current line does not have any tokens after position `i` and
+    " there are no other lines, return []
+    elseif len(a:all_tokens) == 1
+        return []
+
+    " If the current line does not have any tokens after position `i`, return
+    " the first token of the next line
+    else
+        return a:all_tokens[1][0]
+    endif
+
+endfunction
+
+" ----------------- "
+"  ErlangCalcIndent "
+" ----------------- "
 
 " Calculate the indentation of the given line.
 "
@@ -274,13 +307,29 @@ endfunction
 "     // and the current line should be indented into the same column
 " result = integer
 
-function! s:ErlangCalcIndent(lnum, level, type)
+function! s:ErlangCalcIndent(lnum, stack, indtokens)
+    let res = s:ErlangCalcIndent2(a:lnum, a:stack, a:indtokens)
+    call s:Log("ErlangCalcIndent returned: " . res)
+    return res
+endfunction
+
+function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
     let lnum = a:lnum
-    let level = a:level
     let abscol = -1
-    let shift = 0
     let first_token_of_next_line = []
+    let mode = 'normal'
+    let stack = a:stack
+    let semicolon_abscol = ''
+
+    " TODO Remove - Currently not used
+    let leave_abscol = 0
+
+    if empty(a:indtokens)
+        let all_tokens = []
+    else
+        let all_tokens = [a:indtokens]
+    endif
 
     " Walk through the lines of the buffer backwards (starting from the
     " previous line) until we can decide how to indent the current line.
@@ -288,76 +337,212 @@ function! s:ErlangCalcIndent(lnum, level, type)
 
         let lnum = prevnonblank(lnum)
 
-        " Hit the start of the file, use zero indent
+        " Hit the start of the file
         if lnum == 0
+            let [ret, res] = s:CheckForArrow(stack, 'beginning_of_file', abscol)
+            if ret | return res | endif
+
             return 0
         endif
 
+        " Get the tokens from the currently analyzed line
         let line = getline(lnum)
         call s:Log('Analysing line ' . lnum . ': ' . line)
-
         let string_continuation = s:IsLineStringContinuation(lnum)
         let indtokens = s:ErlangAnalyzeLine(line, first_token_of_next_line, string_continuation)
-        call s:Log("  Tokens in the line:\n    - " . join(indtokens, "\n    - "))
+        call s:Log("  Tokens in the line:\n    - " . join(reverse(copy(indtokens)), "\n    - "))
         if len(indtokens) > 0
             let first_token_of_next_line = indtokens[0]
+            call insert(all_tokens, indtokens)
         endif
 
         let i = len(indtokens) - 1
 
         while i >= 0
-            let [token, absrel, curr_col, curr_level] = indtokens[i]
-            call s:Log('  Analysing the following token: ' . join([indtokens[i]]))
-            let level += curr_level
-            call s:Log('  New level: ' . level)
+
+            " Prepare the analysis of the tokens
+            let [token, curr_col] = indtokens[i]
+            call s:Log('  Analyzing the following token: ' . s:L2s(indtokens[i]))
+            let leave_abscol = 0
 
             if token == 'end_of_clause'
+                let [ret, res] = s:CheckForArrow(stack, token, abscol)
+                if ret | return res | endif
+
                 if abscol == -1
-                    call s:Log('    End of clause at end of line, returning abscol 0')
+                    call s:Log('    End of clause directly preceeds LTI -> return')
                     return 0
                 else
-                    call s:Log('    End of clause (but not end of line), returning abscol ' . abscol)
+                    call s:Log('    End of clause (but not end of line) -> return')
                     return abscol
                 endif
-            endif
 
-            if level > 0
-                if abscol == -1 || token == 'case'
-                    let abscol = curr_col + shift
+            elseif token == 'begin'
+                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, 'end', &sw)
+                if ret | return res | endif
+
+            elseif token == 'case' || token == 'try' || token == 'receive'
+
+                " stack = []  =>  LTI is a condition
+                " stack = ['->']  =>  LTI is a branch
+                " stack = ['->', ';']  =>  LTI is a condition
+                if empty(stack)
+                    " pass
+                elseif (token == 'case' && stack[0] == 'of') ||
+                     \ (token == 'try' && (stack[0] == 'catch' || stack[0] == 'after')) ||
+                     \ (token == 'receive')
+
+                    if token == 'case' || token == 'try' ||
+                     \ (token == 'receive' && stack[0] == 'after')
+                        call s:Pop(stack)
+                    endif
+
+                    if empty(stack)
+                        call s:Log('    LTI is in a condition; matching "case/try/receive" found')
+                        let abscol = curr_col + &sw
+                    elseif stack[0] == 'align_to_begin_element'
+                        call s:Pop(stack)
+                        let abscol = curr_col
+                    elseif len(stack) > 1 && stack[0] == '->' && stack[1] == ';'
+                        call s:Log('    LTI is in a condition; matching "case/try/receive" found')
+                        call s:Pop(stack)
+                        call s:Pop(stack)
+                        let abscol = curr_col + &sw
+                    elseif stack[0] == '->'
+                        call s:Log('    LTI is in a branch; matching "case/try/receive" found')
+                        call s:Pop(stack)
+                        let abscol = curr_col + 2 * &sw
+                    endif
+
                 endif
-                call s:Log('    Token with higher level reached, so returning abscol ' . abscol)
-                return abscol
 
-            elseif absrel == 'abs' && level == 0 && a:type == 'end'
-                if abscol == -1
-                    let abscol = curr_col + shift
+                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, 'end', &sw)
+                if ret | return res | endif
+
+            elseif token == 'fun'
+                let next_indtoken = s:NextToken(all_tokens, i)
+                call s:Log('    Next indtoken = ' . s:L2s(next_indtoken))
+
+                if !empty(next_indtoken) && s:GetTokenFromIndtokens(next_indtoken) == '('
+                    " We have an anonymous function definition
+                    " (e.g. "fun () -> ok end")
+
+                    " stack = []  =>  LTI is a condition
+                    " stack = ['->']  =>  LTI is a branch
+                    " stack = ['->', ';']  =>  LTI is a condition
+                    if empty(stack)
+                        call s:Log('    LTI is in a condition; matching "fun" found')
+                        let abscol = curr_col + &sw
+                    elseif len(stack) > 1 && stack[0] == '->' && stack[1] == ';'
+                        call s:Log('    LTI is in a condition; matching "fun" found')
+                        call s:Pop(stack)
+                        call s:Pop(stack)
+                    elseif stack[0] == '->'
+                        call s:Log('    LTI is in a branch; matching "fun" found')
+                        call s:Pop(stack)
+                        let abscol = curr_col + 2 * &sw
+                    endif
+
+                    let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, 'end', &sw)
+                    if ret | return res | endif
+                else
+                    " We have a function reference (e.g. "fun f/0")
                 endif
-                call s:Log('    Pair for "end" token found, returning abscol ' . abscol)
-                return abscol
 
-            elseif absrel == 'abs' && level == 0
-                let abscol = curr_col + shift
-                call s:Log('    Abs token on level 0: setting abscol to ' . abscol)
+            elseif token == '('
+                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, ')', 2)
+                if ret | return res | endif
 
-            elseif absrel == 'rel' && level == 0
-                let shift += curr_col
-                call s:Log('    Rel token on level 0: setting shift to ' . shift)
+            elseif token == '['
+                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, ']', 1)
+                if ret | return res | endif
+
+            elseif token == '{'
+                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, '}', 1)
+                if ret | return res | endif
+
+            elseif index(['end', ')', ']', '}'], token) != -1
+                call s:Push(stack, token)
+
+            elseif token == ';'
+
+                if empty(stack)
+                    call s:Push(stack, ';')
+                elseif stack[0] == 'end' || stack[0] == 'after' || stack[0] == ';' || stack[0] == '->'
+                    " pass
+                else
+                    return s:UnexpectedToken(token, stack)
+                endif
+
+            elseif token == '->'
+
+                if empty(stack) || stack[0] == ';' || stack[0] == 'end'
+                    " stack = ['->']  ->  LTI is a condition
+                    " stack = ['->', ';']  -> LTI is a branch
+                    call s:Push(stack, '->')
+                elseif stack[0] == '->' || stack[0] == 'after'
+                    " pass
+                else
+                    return s:UnexpectedToken(token, stack)
+                endif
+
+            elseif token == 'when'
+
+                " Pop all ';' from the top of the stack
+                while !empty(stack) && stack[0] == ';'
+                    call s:Pop(stack)
+                endwhile
+
+                if empty(stack)
+
+                    if semicolon_abscol == ''
+                        let semicolon_abscol = abscol
+                    endif
+
+                    let [ret, res] = s:BeginElementFoundIfEmpty(stack, token, curr_col, semicolon_abscol, &sw)
+                    if ret | return res | endif
+                elseif stack[0] == '->'
+                    " pass
+                else
+                    return s:UnexpectedToken(token, stack)
+                endif
+
+            elseif token == 'of' || token == 'catch' || token == 'after'
+
+                if empty(stack) || stack[0] == '->'
+                    call s:Push(stack, token)
+                elseif token == 'catch' || stack[0] == 'after'
+                    " pass
+                else
+                    return s:UnexpectedToken(token, stack)
+                endif
 
             else
-                call s:Log('    Level=' . level . ', doing nothing.')
+                call s:Log('    Misc token, stack unchanged = ' . s:L2s(stack))
 
+            endif
+
+            if leave_abscol
+                " pass
+            elseif s:IsEmptyButShift(stack) || stack[0] == '->'
+                let abscol = curr_col
+                let semicolon_abscol = ''
+                call s:Log('    Misc token when the stack is empty or has "->" -> setting abscol to ' . abscol)
+            elseif stack[0] == ';'
+                let semicolon_abscol = curr_col
+                call s:Log('    Setting semicolon-abscol to ' . abscol)
             endif
 
             let i -= 1
-            call s:Log('    Token analyzed. abscol=' . abscol . ', shift=' . shift)
+            call s:Log('    Token processed. abscol=' . abscol)
 
         endwhile " iteration on tokens in a line
 
-        call s:Log('  Line analyzed. abscol=' . abscol . ', shift=' . shift)
+        call s:Log('  Line analyzed. abscol=' . abscol)
 
-        if level == 0 && abscol != -1 && !string_continuation
-            call s:Log('    Token with level 0 reached, so returning abscol ' . abscol)
-            return abscol
+        if s:IsEmptyButShift(stack) && abscol != -1 && !string_continuation
+            call s:Log('    Empty stack at the beginning of the line -> return')
+            return abscol + s:PopShift(stack)
         endif
 
         let lnum -= 1
@@ -381,16 +566,28 @@ function! ErlangIndent()
         return -1
     endif
 
-    if currline =~# '^\s*\%\(\%(end\|of\|catch\|after\)\>\|[)\]}]\)'
-        call s:Log("  Line type = 'end'")
-        let new_col = s:ErlangCalcIndent(v:lnum - 1, -1, 'end')
-    else
+    let ml = matchlist(currline, '^\s*\(\%(end\|of\|catch\|after\)\>\|[)\]}]\)')
+    if empty(ml)
         call s:Log("  Line type = 'normal'")
-        let new_col = s:ErlangCalcIndent(v:lnum - 1, 0, 'normal')
+
+        if currline =~# '^\s*('
+            let indtokens = ['(']
+        else
+            let indtokens = []
+        endif
+
+        let new_col = s:ErlangCalcIndent(v:lnum - 1, [], indtokens)
+        if currline =~# '^\s*when\>'
+            let new_col += 2
+        endif
+
+    else
+        call s:Log("  Line type = 'end'")
+        let new_col = s:ErlangCalcIndent(v:lnum - 1, [ml[1], 'align_to_begin_element'], [])
     endif
 
-    if new_col < 0
-        throw "new_col < 0"
+    if new_col < -1
+        call s:Log('WARNING: returning new_col == ' . new_col)
     endif
 
     return new_col
