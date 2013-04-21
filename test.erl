@@ -47,6 +47,7 @@ atom_examples() ->
     hello@you,
 'Monday',
 'phone number',
+    case@case,
     ok.
 
 multiline_atoms() ->
@@ -159,6 +160,37 @@ embedded_terms() ->
       B
      ]
     },
+    ok.
+
+list_head_tail() ->
+    [H|_] = [H|_],
+
+    [H|
+     _] = [H|
+           _],
+
+    [H
+     |_] = [H
+            |_],
+
+    [
+     H
+     |
+     _
+    ]
+    =
+    [
+     H
+     |
+     _
+    ],
+    ok.
+
+list_comprehension() ->
+    [ {A, B} ||
+      {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)],
+    [ {A, B}
+      || {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)],
     ok.
 
 %%% ===========================================================================
@@ -368,7 +400,6 @@ f({X, Y}) when A == 0 -> {X, Y}; f({X, Y}) when A == 0 -> ok.
 %%% 6.4  Type information in record declarations
 %%% ===========================================================================
 
-
 -record(rec, {f1 = 42 :: integer(),
               f2      :: 'undefined' | float(),
               f3      :: 'undefined' |
@@ -485,129 +516,99 @@ func() ->
     ok.
 
 %%% ===========================================================================
-%%% Uncategorized
+%%% 7 Expressions
 %%% ===========================================================================
 
-%%%%%%%%%
-% Comma %
-%%%%%%%%%
+%%% ===========================================================================
+%%% 7.3 Variables
+%%% ===========================================================================
 
-f() ->
-    1
-    ,
-    2
-    .
-
-f() ->
-    function_call),
-                                        ok. % syntax error in prev.line
-
-%%%%%%%%%%
-% Tokens %
-%%%%%%%%%%
-
-f() ->
-    SimpleAtom = case@case,
-    SimpleVar = Var@case,
+variables() ->
+    X,
+    Name1,
+    PhoneNumber,
+    Phone_number,
+    _,
+    _Height,
+    Var@case, % just a variable
     ok.
 
-%%%%%%%%%%
-% Period %
-%%%%%%%%%%
+%%% ===========================================================================
+%%% 7.6 Function calls
+%%% ===========================================================================
 
-f() ->
-    (
-      .
+func_calls() ->
 
-f() ->
-    (
-      . % xx
+    func(),
 
-f() ->
-    (
-      .% xx
+    mod:func(),
 
-f() ->
-    % Not valid Erlang; the indent script thinks 'B' is the start of a new
-    % clause, so it indents 'ok' below 'B'.
-    A . B,
-        ok.
+    mod : func(),
 
-% Not valid Erlang, but why not behave nicely
-ok.
-f() ->
-    ok.
-
-f() ->
-    A = #a{},
-
-    %A#a . f1, % syntax error
-    A#a .f1,   % valid Erlang
-
-    %A#a.      % syntax error
-    %f1,
-
-    A#a
-    .f1,   % valid Erlang
-
-    _ = 1.2,   % valid Erlang
-    %_ = 1 .2,  % syntax error
-    %_ = 1 . 2, % syntax error
-    %_ = 1. 2,  % syntax error
-
-    _ = " .
-    ", % valid Erlang
-
-    _ = ' .
-    ', % valid Erlang
+    mod
+    :
+    func(),
 
     ok.
 
-f() -> 1. f() ->
-              3.
+%%% ===========================================================================
+%%% 7.7 If
+%%% ===========================================================================
 
-%%%%%%%%%%%%%
-% begin-end %
-%%%%%%%%%%%%%
-
+% if -- with linebreaks
 f() ->
-    begin A,
-          B
+
+    % if with 0 branch
+    if end, % not valid Erlang, but why not behave nicely
+
+    % if with 1 branch
+    if
+        A -> A
     end,
-    begin
-        A,
-        B
+
+    if
+        A ->
+            A
     end,
-    begin A,
-          begin B
-          end,
-          C
+
+    % if with 2 branches
+    if
+        A -> A;
+        B -> B
     end,
-    begin
-        A,
-        begin
+
+    if
+        A ->
+            A;
+        B ->
             B
-        end,
-        C, D,
-        E
     end,
-    begin
-        A,
-        B, begin
-               C
-           end,
-        D
-    end,
+
     ok.
 
+% if -- one-liners
 f() ->
-    begin A, B end,
-    begin A, begin B end, C end,
+    if A -> A end,
+    if A -> A; B -> B end,
+
+    % half-liners
+    if A -> A end, if A -> A end,
+    if A -> A; B -> B end, if A -> A; B -> B end,
     ok.
 
-%%%%%%%%
-% case %
-%%%%%%%%
+%%% ===========================================================================
+%%% 7.8 Case
+%%% ===========================================================================
+
+case_example(Signal) ->
+    case Signal of
+        {signal, _What, _From, _To} ->
+            true;
+        {signal, _What, _To} ->
+            true;
+        _Else ->
+            false
+    end.
 
 f() ->
                                         end. % syntax error
@@ -667,6 +668,14 @@ f() ->
     ok.
 
 f() ->
+    case A of A -> A1,
+            A2;
+        B -> B1,
+            B2
+    end,
+    ok.
+
+f() ->
     f(case X of
           A -> A
       end),
@@ -700,243 +709,20 @@ f() ->
     end,
     ok.
 
-
-%%%%%%%%%%%%%%%%%%%
-% Basic functions %
-%%%%%%%%%%%%%%%%%%%
-
-f() ->
-    ok.
-
-f
-(
-)
-->
-    ok.
-
-%%%%%%%%%%%%%%%%%%%%%
-% Actual parameters %
-%%%%%%%%%%%%%%%%%%%%%
+%%% ===========================================================================
+%%% 7.9 Send
+%%% ===========================================================================
 
 f() ->
-    g(A, B,
-      C,
-      D),
-    ok.
-
-f() ->
-    long_function(
-                   A, B,
-                   C,
-                   D),
-    ok.
-
-%%%%%%%
-% fun %
-%%%%%%%
-
-% fun - without linebreaks
-f() ->
-    fun a/0,
-    fun (A) -> A end,
-    fun (A) -> A; (B) -> B end,
-    ok.
-
-% fun - with some linebreaks
-f() ->
-    fun a/0,
-    fun (A) -> A
-    end,
-    fun (A) -> A;
-        (B) -> B
-    end,
-    ok.
-
-% fun - with more linebreaks
-f() ->
-    fun a/0,
-    fun (A) ->
-            A
-    end,
-    fun (A) ->
-            A;
-        (B) ->
-            B
-    end,
-    ok.
-
-% fun - with some linebreaks with less space
-f() ->
-    fun a/0,
-    fun(A) -> A
-    end,
-    fun(A) -> A;
-       (B) -> B
-    end,
-    ok.
-
-% fun - with more linebreaks with less space
-f() ->
-    fun a/0,
-    fun(A) ->
-            A
-    end,
-    fun(A) ->
-            A;
-       (B) ->
-            B
-    end,
-    ok.
-
-% fun - with extra linebreaks
-f() ->
-
-    fun
-    a/0,
-
-    fun
+    a ! b,
     a
-    /
-    0,
-
-    fun
-        (A) ->
-            A
-    end,
-
-    fun
-        (A) ->
-            A;
-        (B) ->
-            B
-    end,
+    !
+    b,
     ok.
 
-% fun - without linebreaks + when
-f() ->
-    fun a/0,
-    fun (A) when A > 0 -> A end,
-    fun (A) when A > 0 -> A; (B) when B > 0 -> B end,
-    ok.
-
-% fun - with some linebreaks + when
-f() ->
-    fun a/0,
-    fun (A) when A > 0 -> A
-    end,
-    fun (A) when A > 0 -> A;
-        (B) when B > 0 -> B
-    end,
-    ok.
-
-% fun - with more linebreaks + when
-f() ->
-    fun a/0,
-    fun (A) when A > 0 ->
-            A
-    end,
-    fun  (A) when A > 0 ->
-            A;
-         (B) when B > 0 ->
-            B
-    end,
-    ok.
-
-% fun - with some linebreaks with less space + when
-f() ->
-    fun a/0,
-    fun(A) when A > 0 -> A
-    end,
-    fun(A) when A > 0 -> A;
-       (B) when B > 0 -> B
-    end,
-    ok.
-
-% fun - with more linebreaks with less space + when
-f() ->
-    fun a/0,
-    fun(A) when A > 0 ->
-            A
-    end,
-    fun(A) when A > 0 ->
-            A;
-       (B) when B > 0 ->
-            B
-    end,
-    ok.
-
-% fun - with extra linebreaks + when
-f() ->
-
-    fun
-    a/0,
-
-    fun
-    a
-    /
-    0,
-
-    fun
-        (A) when A > 0 ->
-            A
-    end,
-
-    fun
-        (A) when A > 0 ->
-            A;
-        (B) when B > 0 ->
-            B
-    end,
-    ok.
-
-%%%%%%
-% if %
-%%%%%%
-
-% if -- with linebreaks
-f() ->
-
-    % if with 0 branch
-    if end, % not valid Erlang, but why not behave nicely
-
-    % if with 1 branch
-    if
-        A -> A
-    end,
-
-    if
-        A ->
-            A
-    end,
-
-    % if with 2 branches
-    if
-        A -> A;
-        B -> B
-    end,
-
-    if
-        A ->
-            A;
-        B ->
-            B
-    end,
-
-    ok.
-
-% if -- one-liners
-f() ->
-    if A -> A end,
-    if A -> A; B -> B end,
-
-    % half-liners
-    if A -> A end, if A -> A end,
-    if A -> A; B -> B end, if A -> A; B -> B end,
-    ok.
-
-%%%%%%%%%%%
-% receive %
-%%%%%%%%%%%
+%%% ===========================================================================
+%%% 7.10 Receive
+%%% ===========================================================================
 
 % receive -- with linebreaks
 f() ->
@@ -1050,42 +836,645 @@ f() ->
             T -> T
         end.
 
-%%%%%%%
-% try %
-%%%%%%%
+%%% ===========================================================================
+%%% 7.11 Term Comparisons
+%%% ===========================================================================
+
+term_comparisons() ->
+    A == A,
+    A /= A,
+    A =< A,
+    A < A,
+    A >= A,
+    A > A,
+    A =:= A,
+    A =/= A,
+
+    A ==
+    A,
+
+    A
+    ==
+    A,
+
+    ok.
+
+%%% ===========================================================================
+%%% 7.12 Arithmetic Expressions
+%%% ===========================================================================
+
+unary_operators() ->
+    + A,
+    - A,
+    bnot A,
+
+    +
+    A,
+
+    bnot
+    A,
+
+    ok.
+
+binary_operators() ->
+    A + A,
+    A - A,
+    A * A,
+    A / A,
+    A div A,
+    A rem A,
+    A band A,
+    A bor A,
+    A bxor A,
+    A bsl A,
+    A bsr A,
+
+    A +
+    A,
+
+    A
+    +
+    A,
+
+    A div
+    A,
+
+    A
+    div
+    A,
+
+    ok.
+
+%%% ===========================================================================
+%%% 7.13 Boolean Expressions
+%%% ===========================================================================
+
+unary_boolean() ->
+    not A,
+    ok.
+
+binary_boolean() ->
+    A and A,
+    A or A,
+    A xor A,
+    ok.
+
+%%% ===========================================================================
+%%% 7.14 Short-Circuit Expressions
+%%% ===========================================================================
+
+short_circuit() ->
+    A andalso A,
+    A orelse A,
+
+    A andalso
+    A,
+
+    A
+    andalso
+    A,
+
+    ok.
+
+%%% ===========================================================================
+%%% 7.15 List Operations
+%%% ===========================================================================
+
+list_operations() ->
+    A ++ A,
+    A -- A,
+
+    A ++
+    A,
+
+    A
+    ++
+    A,
+
+    ok.
+
+%%% ===========================================================================
+%%% 7.16 Bit Syntax Expressions
+%%% ===========================================================================
+
+bit_syntax() ->
+    <<>>,
+
+    <<
+    >>,
+
+    <<A>>,
+    <<A:1>>,
+    << A : 1 >>,
+
+    <<A/bits>>,
+    <<A:1/bits>>,
+    << A : 1 / bits >>,
+
+    <<A/integer>>,
+    <<A:1/integer>>,
+    << A : 1 / integer >>,
+
+    ok.
+
+bit_syntax() ->
+    <<A
+    >>,
+
+    <<A:1
+    >>,
+
+    <<A
+    /
+    bits
+    >>,
+
+    <<A:1
+    /
+    bits
+    >>,
+
+    ok.
+
+bit_syntax() ->
+    <<
+    A
+    >>,
+
+    <<
+    A:1
+    >>,
+
+    <<
+    A
+    /
+    bits
+    >>,
+
+    <<
+    A:1
+    /
+    bits
+    >>,
+
+    ok.
+
+bit_syntax() ->
+    <<A,
+    B>>
+
+
+    %%% ===========================================================================
+    %%% 7.17 Fun Expressions
+    %%% ===========================================================================
+
+    % fun - without linebreaks
+    f() ->
+    fun func/0,
+    fun mod:func/0,
+    fun (A) -> A end,
+    fun (A) -> A; (B) -> B end,
+    ok.
+
+% fun - with some linebreaks
+f() ->
+    fun (A) -> A
+    end,
+    fun (A) -> A;
+        (B) -> B
+    end,
+    ok.
+
+% fun - with more linebreaks
+f() ->
+    fun (A) ->
+            A
+    end,
+    fun (A) ->
+            A;
+        (B) ->
+            B
+    end,
+    ok.
+
+% fun - with some linebreaks with less space
+f() ->
+    fun(A) -> A
+    end,
+    fun(A) -> A;
+       (B) -> B
+    end,
+    ok.
+
+% fun - with more linebreaks with less space
+f() ->
+    fun(A) ->
+            A
+    end,
+    fun(A) ->
+            A;
+       (B) ->
+            B
+    end,
+    ok.
+
+% fun - with extra linebreaks
+f() ->
+
+    fun
+    func/0,
+
+    fun
+    func
+    /
+    0,
+
+    fun
+    mod:func/0,
+
+    fun
+    mod
+    :
+    func
+    /
+    0,
+
+    fun
+        (A) ->
+            A
+    end,
+
+    fun
+        (A) ->
+            A;
+        (B) ->
+            B
+    end,
+    ok.
+
+% fun - without linebreaks + when
+f() ->
+    fun (A) when A > 0 -> A end,
+    fun (A) when A > 0 -> A; (B) when B > 0 -> B end,
+    ok.
+
+% fun - with some linebreaks + when
+f() ->
+    fun (A) when A > 0 -> A
+    end,
+    fun (A) when A > 0 -> A;
+        (B) when B > 0 -> B
+    end,
+    ok.
+
+% fun - with more linebreaks + when
+f() ->
+    fun (A) when A > 0 ->
+            A
+    end,
+    fun  (A) when A > 0 ->
+            A;
+         (B) when B > 0 ->
+            B
+    end,
+    ok.
+
+% fun - with some linebreaks with less space + when
+f() ->
+    fun(A) when A > 0 -> A
+    end,
+    fun(A) when A > 0 -> A;
+       (B) when B > 0 -> B
+    end,
+    ok.
+
+% fun - with more linebreaks with less space + when
+f() ->
+    fun(A) when A > 0 ->
+            A
+    end,
+    fun(A) when A > 0 ->
+            A;
+       (B) when B > 0 ->
+            B
+    end,
+    ok.
+
+% fun - with extra linebreaks + when
+f() ->
+
+    fun
+        (A) when A > 0 ->
+            A
+    end,
+
+    fun
+        (A) when A > 0 ->
+            A;
+        (B) when B > 0 ->
+            B
+    end,
+    ok.
+
+%%% ===========================================================================
+%%% 7.18 Catch and Throw
+%%% ===========================================================================
+
+catch_example() ->
+                                        catch 1 + 2,
+                                        A = (catch 1 + 2),
+                                        A = catch 1 + 2, % syntax error
+                                        ok.
+
+throw_example() ->
+    throw(hello).
+
+%%% ===========================================================================
+%%% 7.19 Try
+%%% ===========================================================================
+
+try_example() ->
+    try
+        f()
+                                        of
+                                        A -> B
+                                        catch
+                                        throw:E -> E;
+                                        exit:E -> E;
+                                        error:E -> E
+    after
+        AfterBody
+                                        end.
+
+syntax_error() ->
+    try
+    end, % syntax error
+    ok.
 
 f() ->
+
+    % only catch
     try
         f()
     catch
         A ->
             B
     end,
+
+    % only after
     try
         f()
-    catch
-        A ->
-            B
     after
-        Timeout ->
-            Timeout
-    end.
+        AfterBody1,
+        AfterBody2
+                                        end,
+
+                                        % catch-after
+                                        try
+                                            f()
+                                        catch
+                                            A ->
+                                                B
+                                        after
+                                            AfterBody1,
+                                            AfterBody2
+                                        end.
 
 f() ->
+    % only catch
     try f()
     catch
         A -> B
     end,
+
+    % only after
     try f()
-    catch
-        A -> B
-    after
-        Timeout -> Timeout
-    end.
+    after AfterBody1,
+        AfterBody2
+                                        end,
+
+                                        % catch-after
+                                        try f()
+                                        catch A -> B
+                                        after AfterBody1,
+                                            AfterBody2
+                                        end,
+
+                                        ok.
 
 f() ->
     try f() catch A -> B end,
-    try f() catch A -> B after Timeout -> Timeout end,
+    try f() catch A -> B after AfterBody end,
+                                        ok.
+
+% try-of
+
+f() ->
+    try
+        X
+                                        of
+                                        A ->
+                                        A
+                                        end.
+
+f() ->
+    try A of
+                                        B when B > 0 ->
+                                        ok;
+                                        B
+                                          when
+                                              B > 0 ->
+                                        ok;
+
+                                        B
+                                          when
+                                              B > 0;
+                                              B < 0
+                                              ->
+                                        ok
+                                        end,
+                                        ok.
+
+f() ->
+    try A of
+                                        B when B > 0 ->
+                                        ok;
+                                        B
+                                          when
+                                              B > 0 ->
+                                        ok;
+
+                                        B
+                                          when
+                                              B > 0;
+                                              B < 0
+                                              ->
+                                        ok
+                                        catch
+                                        B when B > 0 ->
+                                        ok;
+                                        B
+                                          when
+                                              B > 0 ->
+                                        ok;
+
+                                        B
+                                          when
+                                              B > 0;
+                                              B < 0
+                                              ->
+                                        ok
+                                        end,
+                                        ok.
+
+%%% ===========================================================================
+%%% Uncategorized
+%%% ===========================================================================
+
+%%%%%%%%%
+% Comma %
+%%%%%%%%%
+
+f() ->
+    1
+    ,
+    2
+    .
+
+f() ->
+    function_call),
+                                        ok. % syntax error in prev.line
+
+%%%%%%%%%%
+% Tokens %
+%%%%%%%%%%
+
+f() ->
+    ok.
+
+%%%%%%%%%%
+% Period %
+%%%%%%%%%%
+
+f() ->
+    (
+      .
+
+f() ->
+    (
+      . % xx
+
+f() ->
+    (
+      .% xx
+
+f() ->
+    % Not valid Erlang; the indent script thinks 'B' is the start of a new
+    % clause, so it indents 'ok' below 'B'.
+    A . B,
+        ok.
+
+% Not valid Erlang, but why not behave nicely
+ok.
+f() ->
+    ok.
+
+f() ->
+    A = #a{},
+
+    %A#a . f1, % syntax error
+    A#a .f1,   % valid Erlang
+
+    %A#a.      % syntax error
+    %f1,
+
+    A#a
+    .f1,   % valid Erlang
+
+    _ = 1.2,   % valid Erlang
+    %_ = 1 .2,  % syntax error
+    %_ = 1 . 2, % syntax error
+    %_ = 1. 2,  % syntax error
+
+    _ = " .
+    ", % valid Erlang
+
+    _ = ' .
+    ', % valid Erlang
+
+    ok.
+
+f() -> 1. f() ->
+              3.
+
+%%%%%%%%%%%%%
+% begin-end %
+%%%%%%%%%%%%%
+
+f() ->
+    begin A,
+          B
+    end,
+    begin
+        A,
+        B
+    end,
+    begin A,
+          begin B
+          end,
+          C
+    end,
+    begin
+        A,
+        begin
+            B
+        end,
+        C, D,
+        E
+    end,
+    begin
+        A,
+        B, begin
+               C
+           end,
+        D
+    end,
+    ok.
+
+f() ->
+    begin A, B end,
+    begin A, begin B end, C end,
+    ok.
+
+
+%%%%%%%%%%%%%%%%%%%
+% Basic functions %
+%%%%%%%%%%%%%%%%%%%
+
+f() ->
+    ok.
+
+f
+(
+)
+->
+    ok.
+
+%%%%%%%%%%%%%%%%%%%%%
+% Actual parameters %
+%%%%%%%%%%%%%%%%%%%%%
+
+f() ->
+    g(A, B,
+      C,
+      D),
+    ok.
+
+f() ->
+    long_function(
+                   A, B,
+                   C,
+                   D),
     ok.
 
 %%%%%%%%%%%
