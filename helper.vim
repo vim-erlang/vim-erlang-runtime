@@ -22,6 +22,7 @@ function! RereadIndent()
     endif
     unlet b:did_indent
     so indent/erlang.vim
+    let g:erlang_unexpected_token_indent = 40
 endfunction
 
 " Unit tests

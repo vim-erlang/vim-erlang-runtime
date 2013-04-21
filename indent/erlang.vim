@@ -230,9 +230,13 @@ function! s:IsLineAtomContinuation(lnum)
     endif
 endfunction
 
+if !exists('g:erlang_unexpected_token_indent')
+    let g:erlang_unexpected_token_indent = -1
+endif
+
 function! s:UnexpectedToken(token, stack)
     call s:Log('    Unexpected token ' . a:token . ', stack = ' . s:L2s(a:stack) . ' -> return')
-    return 40
+    return g:erlang_unexpected_token_indent
 endfunction
 
 function! s:BeginElementFoundIfEmpty(stack, token, curr_col, abscol, sw)
