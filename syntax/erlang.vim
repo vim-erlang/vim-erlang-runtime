@@ -171,7 +171,9 @@ if ! exists ("erlang_keywords")
     syn keyword erlangSignal     badsig kill killed exit normal
 endif
 
-
+" Sync at the beginning of functions: if this is not used, multiline string
+" are not always recognized
+syn sync match erlangSync grouphere NONE "^[a-z]\s*("
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -226,4 +228,3 @@ endif
 
 
 let b:current_syntax = "erlang"
-
