@@ -15,7 +15,7 @@ else
 endif
 
 setlocal indentexpr=ErlangIndent()
-setlocal indentkeys+=0=end,0=of,0=catch,0=after,0=),0=],0=}
+setlocal indentkeys+=0=end,0=of,0=catch,0=after,0=),0=],0=},0=>>
 
 " Only define the functions once
 if exists("*ErlangIndent")
@@ -136,9 +136,12 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
                 call s:AddIndToken(indtokens, 'dot', i)
             endif
 
-        " Arrow token: ->
-        elseif a:line[i] == '-' && (i + 1 < linelen && a:line[i + 1] == '>')
-            call s:AddIndToken(indtokens, '->', i)
+        " Two-character tokens: ->, <<, >>
+        elseif i + 1 < linelen &&
+             \ ((a:line[i] == '-' && a:line[i + 1] == '>') ||
+             \  (a:line[i] == '<' && a:line[i + 1] == '<') ||
+             \  (a:line[i] == '>' && a:line[i + 1] == '>'))
+            call s:AddIndToken(indtokens, a:line[i : i + 1], i)
             let next_i = i + 2
 
         " Other character
@@ -487,7 +490,11 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, '}', 1)
                 if ret | return res | endif
 
-            elseif index(['end', ')', ']', '}'], token) != -1
+            elseif token == '<<'
+                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, '>>', 2)
+                if ret | return res | endif
+
+            elseif index(['end', ')', ']', '}', '>>'], token) != -1
                 call s:Push(stack, token)
 
             elseif token == ';'
@@ -591,7 +598,7 @@ function! ErlangIndent()
         return -1
     endif
 
-    let ml = matchlist(currline, '^\s*\(\%(end\|of\|catch\|after\)\>\|[)\]}]\)')
+    let ml = matchlist(currline, '^\s*\(\%(end\|of\|catch\|after\)\>\|[)\]}]\|>>\)')
     if empty(ml)
         call s:Log("  Line type = 'normal'")
 

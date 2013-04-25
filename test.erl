@@ -162,6 +162,30 @@ embedded_terms() ->
     },
     ok.
 
+embedded_terms() ->
+
+    % {Difference from Emacs}
+    %
+    % Emacs:
+    %     long_expression, {
+    %       A
+    %     }.
+    long_expression, {
+                      A
+                     },
+
+    % {Difference from Emacs}
+    %
+    % Emacs:
+    %     long + expression, {
+    %              A
+    %             }.
+    long + expression, {
+                        A
+                       },
+
+    ok.
+
 list_head_tail() ->
     [H|_] = [H|_],
 
@@ -1038,10 +1062,11 @@ bit_syntax() ->
     << A : 1 / integer >>,
 
     <<<<1>>/binary>>,
+    <<<<1,
+        2>>/binary,
+      3>>,
 
-    ok.
-
-bit_syntax() ->
+    bit_syntax() ->
     <<A
     >>,
 
@@ -1049,47 +1074,47 @@ bit_syntax() ->
     >>,
 
     <<A
-    /
-    bits
+      /
+      bits
     >>,
 
     <<A:1
-    /
-    bits
+      /
+      bits
     >>,
 
     <<<<1>>
-    /
-    binary>>,
+      /
+      binary>>,
 
     ok.
 
 bit_syntax() ->
     <<
-    A
+      A
     >>,
 
     <<
-    A:1
+      A:1
     >>,
 
     <<
-    A
-    /
-    bits
+      A
+      /
+      bits
     >>,
 
     <<
-    A:1
-    /
-    bits
+      A:1
+      /
+      bits
     >>,
 
     ok.
 
 bit_syntax() ->
     <<A,
-    B>>.
+      B>>.
 
 %%% ===========================================================================
 %%% 7.17 Fun Expressions
@@ -1522,35 +1547,35 @@ bit_string_comprehension() ->
     %     <<A ||
     %         A <- L>>
     <<A ||
-    A <- L>>,
+      A <- L>>,
 
     << A ||
-    A <- L>>,
+       A <- L>>,
 
     <<A
-    || A <- L>>,
+      || A <- L>>,
 
     << A
-    || A <- L>>,
+       || A <- L>>,
 
     << <<A, B>> ||
-    <<A, B>> <- <<A, B>>, f(X), <<A, B>> <- <<A, B>>, f(X)>>,
+       <<A, B>> <- <<A, B>>, f(X), <<A, B>> <- <<A, B>>, f(X)>>,
 
     << <<A, B>>
-    || <<A, B>> <- <<A, B>>, f(X), <<A, B>> <- <<A, B>>, f(X)>>,
+       || <<A, B>> <- <<A, B>>, f(X), <<A, B>> <- <<A, B>>, f(X)>>,
 
     << <<A, B>>
-    || <<A,
-    B>> <- <<A,
-    B>>,
-    f(X),
-    <<A,
-    B>> <- <<A,
-    B>>,
-    f(X)>>,
+       || <<A,
+            B>> <- <<A,
+                     B>>,
+       f(X),
+       <<A,
+         B>> <- <<A,
+                  B>>,
+       f(X)>>,
 
     << <<A, B>> ||
-    {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)>>,
+       {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)>>,
 
     ok.
 
