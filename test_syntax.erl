@@ -1,4 +1,4 @@
-%%% The organization of this file follows the Erlang reference:
+%%% The organization of this file follows the Erlang Reference Manual:
 %%%
 %%% http://erlang.org/doc/reference_manual/users_guide.html
 
@@ -438,3 +438,162 @@ try_example() ->
         _:_ -> error;
     end.
 
+%%% ===========================================================================
+%%% 7.24 Guard Sequences
+%%% ===========================================================================
+
+test_type_bifs() when is_atom(A);
+                      is_binary(A);
+                      is_bitstring(A);
+                      is_boolean(A);
+                      is_float(A);
+                      is_function(A);
+                      is_function(A, B);
+                      is_integer(A);
+                      is_list(A);
+                      is_number(A);
+                      is_pid(A);
+                      is_port(A);
+                      is_record(A, B);
+                      is_record(A, B, C);
+                      is_reference(A);
+                      is_tuple(A) ->
+    ok.
+
+old_guards() when abs(Number);
+                  bit_size(Bitstring);
+                  byte_size(Bitstring);
+                  element(N, Tuple);
+                  float(Term);
+                  hd(List);
+                  length(List);
+                  node();
+                  node(Pid|Ref|Port);
+                  round(Number);
+                  self();
+                  size(Tuple|Bitstring);
+                  tl(List);
+                  trunc(Number);
+                  tuple_size(Tuple) ->
+    ok.
+
+%%% ===========================================================================
+%%% 8 The Preprocessor
+%%% ===========================================================================
+
+%%% ===========================================================================
+%%% 8.1 File Inclusion
+%%% ===========================================================================
+
+-include("my_records.hrl").
+-include("incdir/my_records.hrl").
+-include("/home/user/proj/my_records.hrl").
+-include("$PROJ_ROOT/my_records.hrl").
+-include_lib("kernel/include/file.hrl").
+
+%%% ===========================================================================
+%%% 8.2 Defining and Using Macros
+%%% ===========================================================================
+
+-define(TIMEOUT, 200).
+
+call(Request) ->
+    server:call(refserver, Request, ?TIMEOUT).
+
+-define(MACRO1(X, Y), {a, X, b, Y}).
+
+bar(X) ->
+    ?MACRO1(a, b),
+    ?MACRO1(X, 123).
+
+%%% ===========================================================================
+%%% 8.3 Predefined Macros
+%%% ===========================================================================
+
+predefined_macros ->
+    ?MODULE,
+    ?MODULE_STRING,
+    ?FILE,
+    ?LINE,
+    ?MACHINE.
+
+%%% ===========================================================================
+%%% 8.5 Flow Control in Macros
+%%% ===========================================================================
+
+-undef(Macro).
+-ifdef(Macro).
+-ifndef(Macro).
+-else.
+-endif.
+
+%%% ===========================================================================
+%%% 8.6 Stringifying Macro Arguments
+%%% ===========================================================================
+
+-define(TESTCALL(Call), io:format("Call ~s: ~w~n", [??Call, Call])).
+
+?TESTCALL(myfunction(1,2)),
+?TESTCALL(you:function(2,1)).
+
+%%% ===========================================================================
+%%% 9 Records
+%%% ===========================================================================
+
+%%% ===========================================================================
+%%% 9.1 Defining Records
+%%% ===========================================================================
+
+-record(person, {name,
+                 phone=0,
+                 address}).
+
+access_fields(Name, Tab) ->
+    ets:match_object(Tab, #person{name=Name, _='_'}),
+    lists:keysearch(Name, #person.name, List).
+
+update_fields() ->
+    person#Person{field1=Expr1, field1=ExprK}.
+
+%%% ===========================================================================
+%%% 11 Processes
+%%% ===========================================================================
+
+bifs() ->
+    register(Name, Pid),
+    registered(),
+    whereis(Name),
+    spawn(),
+    spawn_link(),
+    spawn_opt(),
+    link(),
+    unlink(),
+    process_flag(trap_exit, true),
+    {'DOWN', Ref, process, Pid2, Reason}.
+
+process_dictionary_bifs() ->
+    put(Key, Value),
+    get(Key),
+    get(),
+    get_keys(Value),
+    erase(Key),
+    erase().
+
+%%% ===========================================================================
+%%% 12 Distributed Erlang
+%%% ===========================================================================
+
+%%% ===========================================================================
+%%% 12.8 Distribution BIFs
+%%% ===========================================================================
+
+distribution_bifs() ->
+    erlang:disconnect_node(Node),
+    erlang:get_cookie(),
+    is_alive(),
+    monitor_node(Node, true),
+    node(),
+    node(Arg),
+    nodes(),
+    nodes(Arg),
+    set_cookie(Node, Cookie).

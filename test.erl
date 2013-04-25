@@ -1,4 +1,4 @@
-%%% The organization of this file follows the Erlang reference:
+%%% The organization of this file follows the Erlang Reference Manual:
 %%%
 %%% http://erlang.org/doc/reference_manual/users_guide.html
 
@@ -186,13 +186,6 @@ list_head_tail() ->
     ],
     ok.
 
-list_comprehension() ->
-    [ {A, B} ||
-      {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)],
-    [ {A, B}
-      || {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)],
-    ok.
-
 %%% ===========================================================================
 %%% 2.11 String
 %%% ===========================================================================
@@ -271,6 +264,20 @@ pattern_matching_examples() ->
      Y} = {A,
            B},
 
+    Variable = 1 +
+    2,
+
+    Variable =
+    1 +
+    2,
+
+    Variable = (1 +
+                2),
+
+    Variable =
+    (1 +
+     2),
+
     ok.
 
 %%% ===========================================================================
@@ -292,6 +299,9 @@ pattern_matching_examples() ->
 % Comment
 %% Comment
 comments() ->
+    % {Difference from Emacs}
+    % Emacs indents comments with a single percentage sign to column 49.
+
     % Comment
     %% Comment
     ok.
@@ -370,6 +380,12 @@ f({X, Y}) when A == 0; B == 0 -> {X, Y};
 f({X, Y}) when A == 0; B == 0 -> ok.
 
 f({X, Y}) when A == 0 -> {X, Y}; f({X, Y}) when A == 0 -> ok.
+
+f(
+   A,
+   B
+ ) ->
+    ok.
 
 %%% ===========================================================================
 %%% 6 Types and Function Specifications
@@ -550,6 +566,49 @@ func_calls() ->
     func(),
 
     ok.
+
+f() ->
+    ok.
+
+f
+(
+)
+->
+    ok.
+
+f() ->
+    g(A, B,
+      C,
+      D),
+    ok.
+
+f() ->
+    long_function(
+                   A, B,
+                   C,
+                   D),
+    ok.
+
+f() ->
+
+    f(A,
+      B),
+
+    f(A, B,
+      C),
+
+    long_function_name(other_long_function_name(A,
+                                                B),
+                       C),
+
+    long_function_name(A,
+                       other_long_function_name(A,
+                                                B),
+                       C).
+
+f() ->
+    function_call),
+                                        ok. % syntax error in prev.line
 
 %%% ===========================================================================
 %%% 7.7 If
@@ -975,6 +1034,8 @@ bit_syntax() ->
     <<A:1/integer>>,
     << A : 1 / integer >>,
 
+    <<<<1>>/binary>>,
+
     ok.
 
 bit_syntax() ->
@@ -993,6 +1054,10 @@ bit_syntax() ->
     /
     bits
     >>,
+
+    <<<<1>>
+    /
+    binary>>,
 
     ok.
 
@@ -1021,15 +1086,14 @@ bit_syntax() ->
 
 bit_syntax() ->
     <<A,
-    B>>
+    B>>.
 
+%%% ===========================================================================
+%%% 7.17 Fun Expressions
+%%% ===========================================================================
 
-    %%% ===========================================================================
-    %%% 7.17 Fun Expressions
-    %%% ===========================================================================
-
-    % fun - without linebreaks
-    f() ->
+% fun - without linebreaks
+f() ->
     fun func/0,
     fun mod:func/0,
     fun (A) -> A end,
@@ -1328,12 +1392,170 @@ f() ->
                                         ok.
 
 %%% ===========================================================================
-%%% Uncategorized
+%%% 7.20 Parenthesized Expressions
 %%% ===========================================================================
 
-%%%%%%%%%
-% Comma %
-%%%%%%%%%
+f() ->
+    11 +
+    22 * 33,
+
+    % {Difference from Emacs}
+    %
+    % Emacs indentation:
+    %
+    %     (11 +
+    %         22) * 3
+    (11 +
+     22) * 3,
+
+    (
+      A,
+      B
+    )
+
+    ok.
+
+%%% ===========================================================================
+%%% 7.21 Block Expressions
+%%% ===========================================================================
+
+f() ->
+    begin A,
+          B
+    end,
+    begin
+        A,
+        B
+    end,
+    begin A,
+          begin B
+          end,
+          C
+    end,
+    begin
+        A,
+        begin
+            B
+        end,
+        C, D,
+        E
+    end,
+    begin
+        A,
+        B, begin
+               C
+           end,
+        D
+    end,
+    ok.
+
+f() ->
+    begin A, B end,
+    begin A, begin B end, C end,
+    ok.
+
+f() ->
+    begin f, f(
+                A
+              )
+    end,
+    ok.
+
+%%% ===========================================================================
+%%% 7.22 List Comprehensions
+%%% ===========================================================================
+
+list_comprehension() ->
+
+    % {Difference from Emacs}
+    %
+    % Emacs indentation:
+    %
+    %     [A ||
+    %         A <- L]
+    [A ||
+     A <- L],
+
+    [ A ||
+      A <- L],
+
+    [A
+     || A <- L],
+
+    [ A
+      || A <- L],
+
+    [ {A, B} ||
+      {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)],
+
+    [ {A, B}
+      || {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)],
+
+    [ {A, B}
+      || {A,
+          B} <- [A,
+                 B],
+      f(X),
+      {A,
+       B} <- [A,
+              B],
+      f(X)],
+
+    [ {A, B} ||
+      <<A, B>> <= <<A, B>>, f(X), <<A, B>> <= <<A, B>>, f(X)],
+
+    ok.
+
+%%% ===========================================================================
+%%% 7.23 Bit String Comprehensions
+%%% ===========================================================================
+
+bit_string_comprehension() ->
+
+    % {Difference from Emacs}
+    %
+    % Emacs indentation:
+    %
+    %     <<A ||
+    %         A <- L>>
+    <<A ||
+    A <- L>>,
+
+    << A ||
+    A <- L>>,
+
+    <<A
+    || A <- L>>,
+
+    << A
+    || A <- L>>,
+
+    << <<A, B>> ||
+    <<A, B>> <- <<A, B>>, f(X), <<A, B>> <- <<A, B>>, f(X)>>,
+
+    << <<A, B>>
+    || <<A, B>> <- <<A, B>>, f(X), <<A, B>> <- <<A, B>>, f(X)>>,
+
+    << <<A, B>>
+    || <<A,
+    B>> <- <<A,
+    B>>,
+    f(X),
+    <<A,
+    B>> <- <<A,
+    B>>,
+    f(X)>>,
+
+    << <<A, B>> ||
+    {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)>>,
+
+    ok.
+
+%%% ===========================================================================
+%%% 7.x: Other expressions
+%%% ===========================================================================
+
+%% Comma
 
 f() ->
     1
@@ -1341,20 +1563,7 @@ f() ->
     2
     .
 
-f() ->
-    function_call),
-                                        ok. % syntax error in prev.line
-
-%%%%%%%%%%
-% Tokens %
-%%%%%%%%%%
-
-f() ->
-    ok.
-
-%%%%%%%%%%
-% Period %
-%%%%%%%%%%
+%% Period
 
 f() ->
     (
@@ -1407,89 +1616,235 @@ f() ->
 f() -> 1. f() ->
               3.
 
-%%%%%%%%%%%%%
-% begin-end %
-%%%%%%%%%%%%%
+%%% ===========================================================================
+%%% 8 The Preprocessor
+%%% ===========================================================================
 
-f() ->
-    begin A,
-          B
-    end,
-    begin
-        A,
-        B
-    end,
-    begin A,
-          begin B
-          end,
-          C
-    end,
-    begin
-        A,
-        begin
-            B
-        end,
-        C, D,
-        E
-    end,
-    begin
-        A,
-        B, begin
-               C
-           end,
-        D
-    end,
+%%% ===========================================================================
+%%% 8.1 File Inclusion
+%%% ===========================================================================
+
+-include("my_records.hrl").
+-include("incdir/my_records.hrl").
+-include("/home/user/proj/my_records.hrl").
+-include("$PROJ_ROOT/my_records.hrl").
+-include_lib("kernel/include/file.hrl").
+
+%%% ===========================================================================
+%%% 8.2 Defining and Using Macros
+%%% ===========================================================================
+
+-define(TIMEOUT,
+        200).
+
+call(Request) ->
+    server:call(refserver, Request, ?TIMEOUT).
+
+-define(MACRO1(X,
+               Y),
+        {a, X,
+         b, Y}).
+
+bar(X) ->
+    ?MACRO1(a, b),
+    ?MACRO1(X, 123),
     ok.
 
-f() ->
-    begin A, B end,
-    begin A, begin B end, C end,
+-define(TESTCALL(Call), io:format("Call ~s: ~w~n", [??Call, Call])).
+
+?TESTCALL(myfunction(1,
+                     2)).
+
+%%% ===========================================================================
+%%% 9 Records
+%%% ===========================================================================
+
+%%% ===========================================================================
+%%% 9.1 Defining Records
+%%% ===========================================================================
+
+-record(person, {name,
+                 phone=0,
+                 address}).
+
+-record(person,
+        {name,
+         phone=
+         0,
+         address=
+         0}).
+
+% {Difference in Emacs}
+%
+% Emacs indentation:
+%
+%    -record(person,
+%            {name
+%             =
+%                 0,
+%             phone
+%             =
+%                 0,
+%             address
+%             =
+%                 0}).
+-record(person,
+        {name,
+         =
+         0,
+         phone
+         =
+         0,
+         address
+         =
+         0}).
+
+-record(person,
+        {name
+         =0,
+         phone
+         =0,
+         address
+         =0
+        }).
+
+%%% ===========================================================================
+%%% 9.2 Creating Records
+%%% ===========================================================================
+
+lookup(Name, Tab) ->
+
+    ets:match_object(Tab, #person{name=Name,
+                                  _='_'}),
+
+    ets:match_object(Tab,
+                     #person{name
+                             =
+                             Name,
+                             _
+                             =
+                             '_'}),
+
     ok.
 
+%%% ===========================================================================
+%%% 9.3 Accessing Record Fields
+%%% ===========================================================================
 
-%%%%%%%%%%%%%%%%%%%
-% Basic functions %
-%%%%%%%%%%%%%%%%%%%
+lookup(Name, List) ->
 
-f() ->
-    ok.
-
-f
-(
-)
-->
-    ok.
-
-%%%%%%%%%%%%%%%%%%%%%
-% Actual parameters %
-%%%%%%%%%%%%%%%%%%%%%
-
-f() ->
-    g(A, B,
-      C,
-      D),
-    ok.
-
-f() ->
-    long_function(
-                   A, B,
-                   C,
-                   D),
-    ok.
-
-%%%%%%%%%%%
-% Records %
-%%%%%%%%%%%
-
-f() ->
     A#rec.field,
     A#rec
     .field,
+    ok,
+
+    lists:keysearch(Name, #person.name, List),
+
+    lists:keysearch(Name, #person
+                    .name, List),
+
+    % {Difference in Emacs}
+    %
+    % Emacs indentation:
+    %
+    %     lists:keysearch(Name, #
+    %                       person
+    %                     .name, List),
+
+    lists:keysearch(Name, #
+                    person
+                    .name, List),
+
     ok.
 
-%%%%%%%%%%%%
-% Issue #1 %
-%%%%%%%%%%%%
+%%% ===========================================================================
+%%% 9.4 Updating Records
+%%% ===========================================================================
+
+f() ->
+
+    Expr#Name{Field1=
+              Expr1,
+              FieldK=
+              ExprK},
+
+    Expr
+    #
+    Name{Field1
+         =
+         Expr1,
+         FieldK
+         =
+         ExprK},
+
+    ok.
+
+%%% ===========================================================================
+%%% 9.5 Records in Guards
+%%% ===========================================================================
+
+handle(Msg, State) when Msg
+                        ==
+                        #msg{to=
+                             void,
+                             no=
+                             3} ->
+    ok;
+handle(Msg, State) when Msg
+                        ==
+                        #msg{
+                             to=
+                             void,
+                             no=
+                             3} ->
+    ok;
+handle(Msg, State) when State#state.running
+                        ==
+                        true ->
+    ok.
+
+%%% ===========================================================================
+%%% 9.6 Records in Patterns
+%%% ===========================================================================
+
+f() ->
+    #person{name=
+            Name} =
+    Person.
+
+%%% ===========================================================================
+%%% 9.7 Nested records
+%%% ===========================================================================
+
+-record(nrec0, {name = "nested0"}).
+-record(nrec1, {name = "nested1", nrec0=#nrec0{}}).
+-record(nrec2, {name = "nested2", nrec1=#nrec1{}}).
+
+f() ->
+
+    N2 = #nrec2{},
+
+    "nested0" = ((N2#nrec2.nrec1)#
+                 nrec1.nrec0)#nrec0.name,
+
+    N0n = ((N2#nrec2.nrec1)#nrec1.nrec0)#
+    nrec0{name = "nested0a"},
+
+    "nested0" = N2#nrec2
+    .nrec1
+    #nrec1.nrec0#
+    nrec0.name,
+
+    N0n = N2#nrec2
+    .nrec1
+    #nrec1.nrec0#
+    nrec0{name = "nested0a"},
+
+    ok.
+
+%%% ===========================================================================
+%%% Issue #1: https://github.com/hcs42/vim-erlang/issues/1
+%%% ===========================================================================
 
 rand_pprint_slice() ->
     F = fun pprint/3,
