@@ -45,10 +45,14 @@ if ! exists ("erlang_characters")
     syn match   erlangSeparator        "(\|)\|{\|}\|\[\|]\||\|||\|;\|,\|?\|->\|#" contained
 
     " Strings and atoms
-    syn match   erlangStringModifier     "\~\a\|\\\a\|\\\\" contained
+    syn match   erlangStartString      +"+ nextgroup=erlangString
+    syn region  erlangString           start=++ skip=+\\.+ end=+"+ contains=erlangStringModifier contained
+    syn match   erlangStringModifier   "\~\a\|\\\a\|\\\\" contained
+
+    syn match   erlangStartQuotedAtom  +'+ nextgroup=erlangQuotedAtom
+    syn region  erlangQuotedAtom       start=++ skip=+\\.+ end=+'+ contains=erlangQuotedAtomModifier contained
     syn match   erlangQuotedAtomModifier "\~\a\|\\\a\|\\\\" contained
-    syn region  erlangString           start=+"+ skip=+\\.+ end=+"+ contains=erlangStringModifier
-    syn region  erlangQuotedAtom       start=+'+ skip=+\\.+ end=+'+ contains=erlangQuotedAtomModifier
+
 
     " Operators
     syn match   erlangOperator         "+\|-\|\*\|\/"
@@ -195,10 +199,15 @@ if version >= 508 || !exists ("did_erlang_inits")
     HiLink erlangTodo Todo
     HiLink erlangSpecialCharacter Special
     HiLink erlangSeparator Normal
-    HiLink erlangStringModifier Special
     HiLink erlangOperator Operator
+
+    HiLink erlangStartString String
     HiLink erlangString String
+    HiLink erlangStringModifier Special
+
+    HiLink erlangStartQuotedAtom Type
     HiLink erlangQuotedAtom Type
+    HiLink erlangQuotedAtomModifier Special
 
     HiLink erlangNumberInteger Number
     HiLink erlangNumberFloat1 Float

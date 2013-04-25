@@ -45,8 +45,8 @@ atom_examples() ->
     hello,
     phone_number,
     hello@you,
-'Monday',
-'phone number',
+    'Monday',
+    'phone number',
     case@case,
     ok.
 
@@ -63,7 +63,7 @@ f
     ok.
 
 'my function'() ->
-ok.
+    ok.
 
 %%% ===========================================================================
 %%% 2.9 Tuple
@@ -216,6 +216,9 @@ multiline_string() ->
       bar
       spam begin
       end",
+
+    "foo
+",
 
     ok,
     "foo

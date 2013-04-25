@@ -47,6 +47,7 @@ number_examples() ->
 %%% ===========================================================================
 
 atom_examples() ->
+    '',
     hello,
     phone_number,
     hello@you,
@@ -68,6 +69,9 @@ tuple_list() ->
 %%% ===========================================================================
 
 multiline_string() ->
+    "",
+    "plain",
+    "plain string",
     "multi
      line".
 
