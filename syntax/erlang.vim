@@ -45,12 +45,10 @@ if ! exists ("erlang_characters")
     syn match   erlangSeparator        "(\|)\|{\|}\|\[\|]\||\|||\|;\|,\|?\|->\|#" contained
 
     " Strings and atoms
-    syn match   erlangStartString      +"+ nextgroup=erlangString
-    syn region  erlangString           start=++ skip=+\\.+ end=+"+ contains=erlangStringModifier contained
+    syn region  erlangString           start=+"+ skip=+\\.+ end=+"+ contains=erlangStringModifier
     syn match   erlangStringModifier   "\~\a\|\\\a\|\\\\" contained
 
-    syn match   erlangStartQuotedAtom  +'+ nextgroup=erlangQuotedAtom
-    syn region  erlangQuotedAtom       start=++ skip=+\\.+ end=+'+ contains=erlangQuotedAtomModifier contained
+    syn region  erlangQuotedAtom       start=+'+ skip=+\\.+ end=+'+ contains=erlangQuotedAtomModifier
     syn match   erlangQuotedAtomModifier "\~\a\|\\\a\|\\\\" contained
 
 
