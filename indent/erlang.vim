@@ -77,18 +77,20 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
     let indtokens = []
 
     if a:string_continuation
-        call s:AddIndToken(indtokens, 'string_continuation', i)
         let i = matchend(a:line, '^\%([^"\\]\|\\.\)*"', 0)
         if i == -1
             call s:Log("    Whole line is string continuation -> ignore")
             return []
+        else
+            call s:AddIndToken(indtokens, 'string_end', i)
         endif
     elseif a:atom_continuation
-        call s:AddIndToken(indtokens, 'atom_continuation', i)
         let i = matchend(a:line, "^\\%([^'\\\\]\\|\\\\.\\)*'", 0)
         if i == -1
             call s:Log("    Whole line is quoted atom continuation -> ignore")
             return []
+        else
+            call s:AddIndToken(indtokens, 'quoted_atom_end', i)
         endif
     endif
 
@@ -104,13 +106,21 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
 
         " String token: "..."
         elseif a:line[i] == '"'
-            call s:AddIndToken(indtokens, 'string', i)
             let next_i = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
+            if next_i == -1
+                call s:AddIndToken(indtokens, 'string_start', i)
+            else
+                call s:AddIndToken(indtokens, 'string', i)
+            endif
 
         " Quoted atom token: '...'
         elseif a:line[i] == "'"
-            call s:AddIndToken(indtokens, 'quoted_atom', i)
-            let next_i = matchend(a:line, "'\\%([^'\\\\]\\|\\\\.\\)*'",i)
+            let next_i = matchend(a:line, "'\\%([^'\\\\]\\|\\\\.\\)*'", i)
+            if next_i == -1
+                call s:AddIndToken(indtokens, 'quoted_atom_start', i)
+            else
+                call s:AddIndToken(indtokens, 'quoted_atom', i)
+            endif
 
         " Keyword or atom or variable token
         elseif a:line[i] =~# "[a-zA-Z_@]"
