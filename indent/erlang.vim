@@ -430,8 +430,25 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             " receive BRANCHES after BRANCHES end
                 
             " This branch is not Emacs-compatible
-            elseif token == 'of' && i != len(indtokens) - 1 &&
+            elseif (token == 'of' || token == 'receive' || token == 'after') &&
+                 \ i != len(indtokens) - 1 &&
                  \ (empty(stack) || stack == ['->'] || stack == ['->', ';'])
+
+                " If we are after of/receive, but these are not the last
+                " tokens of the line, we want to indent like this:
+                "
+                " % stack == []
+                " receive Abscol,
+                "         LTI
+                "
+                " % stack == ['->', ';']
+                " receive Abscol ->
+                "             B;
+                "         LTI
+                "
+                " % stack  ['->']
+                " receive Abscol ->
+                "             LTI
 
                 " stack = []  =>  LTI is a condition
                 " stack = ['->']  =>  LTI is a branch

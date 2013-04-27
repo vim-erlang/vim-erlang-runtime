@@ -920,32 +920,32 @@ receive__tokens_after_kw() ->
     end,
 
     receive A ->
-            A
+                A
     end,
 
     % receive with 2 branches
     receive A -> A;
-        B -> B
+            B -> B
     end,
 
     receive A -> A,
                  A;
-        B -> B,
-             B
+            B -> B,
+                 B
     end,
 
     receive A ->
-            A;
-        B ->
-            B
+                A;
+            B ->
+                B
     end,
 
     receive A ->
-            A,
-            A;
-        B ->
-            B,
-            B
+                A,
+                A;
+            B ->
+                B,
+                B
     end,
 
     ok.
@@ -964,38 +964,38 @@ receive_after__tokens_after_kw() ->
     end,
 
     receive A ->
-            A
+                A
     after T ->
-            T
+              T
     end,
 
     % receive with 2 branches
     receive A -> A;
-        B -> B
+            B -> B
     after T -> T
     end,
 
     receive A ->
-            A;
-        B ->
-            B
+                A;
+            B ->
+                B
     after T -> T
     end,
 
     receive A -> A,
                  A;
-        B -> B,
-             A
+            B -> B,
+                 A
     after T -> T,
                T
     end,
 
     receive A ->
-            A,
-            A;
-        B ->
-            B,
-            B
+                A,
+                A;
+            B ->
+                B,
+                B
     after T -> T,
                T
     end,
