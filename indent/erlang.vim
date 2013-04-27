@@ -389,7 +389,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
         let string_continuation = s:IsLineStringContinuation(lnum)
         let atom_continuation = s:IsLineAtomContinuation(lnum)
         let indtokens = s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
-        call s:Log("  Tokens in the line:\n    - " . join(reverse(copy(indtokens)), "\n    - "))
+        call s:Log("  Tokens in the line:\n    - " . join(indtokens, "\n    - "))
         if len(indtokens) > 0
             call insert(all_tokens, indtokens)
         endif
@@ -419,6 +419,16 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, 'end', &sw)
                 if ret | return res | endif
 
+            " case EXPR of BRANCHES end
+            " try EXPR catch BRANCHES end
+            " try EXPR after BODY end
+            " try EXPR catch BRANCHES after BODY end
+            " try EXPR of BRANCHES catch BRANCHES end
+            " try EXPR of BRANCHES after BODY end
+            " try EXPR of BRANCHES catch BRANCHES after BODY end
+            " receive BRANCHES end
+            " receive BRANCHES after BRANCHES end
+                
             elseif token == 'case' || token == 'if' || token == 'try' || token == 'receive'
 
                 " stack = []  =>  LTI is a condition
@@ -428,9 +438,19 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     " pass
                 elseif (token == 'case' && stack[0] == 'of') ||
                      \ (token == 'if') ||
-                     \ (token == 'try' && (stack[0] == 'catch' || stack[0] == 'after')) ||
+                     \ (token == 'try' && (stack[0] == 'of' ||
+                     \                     stack[0] == 'catch' ||
+                     \                     stack[0] == 'after')) ||
                      \ (token == 'receive')
 
+                    " From the indentation point of view, the keyword
+                    " (of/catch/after/end) before the LTI is what counts, so
+                    " when we reached these tokens, and the stack already had
+                    " a catch/after/end, we didn't modify it.
+                    "
+                    " This way when we reach case/try/receive (i.e. now),
+                    " there is at most one of/catch/after/end token in the
+                    " stack.
                     if token == 'case' || token == 'try' ||
                      \ (token == 'receive' && stack[0] == 'after')
                         call s:Pop(stack)
@@ -511,8 +531,20 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
                 if empty(stack)
                     call s:Push(stack, ';')
-                elseif stack[0] == 'end' || stack[0] == 'after' || stack[0] == ';' || stack[0] == '->'
-                    " pass
+                elseif index([';', '->', 'end', 'after', 'catch'], stack[0]) != -1
+                    " Pass:
+                    "
+                    " - If the stack top is another ';', then one ';' is
+                    "   enough.
+                    " - If the stack top is an '->', then we should keep that,
+                    "   because this signifies that LTI is a branch, not a
+                    "   condition.
+                    " - From the indentation point of view, the keyword
+                    "   (of/catch/after/end) before the LTI is what counts, so
+                    "   if the stack already has a catch/after/end, we don't
+                    "   modify it. This way when we reach case/try/receive,
+                    "   there will be at most one of/catch/after/end token in
+                    "   the stack.
                 else
                     return s:UnexpectedToken(token, stack)
                 endif
@@ -523,8 +555,17 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     " stack = ['->']  ->  LTI is a condition
                     " stack = ['->', ';']  -> LTI is a branch
                     call s:Push(stack, '->')
-                elseif stack[0] == '->' || stack[0] == 'after'
-                    " pass
+                elseif index(['->', 'end', 'after', 'catch'], stack[0]) != -1
+                    " Pass: 
+                    "
+                    " - If the stack top is another '->', then one '->' is
+                    "   enough.
+                    " - From the indentation point of view, the keyword
+                    "   (of/catch/after/end) before the LTI is what counts, so
+                    "   if the stack already has a catch/after/end, we don't
+                    "   modify it. This way when we reach case/try/receive,
+                    "   there will be at most one of/catch/after/end token in
+                    "   the stack.
                 else
                     return s:UnexpectedToken(token, stack)
                 endif
@@ -546,6 +587,13 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     if ret | return res | endif
                 elseif stack[0] == '->'
                     " pass
+                elseif stack[0] == 'catch' || stack[0] == 'after' || stack[0] == 'end'
+                    " Pass: From the indentation point of view, the keyword
+                    " (of/catch/after/end) before the LTI is what counts, so
+                    " if the stack already has a catch/after/end, we don't
+                    " modify it. This way when we reach case/try/receive,
+                    " there will be at most one of/catch/after/end token in
+                    " the stack.
                 else
                     return s:UnexpectedToken(token, stack)
                 endif
@@ -554,8 +602,15 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
                 if empty(stack) || stack[0] == '->'
                     call s:Push(stack, token)
-                elseif token == 'catch' || stack[0] == 'after'
-                    " pass
+                elseif token == 'catch'
+                    " Pass: 'catch' can be a 'catch' expression, which is always ok.
+                elseif stack[0] == 'catch' || stack[0] == 'after' || stack[0] == 'end'
+                    " Pass: From the indentation point of view, the keyword
+                    " (of/catch/after/end) before the LTI is what counts, so
+                    " if the stack already has a catch/after/end, we don't
+                    " modify it. This way when we reach case/try/receive,
+                    " there will be at most one of/catch/after/end token in
+                    " the stack.
                 else
                     return s:UnexpectedToken(token, stack)
                 endif
