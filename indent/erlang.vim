@@ -538,7 +538,6 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     "   enough.
                     " - If the stack top is an '->', then we should keep that,
                     "   because this signifies that LTI is a branch, not a
-                    "   condition.
                     " - From the indentation point of view, the keyword
                     "   (of/catch/after/end) before the LTI is what counts, so
                     "   if the stack already has a catch/after/end, we don't
@@ -599,6 +598,13 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 endif
 
             elseif token == 'of' || token == 'catch' || token == 'after'
+
+                if token == 'after'
+                    " If LTI is between an 'after' and the corresponding
+                    " 'end', then let's return
+                    let [ret, res] = s:BeginElementFoundIfEmpty(stack, token, curr_col, abscol, &sw)
+                    if ret | return res | endif
+                endif
 
                 if empty(stack) || stack[0] == '->'
                     call s:Push(stack, token)

@@ -1645,7 +1645,7 @@ try_without_of__two_branches() ->
     % try-after-end
     try f()
     after AfterBody1,
-        AfterBody2
+          AfterBody2
     end,
 
     % try-catch-after-end
@@ -1655,7 +1655,7 @@ try_without_of__two_branches() ->
         A ->
             B
     after AfterBody1,
-        AfterBody2
+          AfterBody2
     end,
 
     ok.
@@ -1679,7 +1679,7 @@ try_with_of__two_branches() ->
         A ->
             B
     after AfterBody1,
-        AfterBody2
+          AfterBody2
     end,
 
     % try-of-catch-after-end
@@ -1693,7 +1693,7 @@ try_with_of__two_branches() ->
         A ->
             B
     after AfterBody1,
-        AfterBody2
+          AfterBody2
     end,
 
     ok.
