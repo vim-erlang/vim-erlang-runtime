@@ -801,13 +801,26 @@ f() ->
           when
               B > 0 ->
             ok;
-
         B
           when
               B > 0;
               B < 0
               ->
             ok
+    end,
+    ok.
+
+f() ->
+    case A of B when B > 0 ->
+                  ok;
+              B when
+                    B > 0 ->
+                  ok;
+              B when
+                    B > 0;
+                    B < 0
+                    ->
+                  ok
     end,
     ok.
 
