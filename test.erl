@@ -1303,16 +1303,25 @@ try_example() ->
                                         error:E -> E
     after
         AfterBody
-                                        end.
+                                        end,
+
+                                        ok.
 
 syntax_error() ->
     try
     end, % syntax error
-    ok.
 
-f() ->
+    try X
+                                        of
+                                        end, % syntax error
 
-    % only catch
+                                        ok.
+
+%%% Plain
+
+try_without_of__one_branch() ->
+
+    % try-catch-end
     try
         f()
     catch
@@ -1320,7 +1329,76 @@ f() ->
             B
     end,
 
-    % only after
+    % try-after-end
+    try
+        f()
+    after
+        AfterBody1
+                                        end,
+
+                                        % try-catch-after-end
+                                        try
+                                            f()
+                                        catch
+                                            A ->
+                                                B
+                                        after
+                                            AfterBody1
+                                        end,
+
+                                        ok.
+
+try_with_of__one_branch() ->
+
+    % try-of-catch-end
+    try
+        f()
+                                        of
+                                        A ->
+                                        B
+                                        catch
+                                        A ->
+                                        B
+                                        end,
+
+                                        % try-of-after-end
+                                        try
+                                            f()
+                                        of
+                                        A ->
+                                        B
+                                        after
+                                            AfterBody1
+                                        end,
+
+                                        % try-of-catch-after-end
+                                        try
+                                            f()
+                                        of
+                                        A ->
+                                        B
+                                        catch
+                                        A ->
+                                        B
+                                        after
+                                            AfterBody1
+                                        end,
+
+                                        ok.
+
+try_without_of__two_branches() ->
+
+    % try-catch-end
+    try
+        f()
+    catch
+        A ->
+            B;
+        A ->
+            B
+    end,
+
+    % try-after-end
     try
         f()
     after
@@ -1328,45 +1406,316 @@ f() ->
         AfterBody2
                                         end,
 
-                                        % catch-after
+                                        % try-catch-after-end
                                         try
                                             f()
                                         catch
+                                            A ->
+                                                B;
                                             A ->
                                                 B
                                         after
                                             AfterBody1,
                                             AfterBody2
-                                        end.
+                                        end,
 
-f() ->
-    % only catch
-    try f()
+                                        ok.
+
+try_with_of__two_branches() ->
+
+    % try-of-catch-end
+    try
+        f()
+                                        of
+                                        A ->
+                                        B;
+                                        A ->
+                                        B
+                                        catch
+                                        A ->
+                                        B
+                                        end,
+
+                                        % try-of-after-end
+                                        try
+                                            f()
+                                        of
+                                        A ->
+                                        B;
+                                        A ->
+                                        B
+                                        after
+                                            AfterBody1,
+                                            AfterBody2
+                                        end,
+
+                                        % try-of-catch-after-end
+                                        try
+                                            f()
+                                        of
+                                        A ->
+                                        B;
+                                        A ->
+                                        B
+                                        catch
+                                        A ->
+                                        B;
+                                        A ->
+                                        B
+                                        after
+                                            AfterBody1,
+                                            AfterBody2
+                                        end,
+
+                                        ok.
+
+%%% With guards
+
+try_without_of__one_branch__guards() ->
+
+    % try-catch-end
+    try
+        f()
     catch
-        A -> B
+        A when A > 0->
+            B
     end,
 
-    % only after
+    % try-after-end
+    try
+        f()
+    after
+        AfterBody1
+                                        end,
+
+                                        % try-catch-after-end
+                                        try
+                                            f()
+                                        catch
+                                            A when A > 0 ->
+                                                B
+                                        after
+                                        AfterBody1
+                                        end,
+
+                                        ok.
+
+try_with_of__one_branch__guards() ->
+
+    % try-of-catch-end
+    try
+        f()
+                                        of
+                                        A when A > 0 ->
+                                        B
+                                        catch
+                                        A when A > 0 ->
+                                        B
+                                        end,
+
+                                        % try-of-after-end
+                                        try
+                                            f()
+                                        of
+                                        A when A > 0 ->
+                                        B
+                                        after
+                                        AfterBody1
+                                        end,
+
+                                        % try-of-catch-after-end
+                                        try
+                                            f()
+                                        of
+                                        A when A > 0 ->
+                                        B
+                                        catch
+                                        A when A > 0 ->
+                                        B
+                                        after
+                                        AfterBody1
+                                        end,
+
+                                        ok.
+
+try_without_of__two_branches__guards() ->
+
+    % try-catch-end
+    try
+        f()
+    catch
+        A when A > 0 ->
+            B;
+        A when A > 0 ->
+            B
+    end,
+
+    % try-after-end
+    try
+        f()
+    after
+        AfterBody1,
+        AfterBody2
+                                        end,
+
+                                        % try-catch-after-end
+                                        try
+                                            f()
+                                        catch
+                                            A when A > 0 ->
+                                                B;
+                                            A when A > 0 ->
+                                                B
+                                        after
+                                        AfterBody1,
+                                        AfterBody2
+                                        end,
+
+                                        ok.
+
+try_with_of__two_branches__guards() ->
+
+    % try-of-catch-end
+    try
+        f()
+                                        of
+                                        A when A > 0 ->
+                                        B;
+                                        A when A > 0 ->
+                                        B
+                                        catch
+                                        A when A > 0 ->
+                                        B
+                                        end,
+
+                                        % try-of-after-end
+                                        try
+                                            f()
+                                        of
+                                        A when A > 0 ->
+                                        B;
+                                        A when A > 0 ->
+                                        B
+                                        after
+                                        AfterBody1,
+                                        AfterBody2
+                                        end,
+
+                                        % try-of-catch-after-end
+                                        try
+                                            f()
+                                        of
+                                        A when A > 0 ->
+                                        B;
+                                        A when A > 0 ->
+                                        B
+                                        catch
+                                        A when A > 0 ->
+                                        B;
+                                        A when A > 0 ->
+                                        B
+                                        after
+                                        AfterBody1,
+                                        AfterBody2
+                                        end,
+
+                                        ok.
+
+%%% No linebreak after keywords
+
+try_without_of__two_branches() ->
+
+    % try-catch-end
+    try f()
+    catch A ->
+            B;
+        A ->
+            B
+    end,
+
+    % try-after-end
     try f()
     after AfterBody1,
         AfterBody2
                                         end,
 
-                                        % catch-after
+                                        % try-catch-after-end
                                         try f()
-                                        catch A -> B
+                                        catch A ->
+                                                B;
+                                            A ->
+                                                B
                                         after AfterBody1,
                                             AfterBody2
                                         end,
 
                                         ok.
 
-f() ->
-    try f() catch A -> B end,
-    try f() catch A -> B after AfterBody end,
+try_with_of__two_branches() ->
+
+    % try-of-catch-end
+    try f()
+                                        of A ->
+                                        B;
+                                        A ->
+                                        B
+                                        catch A ->
+                                        B
+                                        end,
+
+                                        % try-of-after-end
+                                        try f()
+                                        of A ->
+                                        B;
+                                        A ->
+                                        B
+                                        after AfterBody1,
+                                            AfterBody2
+                                        end,
+
+                                        % try-of-catch-after-end
+                                        try f()
+                                        of A ->
+                                        B;
+                                        A ->
+                                        B
+                                        catch A ->
+                                        B;
+                                        A ->
+                                        B
+                                        after AfterBody1,
+                                            AfterBody2
+                                        end,
+
                                         ok.
 
-% try-of
+%%% One-liners
+
+try_without_of__one_branch() ->
+    try f() catch A -> B end,
+    try f() after AfterBody1 end,
+                                        try f() catch A -> B after AfterBody1 end,
+                                        ok.
+
+try_with_of__one_branch() ->
+    try f() of A -> B catch A -> B end,
+                                        try f() of A -> B after AfterBody1 end,
+                                        try f() of A -> B catch A -> B after AfterBody1 end,
+                                        ok.
+
+try_without_of__two_branches() ->
+    try f() catch A -> B; A -> B end,
+    try f() after AfterBody1, AfterBody2 end,
+                                        try f() catch A -> B; A -> B after AfterBody1, AfterBody2 end,
+                                        ok.
+
+try_with_of__two_branches() ->
+    try f() of A -> B; A -> B catch A -> B end,
+                                        try f() of A -> B; A -> B after AfterBody1, AfterBody2 end,
+                                        try f() of A -> B; A -> B catch A -> B; A -> B after AfterBody1, AfterBody2 end,
+                                        ok.
+
+%%% Guards again
 
 f() ->
     try
@@ -1402,7 +1751,11 @@ f() ->
                                           when
                                               B > 0 ->
                                         ok;
-
+                                        B
+                                          when B > 0;
+                                               B < 0
+                                               ->
+                                        ok;
                                         B
                                           when
                                               B > 0;
@@ -1417,6 +1770,11 @@ f() ->
                                               B > 0 ->
                                         ok;
 
+                                        B
+                                          when B > 0;
+                                               B < 0
+                                               ->
+                                        ok;
                                         B
                                           when
                                               B > 0;
