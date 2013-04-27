@@ -1739,9 +1739,9 @@ try_without_of__two_branches() ->
     % try-catch-end
     try f()
     catch A ->
-            B;
-        A ->
-            B
+              B;
+          A ->
+              B
     end,
 
     % try-after-end
@@ -1753,9 +1753,9 @@ try_without_of__two_branches() ->
     % try-catch-after-end
     try f()
     catch A ->
-            B;
-        A ->
-            B
+              B;
+          A ->
+              B
     after AfterBody1,
           AfterBody2
     end,
@@ -1771,7 +1771,7 @@ try_with_of__two_branches() ->
        A ->
            B
     catch A ->
-            B
+              B
     end,
 
     % try-of-after-end
@@ -1791,9 +1791,9 @@ try_with_of__two_branches() ->
        A ->
            B
     catch A ->
-            B;
-        A ->
-            B
+              B;
+          A ->
+              B
     after AfterBody1,
           AfterBody2
     end,
