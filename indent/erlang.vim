@@ -567,7 +567,10 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
             elseif token == '->'
 
-                if empty(stack) || stack[0] == ';' || stack[0] == 'end'
+                if empty(stack) && i != len(indtokens) - 1
+                    call s:Log('    LTI is in expression after arrow -> return')
+                    return abscol
+                elseif empty(stack) || stack[0] == ';' || stack[0] == 'end'
                     " stack = ['->']  ->  LTI is a condition
                     " stack = ['->', ';']  -> LTI is a branch
                     call s:Push(stack, '->')

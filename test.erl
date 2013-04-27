@@ -485,8 +485,8 @@ func() ->
     ok.
 
 -spec func(A, B) -> ReturnType
-    ; (A,
-       B) -> ReturnType.
+                    ; (A,
+                       B) -> ReturnType.
 func() ->
     ok.
 
@@ -526,10 +526,10 @@ func() ->
           ;
           (A,
            B) -> ReturnType
-      when
-          A
-          ::
-          t().
+                   when
+                       A
+                       ::
+                       t().
 func() ->
     ok.
 
@@ -762,9 +762,9 @@ f() ->
 
 f() ->
     case A of A -> A1,
-                  A2;
+                   A2;
               B -> B1,
-                  B2
+                   B2
     end,
     ok.
 
@@ -773,7 +773,7 @@ f() ->
                   A1,
                   A2;
               B -> B1,
-                  B2
+                   B2
     end,
     ok.
 
