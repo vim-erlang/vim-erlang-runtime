@@ -769,6 +769,15 @@ f() ->
     ok.
 
 f() ->
+    case A of A ->
+            A1,
+            A2;
+        B -> B1,
+            B2
+    end,
+    ok.
+
+f() ->
     f(case X of
           A -> A
       end),
