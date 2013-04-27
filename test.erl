@@ -913,6 +913,95 @@ f() ->
 
     ok.
 
+receive__tokens_after_kw() ->
+
+    % receive with 1 branch
+    receive A -> A
+    end,
+
+    receive A ->
+            A
+    end,
+
+    % receive with 2 branches
+    receive A -> A;
+        B -> B
+    end,
+
+    receive A -> A,
+                 A;
+        B -> B,
+             B
+    end,
+
+    receive A ->
+            A;
+        B ->
+            B
+    end,
+
+    receive A ->
+            A,
+            A;
+        B ->
+            B,
+            B
+    end,
+
+    ok.
+
+% receive + after -- with linebreaks
+receive_after__tokens_after_kw() ->
+
+    % receive with 0 branch
+    receive
+    after T -> T
+    end,
+
+    % receive with 1 branch
+    receive A -> A
+    after T -> T
+    end,
+
+    receive A ->
+            A
+    after T ->
+            T
+    end,
+
+    % receive with 2 branches
+    receive A -> A;
+        B -> B
+    after T -> T
+    end,
+
+    receive A ->
+            A;
+        B ->
+            B
+    after T -> T
+    end,
+
+    receive A -> A,
+                 A;
+        B -> B,
+             A
+    after T -> T,
+               T
+    end,
+
+    receive A ->
+            A,
+            A;
+        B ->
+            B,
+            B
+    after T -> T,
+               T
+    end,
+
+    ok.
+
 % receive -- one-liners
 f() ->
     receive A -> A end,
