@@ -762,18 +762,18 @@ f() ->
 
 f() ->
     case A of A -> A1,
-            A2;
-        B -> B1,
-            B2
+                  A2;
+              B -> B1,
+                  B2
     end,
     ok.
 
 f() ->
     case A of A ->
-            A1,
-            A2;
-        B -> B1,
-            B2
+                  A1,
+                  A2;
+              B -> B1,
+                  B2
     end,
     ok.
 
@@ -1665,9 +1665,9 @@ try_with_of__two_branches() ->
     % try-of-catch-end
     try f()
     of A ->
-            B;
-        A ->
-            B
+           B;
+       A ->
+           B
     catch A ->
             B
     end,
@@ -1675,9 +1675,9 @@ try_with_of__two_branches() ->
     % try-of-after-end
     try f()
     of A ->
-            B;
-        A ->
-            B
+           B;
+       A ->
+           B
     after AfterBody1,
           AfterBody2
     end,
@@ -1685,9 +1685,9 @@ try_with_of__two_branches() ->
     % try-of-catch-after-end
     try f()
     of A ->
-            B;
-        A ->
-            B
+           B;
+       A ->
+           B
     catch A ->
             B;
         A ->

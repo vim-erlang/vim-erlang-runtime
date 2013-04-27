@@ -429,6 +429,23 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             " receive BRANCHES end
             " receive BRANCHES after BRANCHES end
                 
+            " This branch is not Emacs-compatible
+            elseif token == 'of' && i != len(indtokens) - 1 &&
+                 \ (empty(stack) || stack == ['->'] || stack == ['->', ';'])
+
+                " stack = []  =>  LTI is a condition
+                " stack = ['->']  =>  LTI is a branch
+                " stack = ['->', ';']  =>  LTI is a condition
+                if empty(stack) || stack == ['->', ';']
+                    call s:Log('    LTI is in a condition after "of" -> return')
+                    return abscol
+                elseif stack == ['->']
+                    call s:Log('    LTI is in a branch after "of" -> return')
+                    return abscol + &sw
+                else
+                    return s:UnexpectedToken(token, stack)
+                endif
+
             elseif token == 'case' || token == 'if' || token == 'try' || token == 'receive'
 
                 " stack = []  =>  LTI is a condition
