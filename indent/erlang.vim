@@ -189,41 +189,6 @@ function! s:Pop(stack)
     return head
 endfunction
 
-" TODO Remove - Currently not used
-function! s:PushShift(stack, shift)
-    if len(a:stack) > 0 && type(a:stack[0]) == type(0)
-        call s:Log('    Shift on stack updated: ' . a:stack[0] . ' -> ' . a:stack[0] + a:shift)
-        let a:stack[0] += a:shift
-    else
-        call s:Push(a:stack, a:shift)
-    endif
-endfunction
-
-" TODO Remove - Currently not used
-function! s:PopShift(stack)
-    if len(a:stack) > 0 && type(a:stack[0]) == type(0)
-        let head = remove(a:stack, 0)
-        call s:Log('    Stack PopShift: ' . head . ' <- ' . s:L2s(a:stack))
-        return head
-    else
-        call s:Log('    Stack PopShift: 0')
-        return 0
-    endif
-endfunction
-
-" TODO Use empty() instead - shift are currently not used
-function! s:IsEmptyButShift(stack)
-    return empty(a:stack) || type(a:stack[0]) == type(0)
-endfunction
-
-function! s:Get(list, i)
-    if len(a:list) > a:i
-        return a:list[a:i]
-    else
-        return ''
-    endif
-endfunction
-
 " --------------------------------- "
 " ErlangCalcIndent helper functions "
 " --------------------------------- "
@@ -300,7 +265,7 @@ function! s:CheckForFuncDefArrow(stack, token, abscol)
     if !empty(a:stack) && a:stack[0] == 'when'
         call s:Log('    CheckForFuncDefArrow: "when" found in stack')
         call s:Pop(a:stack)
-        if s:IsEmptyButShift(a:stack)
+        if empty(a:stack)
             call s:Log('    Stack is ["when"], so LTI is in a guard -> return')
             return [1, a:abscol + &sw + 2]
         else
@@ -309,12 +274,12 @@ function! s:CheckForFuncDefArrow(stack, token, abscol)
     elseif !empty(a:stack) && a:stack[0] == '->'
         call s:Log('    CheckForFuncDefArrow: "->" found in stack')
         call s:Pop(a:stack)
-        if s:IsEmptyButShift(a:stack)
+        if empty(a:stack)
             call s:Log('    Stack is ["->"], so LTI is in function body -> return')
             return [1, a:abscol + &sw]
         elseif a:stack[0] == ';'
             call s:Pop(a:stack)
-            if s:IsEmptyButShift(a:stack)
+            if empty(a:stack)
                 call s:Log('    Stack is ["->", ";"], so LTI is in a function head -> return')
                 return [0, a:abscol]
             else
@@ -376,9 +341,6 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
     let stack = a:stack
     let semicolon_abscol = ''
 
-    " TODO Remove - Currently not used
-    let leave_abscol = 0
-
     if empty(a:indtokens)
         let all_tokens = []
     else
@@ -418,7 +380,6 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             " Prepare the analysis of the tokens
             let [token, curr_col] = indtokens[i]
             call s:Log('  Analyzing the following token: ' . s:L2s(indtokens[i]))
-            let leave_abscol = 0
 
             if token == '<end_of_clause>'
                 let [ret, res] = s:CheckForFuncDefArrow(stack, token, abscol)
@@ -834,9 +795,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
             endif
 
-            if leave_abscol
-                " pass
-            elseif s:IsEmptyButShift(stack) || stack[0] == '->' || stack[0] == 'when'
+            if empty(stack) || stack[0] == '->' || stack[0] == 'when'
                 let abscol = curr_col
                 let semicolon_abscol = ''
                 call s:Log('    Misc token when the stack is empty or has "->" -> setting abscol to ' . abscol)
@@ -854,9 +813,9 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
         call s:Log('  Line analyzed. abscol=' . abscol)
 
-        if s:IsEmptyButShift(stack) && abscol != -1 && !string_continuation && !atom_continuation
+        if empty(stack) && abscol != -1 && !string_continuation && !atom_continuation
             call s:Log('    Empty stack at the beginning of the line -> return')
-            return abscol + s:PopShift(stack)
+            return abscol
         endif
 
         let lnum -= 1
