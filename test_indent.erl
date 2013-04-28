@@ -717,7 +717,7 @@ f() ->
     end,
 
     if A -> A;
-        B -> B
+       B -> B
     end,
 
     if
@@ -729,9 +729,9 @@ f() ->
 
 
     if A ->
-            A;
-        B ->
-            B
+           A;
+       B ->
+           B
     end,
 
     ok.

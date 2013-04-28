@@ -416,8 +416,8 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             " receive BRANCHES after BRANCHES end
                 
             " This branch is not Emacs-compatible
-            elseif (token == 'of' || token == 'receive' || token == 'after' || token == 'catch') &&
-                 \ i != len(indtokens) - 1 &&
+            elseif (token == 'of' || token == 'receive' || token == 'after' || token == 'catch' || token == 'if') &&
+                 \ !last_token_of_line &&
                  \ (empty(stack)  || stack == ['when']|| stack == ['->'] || stack == ['->', ';'])
 
                 " If we are after of/receive, but these are not the last
