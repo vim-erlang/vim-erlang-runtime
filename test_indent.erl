@@ -357,6 +357,9 @@ f({A,
    B}, C) ->
     ok.
 
+f() -> A,
+       B.
+
 % Multiple clauses
 f() ->
     ok;
@@ -391,6 +394,22 @@ f(A)
 f(A)
   when
       A == 0;
+      B == 0
+      ->
+    ok.
+
+f(A) when A == 0, B == 0 ->
+    ok.
+
+f(A)
+  when A == 0,
+       B == 0
+       ->
+    ok.
+
+f(A)
+  when
+      A == 0,
       B == 0
       ->
     ok.
@@ -760,6 +779,17 @@ f() ->
     end,
     ok.
 
+% {Difference from Emacs}
+%
+% Emacs indentation:
+%
+%     f() ->
+%         case A of A -> A1,
+%                        A2;
+%             B -> B1,
+%                  B2
+%         end,
+%         ok.
 f() ->
     case A of A -> A1,
                    A2;
@@ -821,6 +851,27 @@ f() ->
                     B < 0
                     ->
                   ok
+    end,
+    ok.
+
+% case and when
+f() ->
+    case A of
+        B when A < 0,
+               B < 0;
+               A > 0,
+               B > 0 ->
+            ok
+    end,
+    ok.
+
+f() ->
+    case A of
+        B when (A < 0 andalso
+                B < 0);
+               (A > 0,
+                B > 0) ->
+            ok
     end,
     ok.
 
@@ -1995,6 +2046,19 @@ list_comprehension() ->
     [ {A, B}
       || {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)],
 
+    % line breaks after commas
+    [ {A, B} || {A, B} <- [A, B],
+      f(X),
+      {A, B} <- [A, B],
+      f(X)],
+
+    [ {A, B} ||
+      {A, B} <- [A, B],
+      f(X),
+      {A, B} <- [A, B],
+      f(X)],
+
+    % line breaks withing terms
     [ {A, B}
       || {A,
           B} <- [A,
@@ -2005,6 +2069,7 @@ list_comprehension() ->
               B],
       f(X)],
 
+    % mixing with binaries
     [ {A, B} ||
       <<A, B>> <= <<A, B>>, f(X), <<A, B>> <= <<A, B>>, f(X)],
 
@@ -2074,6 +2139,10 @@ f() ->
 
     A +
     B,
+
+    A +
+    B +
+    C,
 
     ok.
 
