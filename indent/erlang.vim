@@ -82,7 +82,7 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
             call s:Log("    Whole line is string continuation -> ignore")
             return []
         else
-            call s:AddIndToken(indtokens, 'string_end', i)
+            call s:AddIndToken(indtokens, '<string_end>', i)
         endif
     elseif a:atom_continuation
         let i = matchend(a:line, "^\\%([^'\\\\]\\|\\\\.\\)*'", 0)
@@ -90,7 +90,7 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
             call s:Log("    Whole line is quoted atom continuation -> ignore")
             return []
         else
-            call s:AddIndToken(indtokens, 'quoted_atom_end', i)
+            call s:AddIndToken(indtokens, '<quoted_atom_end>', i)
         endif
     endif
 
@@ -108,42 +108,42 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
         elseif a:line[i] == '"'
             let next_i = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
             if next_i == -1
-                call s:AddIndToken(indtokens, 'string_start', i)
+                call s:AddIndToken(indtokens, '<string_start>', i)
             else
-                call s:AddIndToken(indtokens, 'string', i)
+                call s:AddIndToken(indtokens, '<string>', i)
             endif
 
         " Quoted atom token: '...'
         elseif a:line[i] == "'"
             let next_i = matchend(a:line, "'\\%([^'\\\\]\\|\\\\.\\)*'", i)
             if next_i == -1
-                call s:AddIndToken(indtokens, 'quoted_atom_start', i)
+                call s:AddIndToken(indtokens, '<quoted_atom_start>', i)
             else
-                call s:AddIndToken(indtokens, 'quoted_atom', i)
+                call s:AddIndToken(indtokens, '<quoted_atom>', i)
             endif
 
         " Keyword or atom or variable token
-        elseif a:line[i] =~# "[a-zA-Z_@]"
-            let next_i = matchend(a:line, "[[:alnum:]_@]*", i + 1)
+        elseif a:line[i] =~# '[a-zA-Z_@]'
+            let next_i = matchend(a:line, '[[:alnum:]_@:]*\%(\s*#\s*[[:alnum:]_@:]*\)\=', i + 1)
             call s:AddIndToken(indtokens, a:line[(i):(next_i - 1)], i)
 
         " Character token: $<char> (as in: $a)
         elseif a:line[i] == '$'
-            call s:AddIndToken(indtokens, 'char', i)
+            call s:AddIndToken(indtokens, '$.', i)
             let next_i = i + 2
 
         " Dot token: .
-        elseif a:line[i] == "."
+        elseif a:line[i] == '.'
 
             let next_i = i + 1
             " Dot token (end of clause): . (as in: f() -> ok.)
             if i + 1 == linelen || a:line[i + 1] =~# '[[:blank:]%]'
-                call s:AddIndToken(indtokens, 'end_of_clause', i)
+                call s:AddIndToken(indtokens, '<end_of_clause>', i)
             else
                 " Possibilities:
                 " - Dot token in float: . (as in: 3.14)
                 " - Dot token in record: . (as in: #myrec.myfield)
-                call s:AddIndToken(indtokens, 'dot', i)
+                call s:AddIndToken(indtokens, '.', i)
             endif
 
         " Two-character tokens: ->, <<, >>
@@ -411,6 +411,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
         endif
 
         let i = len(indtokens) - 1
+        let last_token_of_line = 1
 
         while i >= 0
 
@@ -419,7 +420,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             call s:Log('  Analyzing the following token: ' . s:L2s(indtokens[i]))
             let leave_abscol = 0
 
-            if token == 'end_of_clause'
+            if token == '<end_of_clause>'
                 let [ret, res] = s:CheckForFuncDefArrow(stack, token, abscol)
                 if ret | return res | endif
 
@@ -429,6 +430,14 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 else
                     call s:Log('    End of clause (but not end of line) -> return')
                     return abscol
+                endif
+
+            elseif stack == ['prev_term_plus']
+                if token =~# '[a-zA-Z_@]' ||
+                 \ token == '<string>' || token == '<string_start>' ||
+                 \ token == '<quoted_atom>' || token == '<quoted_atom_start>'
+                    call s:Log('    previous token found: curr_col + plus = ' . curr_col . " + " . plus)
+                    return curr_col + plus
                 endif
 
             elseif token == 'begin'
@@ -576,21 +585,130 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     " We have a function reference (e.g. "fun f/0")
                 endif
 
-            elseif token == '('
-                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, ')', 2)
-                if ret | return res | endif
-
             elseif token == '['
+                " Emacs compatibility
                 let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, ']', 1)
                 if ret | return res | endif
 
-            elseif token == '{'
-                let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, '}', 1)
-                if ret | return res | endif
-
             elseif token == '<<'
+                " Emacs compatibility
                 let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, '>>', 2)
                 if ret | return res | endif
+
+            elseif token == '(' || token == '{'
+
+                let end_token = (token == '(' ? ')' :
+                              \  token == '{' ? '}' : 'error')
+
+                if empty(stack)
+                    " We found the opening paren whose block contains the LTI.
+                    let mode = 'inside'
+                elseif stack[0] == end_token
+                    call s:Log('    "' . token . '" pops "' . end_token . '"')
+                    call s:Pop(stack)
+
+                    if !empty(stack) && stack[0] == 'align_to_begin_element'
+                        " We found the opening paren whose closing paren
+                        " starts LTI
+                        let mode = 'align_to_begin_element'
+                    else
+                        " We found the opening pair for a closing paren that
+                        " was already in the stack.
+                        let mode = 'outside'
+                    endif
+                else
+                    return s:UnexpectedToken(token, stack)
+                endif
+
+                if mode == 'inside' || mode == 'align_to_begin_element'
+
+                    if last_token_of_line && i != 0
+                        " Examples:
+                        "
+                        " mode == 'inside':
+                        "
+                        "     my_func(
+                        "       LTI
+                        "
+                        "     [Variable, {
+                        "        LTI
+                        "
+                        " mode == 'align_to_begin_element':
+                        "
+                        "     my_func(
+                        "       Params
+                        "      ) % LTI
+                        "
+                        "     [Variable, {
+                        "        Terms
+                        "       } % LTI
+                        let stack = ['prev_term_plus']
+                        let plus = (mode == 'inside' ? 2 : 1)
+                        call s:Log('    "' . token . '" token found at end of line -> find previous token')
+                    elseif mode == 'align_to_begin_element'
+                        " Examples:
+                        " 
+                        " mode == 'align_to_begin_element' && !last_token_of_line
+                        " 
+                        "     my_func(Abscol
+                        "            ) % LTI
+                        "
+                        "     [Variable, {Abscol
+                        "                } % LTI
+                        " 
+                        " mode == 'align_to_begin_element' && i == 0
+                        " 
+                        "     (
+                        "       Abscol
+                        "     ) % LTI
+                        "
+                        "     {
+                        "       Abscol
+                        "     } % LTI
+                        " 
+                        call s:Log('    "' . token . '" token (whose closing token starts LTI) found -> return')
+                        return curr_col
+                    elseif abscol == -1
+                        " Examples:
+                        "
+                        " mode == 'inside' && abscol == -1 && !last_token_of_line
+                        "
+                        "     my_func(
+                        "             LTI
+                        "     [Variable, {
+                        "                 LTI
+                        "
+                        " mode == 'inside' && abscol == -1 && i == 0
+                        "
+                        "     (
+                        "      LTI
+                        "
+                        "     {
+                        "      LTI
+                        call s:Log('    "' . token . '" token (which directly precedes LTI) found -> return')
+                        return curr_col + 1
+                    else
+                        " Examples:
+                        "
+                        " mode == 'inside' && abscol != -1 && !last_token_of_line
+                        "
+                        "     my_func(Abscol,
+                        "             LTI
+                        "
+                        "     [Variable, {Abscol,
+                        "                 LTI
+                        " 
+                        " mode == 'inside' && abscol != -1 && i == 0
+                        "
+                        "     (Abscol,
+                        "      LTI
+                        "
+                        "     {Abscol,
+                        "      LTI
+                        call s:Log('    "' . token . '" token (whose block contains LTI) found -> return')
+                        return abscol
+                    endif
+                endif
 
             elseif index(['end', ')', ']', '}', '>>'], token) != -1
                 call s:Push(stack, token)
@@ -619,7 +737,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
             elseif token == '->'
 
-                if empty(stack) && i != len(indtokens) - 1
+                if empty(stack) && !last_token_of_line
                     call s:Log('    LTI is in expression after arrow -> return')
                     return abscol
                 elseif empty(stack) || stack[0] == ';' || stack[0] == 'end'
@@ -655,7 +773,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     if semicolon_abscol != ''
                         let abscol = semicolon_abscol
                     endif
-                    if i != len(indtokens) - 1
+                    if !last_token_of_line
                         " when A,
                         "      LTI
                         let [ret, res] = s:BeginElementFoundIfEmpty(stack, token, curr_col, abscol, &sw)
@@ -706,7 +824,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     return s:UnexpectedToken(token, stack)
                 endif
 
-            elseif token == '||' && empty(stack) && i != len(indtokens) - 1
+            elseif token == '||' && empty(stack) && !last_token_of_line
 
                 call s:Log('    LTI is in expression after "||" -> return')
                 return abscol
@@ -729,6 +847,8 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
             let i -= 1
             call s:Log('    Token processed. abscol=' . abscol)
+
+            let last_token_of_line = 0
 
         endwhile " iteration on tokens in a line
 

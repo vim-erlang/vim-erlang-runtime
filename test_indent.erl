@@ -139,14 +139,14 @@ embedded_terms() ->
      ]
     },
     {{
-      A,
-      {
-       {
-        B,
-        C
-       },
-       D
-      }}},
+        A,
+        {
+         {
+          B,
+          C
+         },
+         D
+        }}},
     [
      A
     ],
@@ -167,16 +167,16 @@ embedded_terms() ->
 embedded_terms() ->
 
     long_expression, {
-                      A
-                     },
+      A
+     },
 
     long_expression, other_expression {
-                                       A
-                                      },
+                       A
+                      },
 
     long + expression, {
-                        A
-                       },
+             A
+            },
 
     ok.
 
@@ -360,7 +360,7 @@ f() ->
     ok.
 
 f(
-   A,
+  A,
  ) ->
     ok.
 
@@ -446,8 +446,8 @@ f({X, Y}) when A == 0; B == 0 -> ok.
 f({X, Y}) when A == 0 -> {X, Y}; f({X, Y}) when A == 0 -> ok.
 
 f(
-   A,
-   B
+  A,
+  B
  ) ->
     ok.
 
@@ -630,20 +630,20 @@ func_calls() ->
     func(),
 
     lists:foldl(
-                 A,
-                 B,
-                 C),
+      A,
+      B,
+      C),
 
     lists:foldl(
-                 A,
-                 B
-               ),
+      A,
+      B
+     ),
 
     lists:foldl(
-                 fun(X) ->
-                         X
-                 end,
-                 B, C),
+      fun(X) ->
+              X
+      end,
+      B, C),
 
     ok.
 
@@ -664,9 +664,9 @@ f() ->
 
 f() ->
     long_function(
-                   A, B,
-                   C,
-                   D),
+      A, B,
+      C,
+      D),
     ok.
 
 f() ->
@@ -2022,8 +2022,8 @@ f() ->
      22) * 3,
 
     (
-      A,
-      B
+     A,
+     B
     )
 
     ok.
@@ -2069,7 +2069,7 @@ f() ->
 
 f() ->
     begin f, f(
-                A
+               A
               )
     end,
     ok.
@@ -2208,15 +2208,15 @@ f() ->
 
 f() ->
     (
-      .
+     .
 
 f() ->
     (
-      . % xx
+     . % xx
 
 f() ->
     (
-      .% xx
+     .% xx
 
 f() ->
     % Not valid Erlang; the indent script thinks 'B' is the start of a new
@@ -2367,21 +2367,21 @@ lookup(Name, Tab) ->
                              '_'}),
 
     ets:match_object(Tab, #person{
-                                  name=Name,
-                                  _='_'}),
+                             name=Name,
+                             _='_'}),
 
     ets:match_object(Tab,
                      #person{
-                             name = Name,
-                             _ = '_'}),
+                        name = Name,
+                        _ = '_'}),
 
     ets:match_object(Tab, Person#person{
-                                        name=Name,
-                                        _='_'}),
+                            name=Name,
+                            _='_'}),
 
     ets:match_object(Tab, Person # person {
-                                           name=Name,
-                                           _='_'}),
+                            name=Name,
+                            _='_'}),
 
     ok.
 
@@ -2451,10 +2451,10 @@ handle(Msg, State) when Msg
 handle(Msg, State) when Msg
                         ==
                         #msg{
-                             to=
-                             void,
-                             no=
-                             3} ->
+                           to=
+                           void,
+                           no=
+                           3} ->
     ok;
 handle(Msg, State) when State#state.running
                         ==
