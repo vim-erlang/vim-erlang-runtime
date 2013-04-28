@@ -716,8 +716,19 @@ f() ->
         B -> B
     end,
 
+    if A -> A;
+        B -> B
+    end,
+
     if
         A ->
+            A;
+        B ->
+            B
+    end,
+
+
+    if A ->
             A;
         B ->
             B
