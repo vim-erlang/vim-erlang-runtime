@@ -109,6 +109,8 @@ embedded_terms() ->
     {[A,B
      ]
     },
+    {x
+    }
     ok.
 
 embedded_terms() ->
@@ -164,25 +166,29 @@ embedded_terms() ->
 
 embedded_terms() ->
 
-    % {Difference from Emacs}
-    %
-    % Emacs:
-    %     long_expression, {
-    %       A
-    %     }.
     long_expression, {
                       A
                      },
 
-    % {Difference from Emacs}
-    %
-    % Emacs:
-    %     long + expression, {
-    %              A
-    %             }.
+    long_expression, other_expression {
+                                       A
+                                      },
+
     long + expression, {
                         A
                        },
+
+    ok.
+
+embedded_terms() ->
+
+    long_expression, [
+                      A
+                     ],
+
+    long + expression, [
+                        A
+                       ],
 
     ok.
 
@@ -351,6 +357,11 @@ comments() ->
 %%% ===========================================================================
 
 f() ->
+    ok.
+
+f(
+   A,
+ ) ->
     ok.
 
 f({A,
@@ -617,6 +628,22 @@ func_calls() ->
     mod
     :
     func(),
+
+    lists:foldl(
+                 A,
+                 B,
+                 C),
+
+    lists:foldl(
+                 A,
+                 B
+               ),
+
+    lists:foldl(
+                 fun(X) ->
+                         X
+                 end,
+                 B, C),
 
     ok.
 
@@ -1276,6 +1303,11 @@ bit_syntax() ->
     <<
       A
     >>,
+
+    {atom, <<
+             A,B
+           >>
+    },
 
     <<
       A:1
@@ -2333,6 +2365,23 @@ lookup(Name, Tab) ->
                              _
                              =
                              '_'}),
+
+    ets:match_object(Tab, #person{
+                                  name=Name,
+                                  _='_'}),
+
+    ets:match_object(Tab,
+                     #person{
+                             name = Name,
+                             _ = '_'}),
+
+    ets:match_object(Tab, Person#person{
+                                        name=Name,
+                                        _='_'}),
+
+    ets:match_object(Tab, Person # person {
+                                           name=Name,
+                                           _='_'}),
 
     ok.
 
