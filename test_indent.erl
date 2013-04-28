@@ -2048,9 +2048,9 @@ list_comprehension() ->
 
     % line breaks after commas
     [ {A, B} || {A, B} <- [A, B],
-      f(X),
-      {A, B} <- [A, B],
-      f(X)],
+                f(X),
+                {A, B} <- [A, B],
+                f(X)],
 
     [ {A, B} ||
       {A, B} <- [A, B],
@@ -2063,11 +2063,11 @@ list_comprehension() ->
       || {A,
           B} <- [A,
                  B],
-      f(X),
-      {A,
-       B} <- [A,
-              B],
-      f(X)],
+         f(X),
+         {A,
+          B} <- [A,
+                 B],
+         f(X)],
 
     % mixing with binaries
     [ {A, B} ||
@@ -2109,11 +2109,11 @@ bit_string_comprehension() ->
        || <<A,
             B>> <- <<A,
                      B>>,
-       f(X),
-       <<A,
-         B>> <- <<A,
-                  B>>,
-       f(X)>>,
+          f(X),
+          <<A,
+            B>> <- <<A,
+                     B>>,
+          f(X)>>,
 
     << <<A, B>> ||
        {A, B} <- [A, B], f(X), {A, B} <- [A, B], f(X)>>,

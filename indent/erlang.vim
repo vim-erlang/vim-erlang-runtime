@@ -147,17 +147,24 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
             endif
 
         " Two-character tokens: ->, <<, >>
-        elseif i + 1 < linelen &&
-             \ ((a:line[i] == '-' && a:line[i + 1] == '>') ||
-             \  (a:line[i] == '<' && a:line[i + 1] == '<') ||
-             \  (a:line[i] == '>' && a:line[i + 1] == '>'))
-            call s:AddIndToken(indtokens, a:line[i : i + 1], i)
-            let next_i = i + 2
+        elseif i + 1 < linelen
+            let two_chars = a:line[i : i + 1]
+            if index(['->', '<<', '>>', '||'], two_chars) != -1
+                " We recognized a two-character token
+                call s:AddIndToken(indtokens, two_chars, i)
+                let next_i = i + 2
+            else
+                " Other character
+                call s:AddIndToken(indtokens, a:line[i], i)
+                let next_i = i + 1
+            endif
 
-        " Other character
         else
+
+            " Other character
             call s:AddIndToken(indtokens, a:line[i], i)
             let next_i = i + 1
+
         endif
 
         let i = next_i
@@ -657,6 +664,11 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 else
                     return s:UnexpectedToken(token, stack)
                 endif
+
+            elseif token == '||' && empty(stack) && i != len(indtokens) - 1
+
+                call s:Log('    LTI is in expression after "||" -> return')
+                return abscol
 
             else
                 call s:Log('    Misc token, stack unchanged = ' . s:L2s(stack))
