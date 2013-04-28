@@ -517,17 +517,17 @@ func() ->
 ->
     A
       when
-          A
-          ::
-          tuple().
+      A
+      ::
+      tuple().
 -spec id(A)
 ->
     A
       when
-          A;
-          B
-          ::
-          tuple().
+      A;
+      B
+      ::
+      tuple().
 
 % One guard + overloading
 -spec func(A, B) -> ReturnType when A :: t();
@@ -539,16 +539,16 @@ func() ->
 -spec func(A, B) ->
     ReturnType
       when
-          A
-          ::
-          t()
-          ;
-          (A,
-           B) -> ReturnType
-                   when
-                       A
-                       ::
-                       t().
+      A
+      ::
+      t()
+      ;
+      (A,
+       B) -> ReturnType
+               when
+      A
+      ::
+      t().
 func() ->
     ok.
 
@@ -563,24 +563,24 @@ func() ->
 ->
     ReturnType
       when
-          A
-          ::
-          t(),
-          B
-          ::
-          t()
-          ;
-          (A,
-           B)
-          ->
+      A
+      ::
+      t(),
+      B
+      ::
+      t()
+      ;
+      (A,
+       B)
+      ->
     ReturnType
       when
-          A
-          ::
-          t(),
-          B
-          ::
-          t().
+      A
+      ::
+      t(),
+      B
+      ::
+      t().
 func() ->
     ok.
 
@@ -844,12 +844,12 @@ f() ->
     case A of B when B > 0 ->
                   ok;
               B when
-                    B > 0 ->
+                  B > 0 ->
                   ok;
               B when
-                    B > 0;
-                    B < 0
-                    ->
+                  B > 0;
+                  B < 0
+                  ->
                   ok
     end,
     ok.
@@ -878,7 +878,7 @@ f() ->
 f() ->
     case A of
         Variable when
-                     B > 0 ->
+              B > 0 ->
             ok;
         Variable
           when
@@ -1454,12 +1454,12 @@ f() ->
 % fun - linebreaks after 'when'
 f() ->
     fun(A) when
-               A > 0 -> A
+              A > 0 -> A
     end,
     fun(A) when
-               A > 0 -> A;
+              A > 0 -> A;
        (B) when
-               B > 0 -> B
+              B > 0 -> B
     end,
     ok.
 

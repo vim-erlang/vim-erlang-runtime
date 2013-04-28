@@ -179,13 +179,13 @@ endfunction
 " ------------- "
 
 function! s:Push(stack, token)
-    call s:Log('    Stack Push: ' . a:token . ' -> ' . s:L2s(a:stack))
+    call s:Log('    Stack Push: ' . a:token . ' into ' . s:L2s(a:stack))
     call insert(a:stack, a:token)
 endfunction
 
 function! s:Pop(stack)
     let head = remove(a:stack, 0)
-    call s:Log('    Stack Pop: ' . head . ' <- ' . s:L2s(a:stack))
+    call s:Log('    Stack Pop: ' . head . ' from ' . s:L2s(a:stack))
     return head
 endfunction
 
@@ -297,7 +297,16 @@ function! s:BeginElementFound(stack, token, curr_col, abscol, end_token, sw)
 endfunction
 
 function! s:CheckForFuncDefArrow(stack, token, abscol)
-    if !empty(a:stack) && a:stack[0] == '->'
+    if !empty(a:stack) && a:stack[0] == 'when'
+        call s:Log('    CheckForFuncDefArrow: "when" found in stack')
+        call s:Pop(a:stack)
+        if s:IsEmptyButShift(a:stack)
+            call s:Log('    Stack is ["when"], so LTI is in a guard -> return')
+            return [1, a:abscol + &sw + 2]
+        else
+            return [1, s:UnexpectedToken(a:token, a:stack)]
+        endif
+    elseif !empty(a:stack) && a:stack[0] == '->'
         call s:Log('    CheckForFuncDefArrow: "->" found in stack')
         call s:Pop(a:stack)
         if s:IsEmptyButShift(a:stack)
@@ -439,7 +448,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             " This branch is not Emacs-compatible
             elseif (token == 'of' || token == 'receive' || token == 'after' || token == 'catch') &&
                  \ i != len(indtokens) - 1 &&
-                 \ (empty(stack) || stack == ['->'] || stack == ['->', ';'])
+                 \ (empty(stack)  || stack == ['when']|| stack == ['->'] || stack == ['->', ';'])
 
                 " If we are after of/receive, but these are not the last
                 " tokens of the line, we want to indent like this:
@@ -453,18 +462,26 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 "             B;
                 "         LTI
                 "
-                " % stack  ['->']
+                " % stack == ['->']
                 " receive Abscol ->
+                "             LTI
+                "
+                " % stack == ['when']
+                " receive Abscol when
                 "             LTI
 
                 " stack = []  =>  LTI is a condition
                 " stack = ['->']  =>  LTI is a branch
                 " stack = ['->', ';']  =>  LTI is a condition
+                " stack = ['when']  =>  LTI is a guard
                 if empty(stack) || stack == ['->', ';']
                     call s:Log('    LTI is in a condition after "of" -> return')
                     return abscol
                 elseif stack == ['->']
                     call s:Log('    LTI is in a branch after "of" -> return')
+                    return abscol + &sw
+                elseif stack == ['when']
+                    call s:Log('    LTI is in a guard after "of" -> return')
                     return abscol + &sw
                 else
                     return s:UnexpectedToken(token, stack)
@@ -475,6 +492,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 " stack = []  =>  LTI is a condition
                 " stack = ['->']  =>  LTI is a branch
                 " stack = ['->', ';']  =>  LTI is a condition
+                " stack = ['when']  =>  LTI is in a guard
                 if empty(stack)
                     " pass
                 elseif (token == 'case' && stack[0] == 'of') ||
@@ -512,6 +530,10 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                         call s:Log('    LTI is in a branch; matching "case/if/try/receive" found')
                         call s:Pop(stack)
                         let abscol = curr_col + 2 * &sw
+                    elseif stack[0] == 'when'
+                        call s:Log('    LTI is in a guard; matching "case/if/try/receive" found')
+                        call s:Pop(stack)
+                        let abscol = curr_col + 2 * &sw + 2
                     endif
 
                 endif
@@ -530,6 +552,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     " stack = []  =>  LTI is a condition
                     " stack = ['->']  =>  LTI is a branch
                     " stack = ['->', ';']  =>  LTI is a condition
+                    " stack = ['when']  =>  LTI is in a guard
                     if empty(stack)
                         call s:Log('    LTI is in a condition; matching "fun" found')
                         let abscol = curr_col + &sw
@@ -541,6 +564,10 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                         call s:Log('    LTI is in a branch; matching "fun" found')
                         call s:Pop(stack)
                         let abscol = curr_col + 2 * &sw
+                    elseif stack[0] == 'when'
+                        call s:Log('    LTI is in a guard; matching "fun" found')
+                        call s:Pop(stack)
+                        let abscol = curr_col + 2 * &sw + 2
                     endif
 
                     let [ret, res] = s:BeginElementFound(stack, token, curr_col, abscol, 'end', &sw)
@@ -572,13 +599,14 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
                 if empty(stack)
                     call s:Push(stack, ';')
-                elseif index([';', '->', 'end', 'after', 'catch'], stack[0]) != -1
+                elseif index([';', '->', 'when', 'end', 'after', 'catch'], stack[0]) != -1
                     " Pass:
                     "
                     " - If the stack top is another ';', then one ';' is
                     "   enough.
-                    " - If the stack top is an '->', then we should keep that,
-                    "   because this signifies that LTI is a branch, not a
+                    " - If the stack top is an '->' or a 'when', then we
+                    "   should keep that, because they signify the type of the
+                    "   LTI (branch, condition or guard).
                     " - From the indentation point of view, the keyword
                     "   (of/catch/after/end) before the LTI is what counts, so
                     "   if the stack already has a catch/after/end, we don't
@@ -595,14 +623,17 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     call s:Log('    LTI is in expression after arrow -> return')
                     return abscol
                 elseif empty(stack) || stack[0] == ';' || stack[0] == 'end'
+                    " stack = [';']  -> LTI is either a branch or in a guard
                     " stack = ['->']  ->  LTI is a condition
                     " stack = ['->', ';']  -> LTI is a branch
                     call s:Push(stack, '->')
-                elseif index(['->', 'end', 'after', 'catch'], stack[0]) != -1
+                elseif index(['->', 'when', 'end', 'after', 'catch'], stack[0]) != -1
                     " Pass: 
                     "
                     " - If the stack top is another '->', then one '->' is
                     "   enough.
+                    " - If the stack top is a 'when', then we should keep
+                    "   that, because this signifies that LTI is a in a guard.
                     " - From the indentation point of view, the keyword
                     "   (of/catch/after/end) before the LTI is what counts, so
                     "   if the stack already has a catch/after/end, we don't
@@ -621,22 +652,32 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 endwhile
 
                 if empty(stack)
-
-                    if semicolon_abscol == ''
-                        let semicolon_abscol = abscol
+                    if semicolon_abscol != ''
+                        let abscol = semicolon_abscol
                     endif
-
-                    let [ret, res] = s:BeginElementFoundIfEmpty(stack, token, curr_col, semicolon_abscol, &sw)
-                    if ret | return res | endif
-                elseif stack[0] == '->'
-                    " pass
-                elseif stack[0] == 'catch' || stack[0] == 'after' || stack[0] == 'end'
-                    " Pass: From the indentation point of view, the keyword
-                    " (of/catch/after/end) before the LTI is what counts, so
-                    " if the stack already has a catch/after/end, we don't
-                    " modify it. This way when we reach case/try/receive,
-                    " there will be at most one of/catch/after/end token in
-                    " the stack.
+                    if i != len(indtokens) - 1
+                        " when A,
+                        "      LTI
+                        let [ret, res] = s:BeginElementFoundIfEmpty(stack, token, curr_col, abscol, &sw)
+                        if ret | return res | endif
+                    else
+                        " when
+                        "     LTI
+                        call s:Push(stack, token)
+                    endif
+                elseif index(['->', 'when', 'end', 'after', 'catch'], stack[0]) != -1
+                    " Pass:
+                    " - If the stack top is another 'when', then one 'when' is
+                    "   enough.
+                    " - If the stack top is an '->' or a 'when', then we
+                    "   should keep that, because they signify the type of the
+                    "   LTI (branch, condition or guard).
+                    " - From the indentation point of view, the keyword
+                    "   (of/catch/after/end) before the LTI is what counts, so
+                    "   if the stack already has a catch/after/end, we don't
+                    "   modify it. This way when we reach case/try/receive,
+                    "   there will be at most one of/catch/after/end token in
+                    "   the stack.
                 else
                     return s:UnexpectedToken(token, stack)
                 endif
@@ -650,7 +691,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     if ret | return res | endif
                 endif
 
-                if empty(stack) || stack[0] == '->'
+                if empty(stack) || stack[0] == '->' || stack[0] == 'when'
                     call s:Push(stack, token)
                 elseif token == 'catch'
                     " Pass: 'catch' can be a 'catch' expression, which is always ok.
@@ -677,7 +718,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
             if leave_abscol
                 " pass
-            elseif s:IsEmptyButShift(stack) || stack[0] == '->'
+            elseif s:IsEmptyButShift(stack) || stack[0] == '->' || stack[0] == 'when'
                 let abscol = curr_col
                 let semicolon_abscol = ''
                 call s:Log('    Misc token when the stack is empty or has "->" -> setting abscol to ' . abscol)
