@@ -70,10 +70,56 @@ endfunction
 " atom_continuation = bool
 " result = [indtoken]
 
-function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
+function! s:CalcVCol(line, first_index, last_index, vcol, tabstop)
+    
+    " We copy the relevent segment of the line, otherwise if the line were
+    " e.g.
+    "
+    "     "\t", term
+    "
+    " then the else branch below would consume the
+    "
+    "     ", term
+    "
+    " part at once.
+    let line = a:line[a:first_index : a:last_index]
+
+    let i = 0
+    let last_index = a:last_index - a:first_index
+    let vcol = a:vcol
+
+    while 0 <= i && i <= last_index
+
+        if line[i] == "\t"
+            " Example (when tabstop == 4):
+            "
+            " vcol + tab -> next_vcol
+            " 0 + tab -> 4
+            " 1 + tab -> 4
+            " 2 + tab -> 4
+            " 3 + tab -> 4
+            " 4 + tab -> 8
+            "
+            " next_i - i == the number of tabs
+            let next_i = matchend(line, '\t*', i + 1)
+            let vcol = (vcol / a:tabstop + (next_i - i)) * a:tabstop
+            call s:Log('new vcol after tab: '. vcol)
+        else
+            let next_i = matchend(line, '[^\t]*', i + 1)
+            let vcol += next_i - i
+            call s:Log('new vcol after other: '. vcol)
+        endif
+        let i = next_i
+    endwhile
+
+    return vcol
+endfunction
+
+function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation, tabstop)
 
     let linelen = strlen(a:line) " The length of the line
     let i = 0 " The index of the current character in the line
+    let vcol = 0 " The virtual column of the current character
     let indtokens = []
 
     if a:string_continuation
@@ -82,6 +128,7 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
             call s:Log("    Whole line is string continuation -> ignore")
             return []
         else
+            let vcol = s:CalcVCol(a:line, 0, i - 1, 0, a:tabstop)
             call s:AddIndToken(indtokens, '<string_end>', i)
         endif
     elseif a:atom_continuation
@@ -90,15 +137,25 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
             call s:Log("    Whole line is quoted atom continuation -> ignore")
             return []
         else
+            let vcol = s:CalcVCol(a:line, 0, i - 1, 0, a:tabstop)
             call s:AddIndToken(indtokens, '<quoted_atom_end>', i)
         endif
     endif
 
     while 0 <= i && i < linelen
 
-        " Blanks
-        if a:line[i] =~# '\s'
-            let next_i = matchend(a:line, '\s*', i + 1)
+        let next_vcol = ''
+
+        " Spaces
+        if a:line[i] == ' '
+            let next_i = matchend(a:line, ' *', i + 1)
+
+        " Tabs
+        elseif a:line[i] == "\t"
+            let next_i = matchend(a:line, '\t*', i + 1)
+
+            " See example in s:CalcVCol
+            let next_vcol = (vcol / a:tabstop + (next_i - i)) * a:tabstop
 
         " Comment
         elseif a:line[i] == '%'
@@ -106,30 +163,32 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
 
         " String token: "..."
         elseif a:line[i] == '"'
-            let next_i = matchend(a:line, '"\%([^"\\]\|\\.\)*"', i)
+            let next_i = matchend(a:line, '\%([^"\\]\|\\.\)*"', i + 1)
             if next_i == -1
-                call s:AddIndToken(indtokens, '<string_start>', i)
+                call s:AddIndToken(indtokens, '<string_start>', vcol)
             else
-                call s:AddIndToken(indtokens, '<string>', i)
+                let next_vcol = s:CalcVCol(a:line, i, next_i - 1, vcol, a:tabstop)
+                call s:AddIndToken(indtokens, '<string>', vcol)
             endif
 
         " Quoted atom token: '...'
         elseif a:line[i] == "'"
-            let next_i = matchend(a:line, "'\\%([^'\\\\]\\|\\\\.\\)*'", i)
+            let next_i = matchend(a:line, "\\%([^'\\\\]\\|\\\\.\\)*'", i + 1)
             if next_i == -1
-                call s:AddIndToken(indtokens, '<quoted_atom_start>', i)
+                call s:AddIndToken(indtokens, '<quoted_atom_start>', vcol)
             else
-                call s:AddIndToken(indtokens, '<quoted_atom>', i)
+                let next_vcol = s:CalcVCol(a:line, i, next_i - 1, vcol, a:tabstop)
+                call s:AddIndToken(indtokens, '<quoted_atom>', vcol)
             endif
 
         " Keyword or atom or variable token
         elseif a:line[i] =~# '[a-zA-Z_@]'
             let next_i = matchend(a:line, '[[:alnum:]_@:]*\%(\s*#\s*[[:alnum:]_@:]*\)\=', i + 1)
-            call s:AddIndToken(indtokens, a:line[(i):(next_i - 1)], i)
+            call s:AddIndToken(indtokens, a:line[(i):(next_i - 1)], vcol)
 
         " Character token: $<char> (as in: $a)
         elseif a:line[i] == '$'
-            call s:AddIndToken(indtokens, '$.', i)
+            call s:AddIndToken(indtokens, '$.', vcol)
             let next_i = i + 2
 
         " Dot token: .
@@ -138,12 +197,12 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
             let next_i = i + 1
             " Dot token (end of clause): . (as in: f() -> ok.)
             if i + 1 == linelen || a:line[i + 1] =~# '[[:blank:]%]'
-                call s:AddIndToken(indtokens, '<end_of_clause>', i)
+                call s:AddIndToken(indtokens, '<end_of_clause>', vcol)
             else
                 " Possibilities:
                 " - Dot token in float: . (as in: 3.14)
                 " - Dot token in record: . (as in: #myrec.myfield)
-                call s:AddIndToken(indtokens, '.', i)
+                call s:AddIndToken(indtokens, '.', vcol)
             endif
 
         " Two-character tokens: ->, <<, >>
@@ -151,23 +210,30 @@ function! s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
             let two_chars = a:line[i : i + 1]
             if index(['->', '<<', '>>', '||'], two_chars) != -1
                 " We recognized a two-character token
-                call s:AddIndToken(indtokens, two_chars, i)
+                call s:AddIndToken(indtokens, two_chars, vcol)
                 let next_i = i + 2
             else
                 " Other character
-                call s:AddIndToken(indtokens, a:line[i], i)
+                call s:AddIndToken(indtokens, a:line[i], vcol)
                 let next_i = i + 1
             endif
 
         else
 
             " Other character
-            call s:AddIndToken(indtokens, a:line[i], i)
+            call s:AddIndToken(indtokens, a:line[i], vcol)
             let next_i = i + 1
 
         endif
 
+        if next_vcol == ''
+            let vcol += next_i - i
+        else
+            let vcol = next_vcol
+        endif
+
         let i = next_i
+
     endwhile
 
     return indtokens
@@ -366,7 +432,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
         call s:Log('Analysing line ' . lnum . ': ' . line)
         let string_continuation = s:IsLineStringContinuation(lnum)
         let atom_continuation = s:IsLineAtomContinuation(lnum)
-        let indtokens = s:ErlangAnalyzeLine(line, string_continuation, atom_continuation)
+        let indtokens = s:ErlangAnalyzeLine(line, string_continuation, atom_continuation, &tabstop)
         call s:Log("  Tokens in the line:\n    - " . join(indtokens, "\n    - "))
         if len(indtokens) > 0
             call insert(all_tokens, indtokens)
@@ -884,7 +950,31 @@ endfunction
 
 function! s:TestErlangAnalyzeLine()
 
-    call s:AssertEqual(s:ErlangAnalyzeLine('', 0, 0), [])
+    call s:AssertEqual(s:ErlangAnalyzeLine('', 0, 0, 4), [])
+
+    " Tabs and spaces
+    call s:AssertEqual(s:ErlangAnalyzeLine("a  b", 0, 0, 4), [
+       \ ['a', 0],
+       \ ['b', 3]])
+
+    call s:AssertEqual(s:ErlangAnalyzeLine("\ta", 0, 0, 4), [
+       \ ['a', 4]])
+
+    call s:AssertEqual(s:ErlangAnalyzeLine(" \t  a", 0, 0, 4), [
+       \ ['a', 6]])
+
+    call s:AssertEqual(s:ErlangAnalyzeLine("a\tb\t\tc", 0, 0, 4), [
+       \ ['a', 0],
+       \ ['b', 4],
+       \ ['c', 12]])
+
+    call s:AssertEqual(s:ErlangAnalyzeLine("\t\"a", 1, 0, 4), [
+       \ ['<string_end>', 2],
+       \ ['a', 5]])
+
+    call s:AssertEqual(s:ErlangAnalyzeLine("\t\"a\tb\"c", 0, 0, 4), [
+       \ ['<string>', 4],
+       \ ['c', 10]])
 
 endfunction
 
@@ -895,7 +985,7 @@ endfunction
 
 function! ErlangAnalyzeLine(line)
     echo "Line: " . a:line
-    let indtokens = s:ErlangAnalyzeLine(a:line, 0, 0)
+    let indtokens = s:ErlangAnalyzeLine(a:line, 0, 0, &tabstop)
     echo "Tokens:"
     for it in indtokens
         echo it
