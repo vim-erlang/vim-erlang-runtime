@@ -50,13 +50,19 @@ endfunction
 
 
 " Indent the whole buffer
-noremap <buffer> <F4> :call IndentCurrentBufferPerf()<cr>
+noremap <buffer> <F4> :call IndentCurrentBufferPerf(1)<cr>
+noremap <buffer> <s-F4> :call IndentCurrentBufferPerf(0)<cr>
 
-function! IndentCurrentBufferPerf()
+function! IndentCurrentBufferPerf(use_cache)
+    if a:use_cache
+        let g:erlang_indent_external_cache_handling = 1
+    endif
+    call ClearErlangParseCache()
     call DeleteErlangLog()
     let start = reltime()
     normal mkHmlggvG=`lzt`k
     echo "Execution time: " . reltimestr(reltime(start))
+    let g:erlang_indent_external_cache_handling = 0
 endfunction
 
 " Show tokens in current line

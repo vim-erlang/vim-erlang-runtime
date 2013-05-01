@@ -359,21 +359,65 @@ function! s:CheckForFuncDefArrow(stack, token, abscol)
     endif
 endfunction
 
-function! s:NextToken(all_tokens, i)
-    " If the current line has a next token, return that
-    if len(a:all_tokens[0]) > a:i + 1
-        return a:all_tokens[0][a:i + 1]
+" `lnum -> indtokens` dictionary
+let s:all_tokens = {}
 
-    " If the current line does not have any tokens after position `i` and
-    " there are no other lines, return []
-    elseif len(a:all_tokens) == 1
-        return []
+function! ClearErlangParseCache()
+    let s:all_tokens = {}
+endfunction
 
-    " If the current line does not have any tokens after position `i`, return
-    " the first token of the next line
-    else
-        return a:all_tokens[1][0]
+function! s:ParseStoreLine(lnum, direction)
+
+    if a:direction == 'up'
+        let lnum = prevnonblank(a:lnum)
+    else " a:direction == 'down'
+        let lnum = nextnonblank(a:lnum)
     endif
+
+    " We hit the beginning or end of the file
+    if lnum == 0
+        let indtokens = []
+
+    " The line has already been parsed
+    elseif has_key(s:all_tokens, lnum)
+        let indtokens = s:all_tokens[lnum]
+
+    " The line should be parsed now
+    else
+
+        " Parse the line
+        let line = getline(lnum)
+        call s:Log('Analysing line ' . lnum . ': ' . line)
+        let string_continuation = s:IsLineStringContinuation(lnum)
+        let atom_continuation = s:IsLineAtomContinuation(lnum)
+        let indtokens = s:ErlangAnalyzeLine(line, string_continuation, atom_continuation, &tabstop)
+        call s:Log("  Tokens in the line:\n    - " . join(indtokens, "\n    - "))
+        let s:all_tokens[lnum] = indtokens
+
+    endif
+
+    return [lnum, indtokens]
+endfunction
+
+function! s:NextToken(lnum, i)
+    call s:Log('    NextToken called: lnum=' . a:lnum . ', i =' . a:i)
+
+    " If the current line has a next token, return that
+    if len(s:all_tokens[a:lnum]) > a:i + 1
+        return s:all_tokens[a:lnum][a:i + 1]
+    endif
+
+    let lnum = a:lnum
+    while 1
+        let lnum += 1
+        let [lnum, indtokens] = s:ParseStoreLine(lnum, 'down')
+        if lnum == 0
+            " End of file
+            return []
+        elseif !empty(indtokens)
+            return indtokens[0]
+        endif
+    endwhile
 
 endfunction
 
@@ -417,7 +461,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
     " previous line) until we can decide how to indent the current line.
     while 1
 
-        let lnum = prevnonblank(lnum)
+        let [lnum, indtokens] = s:ParseStoreLine(lnum, 'up')
 
         " Hit the start of the file
         if lnum == 0
@@ -425,17 +469,6 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             if ret | return res | endif
 
             return 0
-        endif
-
-        " Get the tokens from the currently analyzed line
-        let line = getline(lnum)
-        call s:Log('Analysing line ' . lnum . ': ' . line)
-        let string_continuation = s:IsLineStringContinuation(lnum)
-        let atom_continuation = s:IsLineAtomContinuation(lnum)
-        let indtokens = s:ErlangAnalyzeLine(line, string_continuation, atom_continuation, &tabstop)
-        call s:Log("  Tokens in the line:\n    - " . join(indtokens, "\n    - "))
-        if len(indtokens) > 0
-            call insert(all_tokens, indtokens)
         endif
 
         let i = len(indtokens) - 1
@@ -578,7 +611,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 if ret | return res | endif
 
             elseif token == 'fun'
-                let next_indtoken = s:NextToken(all_tokens, i)
+                let next_indtoken = s:NextToken(lnum, i)
                 call s:Log('    Next indtoken = ' . s:L2s(next_indtoken))
 
                 if !empty(next_indtoken) && s:GetTokenFromIndtokens(next_indtoken) == '('
@@ -879,7 +912,9 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
         call s:Log('  Line analyzed. abscol=' . abscol)
 
-        if empty(stack) && abscol != -1 && !string_continuation && !atom_continuation
+        if empty(stack) && abscol != -1 &&
+         \ (!empty(indtokens) && indtokens[0][0] != '<string_end>' &&
+         \                       indtokens[0][0] != '<quoted_atom_end>')
             call s:Log('    Empty stack at the beginning of the line -> return')
             return abscol
         endif
@@ -895,6 +930,11 @@ endfunction
 " --------------------- "
 
 function! ErlangIndent()
+
+    if !exists('g:erlang_indent_external_cache_handling') ||
+     \ g:erlang_indent_external_cache_handling == 0
+        call ClearErlangParseCache()
+    endif
 
     let currline = getline(v:lnum)
     call s:Log('Indenting line ' . v:lnum . ': ' . currline)
