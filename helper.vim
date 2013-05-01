@@ -66,7 +66,7 @@ function! IndentCurrentBufferPerf(use_cache)
 endfunction
 
 " Show tokens in current line
-noremap <buffer> <F5> :call ErlangAnalyzeCurrentLine()<cr>
+noremap <buffer> <F5> :call ErlangShowTokensInCurrentLine()<cr>
 
 " --------- "
 " Debugging "
