@@ -1513,268 +1513,268 @@ f() ->
 catch_example() ->
 
     % simple examples
-catch 1 + 2,
-      A = (catch 1 + 2),
-      A = catch 1 + 2, % syntax error
+    catch 1 + 2,
+    A = (catch 1 + 2),
+    A = catch 1 + 2, % syntax error
 
-                % catch after Variable
-                try X + B
-                catch X
-                end,
+    % catch after Variable
+    try X + B
+    catch X
+    end,
 
-                % catch after 'after'
-                try X
-                after
-                catch A
-                end,
+    % catch after 'after'
+    try X
+    after
+        catch A
+    end,
 
-                try
-                    X 
-                after catch A,
-                            B
-                end,
+    try
+        X 
+    after catch A,
+          B
+    end,
 
-                % catch after 'begin'
-                begin
-                                        catch X
-                end,
+    % catch after 'begin'
+    begin
+        catch X
+    end,
 
-                % catch after 'case'
-                case
-                                        catch X
-                of
-                    X when A ->
-                                        catch X
-                end,
+    % catch after 'case'
+    case
+        catch X
+    of
+        X when A ->
+            catch X
+    end,
 
-                case catch X of
-                    X when A ->
-                                        catch X
-                end,
+    case catch X of
+        X when A ->
+            catch X
+    end,
 
-                % catch after 'catch'
+    % catch after 'catch'
 
-                        catch catch 1,
+    catch catch 1,
 
-                                    % catch after 'try'
+    % catch after 'try'
 
-                                    try
-                                    catch X
-                                    after
-                                        Y
-                                    end,
+    try
+        catch X
+    after
+        Y
+    end,
 
-                                    try
-                                    catch X
-                                    catch
-                                        Y -> Y
-                                    end,
+    try
+        catch X
+    catch
+        Y -> Y
+    end,
 
-                                    % catch after atom
-                                    try atom
-                                    catch X
-                                    end,
+    % catch after atom
+    try atom
+    catch X
+    end,
 
-                                    % catch after 'end'
-                                    try
-                                        begin
-                                            A
-                                        end
-                                    catch X
-                                    end,
+    % catch after 'end'
+    try
+        begin
+            A
+        end
+    catch X
+    end,
 
-                                    % catch after ')', ']', '}'
-                                    try
-                                        (A)
-                                    catch X
-                                    end,
+    % catch after ')', ']', '}'
+    try
+        (A)
+    catch X
+    end,
 
-                                    try
-                                        [A]
-                                    catch X
-                                    end,
+    try
+        [A]
+    catch X
+    end,
 
-                                    try
-                                        {A}
-                                    catch X
-                                    end,
+    try
+        {A}
+    catch X
+    end,
 
-                                    % catch after strings an quoted atoms
-                                    try
-                                        "text"
-                                    catch X
-                                    end,
+    % catch after strings an quoted atoms
+    try
+        "text"
+    catch X
+    end,
 
-                                    try
-                                        'atom'
-                                    catch X
-                                    end,
+    try
+        'atom'
+    catch X
+    end,
 
-                                    try
-                                        "text
+    try
+        "text
         text"
-                                    catch X
-                                    end,
+    catch X
+    end,
 
-                                    try
-                                        'atom
+    try
+        'atom
         atom'
-                                    catch X
-                                    end,
+    catch X
+    end,
 
-                                    % catch after '(', '[', '{'
-                                    (catch 1 + 2),
-                                    [catch 1 + 2],
-                                    {catch 1 + 2},
+    % catch after '(', '[', '{'
+    (catch 1 + 2),
+    [catch 1 + 2],
+    {catch 1 + 2},
 
-                                    % catch after comma
-                                    begin
-                                        begin
-                                            X
-                                        end,
-                                        catch X
-                                    end,
+    % catch after comma
+    begin
+        begin
+            X
+        end,
+        catch X
+    end,
 
-                                    case X of
-                                        X when A ->
-                                            X,
-                                        catch X;
-                                        X ->
-                                                  Y
-                                        end,
+    case X of
+        X when A ->
+            X,
+            catch X;
+        X ->
+            Y
+    end,
 
 
-                                        case X of
-                                            X when A -> X,
-                                        catch X;
-                                            X ->
-                                                  Y
-                                        end,
+    case X of
+        X when A -> X,
+                    catch X;
+        X ->
+            Y
+    end,
 
-                                        % catch after '->'
+    % catch after '->'
 
-                                        case X of
-                                            X when A ->
-                                        catch X
-                                        end,
+    case X of
+        X when A ->
+            catch X
+    end,
 
-                                        case X of
-                                            X when A ->
-                                        catch X;
-                                            X ->
-                                                  Y
-                                        end,
+    case X of
+        X when A ->
+            catch X;
+        X ->
+            Y
+    end,
 
-                                        fun() ->
-                                        catch X;
-                                           () ->
-                                        catch Y
-                                        end,
+    fun() ->
+            catch X;
+       () ->
+            catch Y
+    end,
 
-                                        % catch after ')'
-                                        try
-                                            X
-                                        of
-                                            A -> B;
-                                            C -> (D)
-                                        catch
-                                            _:_ -> X
-                                        end,
+    % catch after ')'
+    try
+        X
+    of
+        A -> B;
+        C -> (D)
+    catch
+        _:_ -> X
+    end,
 
-                                        % catch after variable
-                                        try
-                                            X
-                                        of
-                                            A when Y -> B;
-                                            C when X -> D
-                                        catch
-                                            _:_ -> X
-                                        end,
+    % catch after variable
+    try
+        X
+    of
+        A when Y -> B;
+        C when X -> D
+    catch
+        _:_ -> X
+    end,
 
-                                        ok.
+    ok.
 
 catch_after_other_keywords() ->
 
     try X and
-    catch A
+        catch A
     catch
         X
     end,
 
     try X andalso
-    catch A
+        catch A
     catch
         X
     end,
 
     try X band
-    catch A
+        catch A
     catch
         X
     end,
 
     try bnot
-    catch A
+        catch A
     catch
         X
     end,
 
     try X bor
-    catch A
+        catch A
     catch
         X
     end,
 
     try X bsl
-    catch A
+        catch A
     catch
         X
     end,
 
     try X bsr
-    catch A
+        catch A
     catch
         X
     end,
 
     try X bxor
-    catch A
+        catch A
     catch
         X
     end,
 
     try X div
-    catch A
+        catch A
     catch
         X
     end,
 
     try not
-    catch A
+        catch A
     catch
         X
     end,
 
     try X or
-    catch A
+        catch A
     catch
         X
     end,
 
     try X orelse
-    catch A
+        catch A
     catch
         X
     end,
 
     try X rem
-    catch A
+        catch A
     catch
         X
     end,
 
     try X xor
-    catch A
+        catch A
     catch
         X
     end,

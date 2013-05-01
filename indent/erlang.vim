@@ -199,22 +199,28 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation, tabs
                 call add(indtokens, ['.', vcol])
             endif
 
-        " Two-character tokens: ->, <<, >>
-        elseif i + 1 < linelen
-            let two_chars = a:line[i : i + 1]
-            if index(['->', '<<', '>>', '||'], two_chars) != -1
-                " We recognized a two-character token
-                call add(indtokens, [two_chars, vcol])
-                let next_i = i + 2
-            else
-                " Other character
-                call add(indtokens, [a:line[i], vcol])
-                let next_i = i + 1
-            endif
+        " Equal sign
+        elseif a:line[i] == '='
+            " This is handled separately so that "=<<" will be parsed as
+            " ['=', '<<'] instead of ['=<', '<']. Although Erlang parses it
+            " currently in the latter way, that may be fixed some day.
+            call add(indtokens, [a:line[i], vcol])
+            let next_i = i + 1
 
+        " Three-character tokens
+        elseif i + 1 < linelen &&
+             \ index(['=:=', '=/='], a:line[i : i + 1]) != -1
+            call add(indtokens, [a:line[i : i + 1], vcol])
+            let next_i = i + 2
+
+        " Two-character tokens
+        elseif i + 1 < linelen &&
+             \ index(['->', '<<', '>>', '||', '==', '/=', '=<', '>=', '++', '--', '::'], a:line[i : i + 1]) != -1
+            call add(indtokens, [a:line[i : i + 1], vcol])
+            let next_i = i + 2
+
+        " Other character: , ; < > ( ) [ ] { } # + - * / : ? = !
         else
-
-            " Other character
             call add(indtokens, [a:line[i], vcol])
             let next_i = i + 1
 
@@ -393,25 +399,82 @@ function! s:ParseStoreLine(lnum, direction)
     return [lnum, indtokens]
 endfunction
 
-function! s:NextToken(lnum, i)
-    call s:Log('    NextToken called: lnum=' . a:lnum . ', i =' . a:i)
+function! s:FindIndToken(lnum, dir)
+    let lnum = a:lnum
+    while 1
+        let lnum += (a:dir == 'up' ? -1 : 1)
+        let [lnum, indtokens] = s:ParseStoreLine(lnum, a:dir)
+        if lnum == 0
+            " We hit the beginning or end of the file
+            return []
+        elseif !empty(indtokens)
+            return indtokens[a:dir == 'up' ? -1 : 0]
+        endif
+    endwhile
+endfunction
+
+function! s:PrevIndToken(lnum, i)
+    call s:Log('    PrevIndToken called: lnum=' . a:lnum . ', i =' . a:i)
+
+    " If the current line has a previous token, return that
+    if a:i > 0
+        return s:all_tokens[a:lnum][a:i - 1]
+    else
+        return s:FindIndToken(a:lnum, 'up')
+    endif
+endfunction
+
+function! s:NextIndToken(lnum, i)
+    call s:Log('    NextIndToken called: lnum=' . a:lnum . ', i =' . a:i)
 
     " If the current line has a next token, return that
     if len(s:all_tokens[a:lnum]) > a:i + 1
         return s:all_tokens[a:lnum][a:i + 1]
+    else
+        return s:FindIndToken(a:lnum, 'down')
+    endif
+endfunction
+
+function! s:IsCatchStandalone(lnum, i)
+    call s:Log('    IsCatchStandalone called: lnum=' . a:lnum . ', i=' . a:i)
+    let prev_indtoken = s:PrevIndToken(a:lnum, a:i)
+
+    " If we hit the beginning of the file, it is not a catch in a try block
+    if prev_indtoken == []
+        return 1
     endif
 
-    let lnum = a:lnum
-    while 1
-        let lnum += 1
-        let [lnum, indtokens] = s:ParseStoreLine(lnum, 'down')
-        if lnum == 0
-            " End of file
-            return []
-        elseif !empty(indtokens)
-            return indtokens[0]
+    let prev_token = prev_indtoken[0]
+
+    if prev_token =~# '[A-Z_@]'
+        let is_standalone = 0
+    elseif prev_token =~# '[a-z]'
+        if index(['after', 'and', 'andalso', 'band', 'begin', 'bnot', 'bor',
+         \        'bsl', 'bsr', 'bxor', 'case', 'catch', 'div', 'not', 'or',
+         \        'orelse', 'rem', 'try', 'xor'], prev_token) != -1
+            " If catch is after these keywords, it is standalone
+            let is_standalone = 1
+        else
+            " If catch is after another keyword (e.g. 'end') or an atom, it is
+            " part of try-catch.
+            "
+            " Keywords:
+            " - may precede 'catch': end
+            " - may not precede 'catch': fun if of receive when 
+            " - unused: cond let query
+            let is_standalone = 0
         endif
-    endwhile
+    elseif index([')', ']', '}', '<string>', '<string_end>', '<quoted_atom>',
+         \        '<quoted_atom_end>', '$.'], prev_token) != -1
+        let is_standalone = 0
+    else
+        "Including: -> == /= =< < >= > =:= =/= + - * / ++ -- :: < > ; ( [ { ? = ! .
+        let is_standalone = 1
+    endif
+
+    call s:Log('   "catch" preceded by "' . prev_token  . '" -> catch ' .
+       \       (is_standalone ? 'is standalone' : 'belongs to try-catch'))
+    return is_standalone
 
 endfunction
 
@@ -508,7 +571,8 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
             " receive BRANCHES after BRANCHES end
 
             " This branch is not Emacs-compatible
-            elseif (token == 'of' || token == 'receive' || token == 'after' || token == 'catch' || token == 'if') &&
+            elseif (token == 'of' || token == 'receive' || token == 'after' || token == 'if' ||
+                 \  (token == 'catch' && !s:IsCatchStandalone(lnum, i))) &&
                  \ !last_token_of_line &&
                  \ (empty(stack)  || stack == ['when']|| stack == ['->'] || stack == ['->', ';'])
 
@@ -604,7 +668,7 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 if ret | return res | endif
 
             elseif token == 'fun'
-                let next_indtoken = s:NextToken(lnum, i)
+                let next_indtoken = s:NextIndToken(lnum, i)
                 call s:Log('    Next indtoken = ' . s:L2s(next_indtoken))
 
                 if !empty(next_indtoken) && next_indtoken[0] == '('
@@ -853,7 +917,8 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                     return s:UnexpectedToken(token, stack)
                 endif
 
-            elseif token == 'of' || token == 'catch' || token == 'after'
+            elseif token == 'of' || token == 'after' ||
+                 \ (token == 'catch' && !s:IsCatchStandalone(lnum, i))
 
                 if token == 'after'
                     " If LTI is between an 'after' and the corresponding
@@ -864,8 +929,6 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
 
                 if empty(stack) || stack[0] == '->' || stack[0] == 'when'
                     call s:Push(stack, token)
-                elseif token == 'catch'
-                    " Pass: 'catch' can be a 'catch' expression, which is always ok.
                 elseif stack[0] == 'catch' || stack[0] == 'after' || stack[0] == 'end'
                     " Pass: From the indentation point of view, the keyword
                     " (of/catch/after/end) before the LTI is what counts, so
@@ -938,7 +1001,12 @@ function! ErlangIndent()
     endif
 
     let ml = matchlist(currline, '^\s*\(\%(end\|of\|catch\|after\)\>\|[)\]}]\|>>\)')
-    if empty(ml)
+
+    " If the line has a special beginning, but not a standalone catch
+    if !empty(ml) && !(ml[1] == 'catch' && s:IsCatchStandalone(v:lnum, 0))
+        call s:Log("  Line type = 'end'")
+        let new_col = s:ErlangCalcIndent(v:lnum - 1, [ml[1], 'align_to_begin_element'], [])
+    else
         call s:Log("  Line type = 'normal'")
 
         if currline =~# '^\s*('
@@ -951,14 +1019,11 @@ function! ErlangIndent()
         if currline =~# '^\s*when\>'
             let new_col += 2
         endif
-
-    else
-        call s:Log("  Line type = 'end'")
-        let new_col = s:ErlangCalcIndent(v:lnum - 1, [ml[1], 'align_to_begin_element'], [])
     endif
 
     if new_col < -1
         call s:Log('WARNING: returning new_col == ' . new_col)
+        return g:erlang_unexpected_token_indent
     endif
 
     return new_col
