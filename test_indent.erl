@@ -1522,6 +1522,11 @@ catch_example() ->
     catch X
     end,
 
+    % catch after number
+    try 1 + 2
+    catch X
+    end,
+
     % catch after 'after'
     try X
     after
@@ -1572,6 +1577,10 @@ catch_example() ->
 
     % catch after atom
     try atom
+    catch X
+    end,
+
+    try atom@
     catch X
     end,
 

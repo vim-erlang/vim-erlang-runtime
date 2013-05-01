@@ -175,8 +175,8 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation, tabs
                 call add(indtokens, ['<quoted_atom>', vcol])
             endif
 
-        " Keyword or atom or variable token
-        elseif a:line[i] =~# '[a-zA-Z_@]'
+        " Keyword or atom or variable token or number
+        elseif a:line[i] =~# '[a-zA-Z_@0-9]'
             let next_i = matchend(a:line, '[[:alnum:]_@:]*\%(\s*#\s*[[:alnum:]_@:]*\)\=', i + 1)
             call add(indtokens, [a:line[(i):(next_i - 1)], vcol])
 
@@ -446,7 +446,7 @@ function! s:IsCatchStandalone(lnum, i)
 
     let prev_token = prev_indtoken[0]
 
-    if prev_token =~# '[A-Z_@]'
+    if prev_token =~# '[A-Z_@0-9]'
         let is_standalone = 0
     elseif prev_token =~# '[a-z]'
         if index(['after', 'and', 'andalso', 'band', 'begin', 'bnot', 'bor',
@@ -601,13 +601,13 @@ function! s:ErlangCalcIndent2(lnum, stack, indtokens)
                 " stack = ['->', ';']  =>  LTI is a condition
                 " stack = ['when']  =>  LTI is a guard
                 if empty(stack) || stack == ['->', ';']
-                    call s:Log('    LTI is in a condition after "of" -> return')
+                    call s:Log('    LTI is in a condition after "of/receive/after/if/catch" -> return')
                     return abscol
                 elseif stack == ['->']
-                    call s:Log('    LTI is in a branch after "of" -> return')
+                    call s:Log('    LTI is in a branch after "of/receive/after/if/catch" -> return')
                     return abscol + &sw
                 elseif stack == ['when']
-                    call s:Log('    LTI is in a guard after "of" -> return')
+                    call s:Log('    LTI is in a guard after "of/receive/after/if/catch" -> return')
                     return abscol + &sw
                 else
                     return s:UnexpectedToken(token, stack)
