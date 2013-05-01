@@ -219,7 +219,7 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation, tabs
             call add(indtokens, [a:line[i : i + 1], vcol])
             let next_i = i + 2
 
-        " Other character: , ; < > ( ) [ ] { } # + - * / : ? = !
+        " Other character: , ; < > ( ) [ ] { } # + - * / : ? = ! |
         else
             call add(indtokens, [a:line[i], vcol])
             let next_i = i + 1
@@ -468,7 +468,7 @@ function! s:IsCatchStandalone(lnum, i)
          \        '<quoted_atom_end>', '$.'], prev_token) != -1
         let is_standalone = 0
     else
-        "Including: -> == /= =< < >= > =:= =/= + - * / ++ -- :: < > ; ( [ { ? = ! .
+        "Including: -> == /= =< < >= > =:= =/= + - * / ++ -- :: < > ; ( [ { ? = ! . |
         let is_standalone = 1
     endif
 
