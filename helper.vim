@@ -57,7 +57,7 @@ function! IndentCurrentBufferPerf(use_cache)
     if a:use_cache
         let g:erlang_indent_external_cache_handling = 1
     endif
-    call ClearErlangParseCache()
+    call ClearErlangTokenCache()
     call DeleteErlangLog()
     let start = reltime()
     normal mkHmlggvG=`lzt`k
