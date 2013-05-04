@@ -290,11 +290,20 @@ endfunction
 " The Erlang token cache: an `lnum -> indtokens` dictionary that stores the
 " tokenized lines.
 let s:all_tokens = {}
+let s:file_name = ''
+let s:last_changedtick = -1
 
 " Purpose:
-"   Clear the Erlang token cache.
-function! ClearErlangTokenCache()
-  let s:all_tokens = {}
+"   Clear the Erlang token cache if we have a different file or the file has
+"   been changed since the last indentation.
+function! s:ClearTokenCacheIfNeeded()
+  let file_name = expand('%:p')
+  if file_name != s:file_name ||
+   \ b:changedtick != s:last_changedtick
+    let s:file_name = file_name
+    let s:last_changedtick = b:changedtick
+    let s:all_tokens = {}
+  endif
 endfunction
 
 " Purpose:
@@ -1171,10 +1180,7 @@ endfunction
 
 function! ErlangIndent()
 
-  if !exists('g:erlang_indent_external_cache_handling') ||
-        \ g:erlang_indent_external_cache_handling == 0
-    call ClearErlangTokenCache()
-  endif
+  call s:ClearTokenCacheIfNeeded()
 
   let currline = getline(v:lnum)
   call s:Log('Indenting line ' . v:lnum . ': ' . currline)
