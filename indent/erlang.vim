@@ -52,12 +52,6 @@ function! s:Log(s)
   endif
 endfunction
 
-" Purpose:
-"   Convert a list to a string.
-function! s:L2s(list)
-  return ''.join([a:list])
-endfunction
-
 " Line tokenizer library {{{1
 " ======================
 
@@ -273,7 +267,7 @@ endfunction
 "   stack: [token]
 "   token: string
 function! s:Push(stack, token)
-  call s:Log('    Stack Push: ' . a:token . ' into ' . s:L2s(a:stack))
+  call s:Log('    Stack Push: ' . a:token . ' into ' . string(a:stack))
   call insert(a:stack, a:token)
 endfunction
 
@@ -286,7 +280,7 @@ endfunction
 "   token: string -- the removed element
 function! s:Pop(stack)
   let head = remove(a:stack, 0)
-  call s:Log('    Stack Pop: ' . head . ' from ' . s:L2s(a:stack))
+  call s:Log('    Stack Pop: ' . head . ' from ' . string(a:stack))
   return head
 endfunction
 
@@ -433,7 +427,7 @@ endfunction
 "   indent: integer
 function! s:UnexpectedToken(token, stack)
   call s:Log('    Unexpected token ' . a:token . ', stack = ' .
-            \s:L2s(a:stack) . ' -> return')
+            \string(a:stack) . ' -> return')
   return g:erlang_unexpected_token_indent
 endfunction
 
@@ -699,7 +693,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
     while i >= 0
 
       let [token, curr_col] = indtokens[i]
-      call s:Log('  Analyzing the following token: ' . s:L2s(indtokens[i]))
+      call s:Log('  Analyzing the following token: ' . string(indtokens[i]))
 
       if token == '<end_of_clause>'
         let [ret, res] = s:BeginningOfClauseFound(stack, token, abs_col)
@@ -845,7 +839,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
 
       elseif token == 'fun'
         let next_indtoken = s:NextIndToken(lnum, i)
-        call s:Log('    Next indtoken = ' . s:L2s(next_indtoken))
+        call s:Log('    Next indtoken = ' . string(next_indtoken))
 
         if !empty(next_indtoken) && next_indtoken[0] == '('
           " We have an anonymous function definition
@@ -1136,7 +1130,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
         return abs_col
 
       else
-        call s:Log('    Misc token, stack unchanged = ' . s:L2s(stack))
+        call s:Log('    Misc token, stack unchanged = ' . string(stack))
 
       endif
 
