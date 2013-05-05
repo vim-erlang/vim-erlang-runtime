@@ -75,7 +75,7 @@ endif
 
 if ! exists ("erlang_functions")
   " Functions call
-  syn match   erlangFCall      "\%(\w\+\s*\.\s*\)*\w\+\s*[:@]\s*\w\+"
+  syn match   erlangFCall      "\%(\w\+\s*\.\s*\)*\w\+\s*[:]\s*\w\+"
 
   " build-in-functions (BIFs)
   syn keyword erlangBIF        abs alive apply atom_to_list
