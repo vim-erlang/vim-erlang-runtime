@@ -704,7 +704,8 @@ function! s:SearchPair(lnum, curr_col, start, middle, end)
   let [lnum_new, col1_new] = 
       \searchpairpos(a:start, a:middle, a:end, 'bW',
                     \'synIDattr(synID(line("."), col("."), 0), "name") ' .
-                    \'=~? "string\\|quotedatom\\|comment\\|erlangChar"',
+                    \'=~? "string\\|quotedatom\\|todo\\|comment\\|' . 
+                    \'erlangmodifier"',
                     \0, g:erlang_indent_searchpair_timeout)
   return [lnum_new, col1_new - 1]
 endfunction
