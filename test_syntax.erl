@@ -277,10 +277,12 @@ variables() ->
 func_calls() ->
 
     func(),
-
     mod:func(),
 
-    mod : func(),
+    1mod:func(), % bad
+    @mod:func(), % bad
+    m@d:f@nc(), % good
+    mod : func(), % good
 
     mod
     :
@@ -635,12 +637,12 @@ process_dictionary_bifs() ->
 %%% ===========================================================================
 
 distribution_bifs() ->
-    erlang:disconnect_node(Node),
+    disconnect_node(Node),
     erlang:get_cookie(),
+    erlang:set_cookie(Node, Cookie),
     is_alive(),
     monitor_node(Node, true),
     node(),
     node(Arg),
     nodes(),
-    nodes(Arg),
-    set_cookie(Node, Cookie).
+    nodes(Arg).

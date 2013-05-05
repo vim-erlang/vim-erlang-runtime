@@ -8,17 +8,16 @@
 
 " Customization:
 "
-" There are three sets of highlighting in here:
-" One is "erlang_characters", second is "erlang_functions" and third
-" is "erlang_keywords".
-" If you want to disable keywords highlighting, put in your .vimrc:
-"       let erlang_keywords=1
-" If you want to disable erlang BIF highlighting, put in your .vimrc
-" this:
-"       let erlang_functions=1
-" If you want to disable special characters highlighting, put in
-" your .vimrc:
-"       let erlang_characters=1
+" There are two optional sets of highlighting:
+"
+" 1. The BIFs are highlighted by default. To disable this, put this in your
+"    vimrc:
+"
+"      let g:erlang_highlight_bifs = 0
+"
+" 2. To enable highlighting some speciak atoms, put this in your vimrc:
+"
+"      let g:erlang_highlight_special_atoms = 1
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -35,110 +34,52 @@ if version >= 600
   setlocal iskeyword+=$,@-@
 endif
 
-if ! exists ("erlang_characters")
+" Comments
+syn match erlangComment             '%.*$' contains=erlangCommentAnnotation,erlangTodo
+syn match erlangCommentAnnotation   ' \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|private\|equiv\|spec\|throws\)' contained
+syn match erlangCommentAnnotation   /`[^']*'/ contained
+syn keyword erlangTodo              TODO FIXME XXX contained
 
-  " Basic elements
-  syn match   erlangSpecialCharacter ":\|_\|@\|\\\|\"\|\."
-  syn match   erlangSeparator        "(\|)\|{\|}\|\[\|]\||\|||\|;\|,\|?\|->\|#" contained
+" Numbers (minimum base is 2, maximum is 36.)
+syn match   erlangNumberInteger     '\<\d\+\>'
+syn match   erlangNumberInteger     '\<\%([2-9]\|[12]\d\|3[0-6]\)\+#[[:alnum:]]\+\>'
+syn match   erlangNumberFloat       '\<\d\+\.\d\+\%([eE][+-]\=\d\+\)\=\>'
 
-  " Comments
-  syn match   erlangComment          "%.*$" contains=erlangCommentAnnotation,erlangTodo
-  syn match   erlangCommentAnnotation       " \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|private\|equiv\|spec\|throws\)" contained
-  syn match   erlangCommentAnnotation       "`[^']*'" contained
-  syn keyword erlangTodo             TODO FIXME XXX contained
+" Strings, atoms, characters
+syn region  erlangString            start=/"/ end=/"/ contains=erlangStringModifier
+syn region  erlangQuotedAtom        start=/'/ end=/'/ contains=erlangQuotedAtomModifier
+syn match   erlangStringModifier     '\~\a\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)' contained
+syn match   erlangQuotedAtomModifier '\~\a\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)' contained
+syn match   erlangModifier           '\$\%([^\\]\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)\)'
 
-  " Strings, atoms, characters
-  syn region  erlangString           start=/"/ end=/"/ contains=erlangStringModifier
-  syn region  erlangQuotedAtom       start=/'/ end=/'/ contains=erlangQuotedAtomModifier
-  syn match   erlangStringModifier     '\~\a\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)' contained
-  syn match   erlangQuotedAtomModifier '\~\a\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)' contained
-  syn match   erlangModifier           '\$\%([^\\]\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)\)'
+" Operators
+syn match   erlangOperator          '==\|=:=\|/=\|=/=\|<\|=<\|>\|>=\|++\|--\|=\|!\|<-\|+\|-\|\*\|\/'
+syn keyword erlangOperator          div rem or xor bor bxor bsl bsr and band not bnot andalso orelse
 
-  " Operators
-  syn match   erlangOperator         "+\|-\|\*\|\/"
-  syn keyword erlangOperator         div rem or xor bor bxor bsl bsr
-  syn keyword erlangOperator         and band not bnot andalso orelse
-  syn match   erlangOperator         "==\|/=\|=:=\|=/=\|<\|=<\|>\|>="
-  syn match   erlangOperator         "++\|--\|=\|!\|<-"
+" Separators
+syn match erlangSeparator           '(\|)\|{\|}\|\[\|]\||\|||\|;\|,\|?\|#'
+syn match erlangRightArrow          '->'
 
-  " Integers (minimum base is 2, maximum is 36.)
-  syn match   erlangNumberInteger '\<\d\+\>'
-  syn match   erlangNumberInteger '\<\%([2-9]\|[12]\d\|3[0-6]\)\+#[[:alnum:]]\+\>'
-  syn match   erlangNumberFloat   '\<\d\+\.\d\+\%([eE][+-]\=\d\+\)\=\>'
+" Functions call
+syn match   erlangFCall             '\<\%(\a[[:alnum:]@]*\s*\.\s*\)*\a[[:alnum:]@]*\s*:\s*\a[[:alnum:]@]*\>'
 
-  " Ignore '_' and '-' in words
-  syn match   erlangWord             "\h\+[[:alnum:]@]*"
-endif
+" Constants and Directives
+syn match   erlangDirective         '-\%(behaviour\|behavior\|compile\|define\|else\|endif\|export\|file\|ifdef\|ifndef\|import\|include_lib\|include\|module\|record\|undef\|author\|copyright\|doc\|vsn\|on_load\|export_type\)\>'
 
-if ! exists ("erlang_functions")
-  " Functions call
-  syn match   erlangFCall      "\%(\w\+\s*\.\s*\)*\w\+\s*[:]\s*\w\+"
+" Keywords
+syn keyword erlangKeyword           after begin case catch cond end fun if let of query receive when try
+syn keyword erlangExtra             true false
+
+
+if !exists("g:erlang_highlight_bifs") || g:erlang_highlight_bifs == 1
 
   " build-in-functions (BIFs)
-  syn keyword erlangBIF        abs alive apply atom_to_list
-  syn keyword erlangBIF        binary_to_list binary_to_term
-  syn keyword erlangBIF        concat_binary
-  syn keyword erlangBIF        date disconnect_node
-  syn keyword erlangBIF        element erase exit
-  syn keyword erlangBIF        float float_to_list
-  syn keyword erlangBIF        get get_keys group_leader
-  syn keyword erlangBIF        halt hd
-  syn keyword erlangBIF        integer_to_list is_alive
-  syn keyword erlangBIF        length link list_to_atom list_to_binary
-  syn keyword erlangBIF        list_to_float list_to_integer list_to_pid
-  syn keyword erlangBIF        list_to_tuple load_module
-  syn keyword erlangBIF        make_ref monitor_node
-  syn keyword erlangBIF        node nodes now
-  syn keyword erlangBIF        open_port
-  syn keyword erlangBIF        pid_to_list process_flag
-  syn keyword erlangBIF        process_info process put
-  syn keyword erlangBIF        register registered round
-  syn keyword erlangBIF        self setelement size spawn
-  syn keyword erlangBIF        spawn_link split_binary statistics
-  syn keyword erlangBIF        term_to_binary throw time tl trunc
-  syn keyword erlangBIF        tuple_to_list
-  syn keyword erlangBIF        unlink unregister
-  syn keyword erlangBIF        whereis
+  syn keyword erlangBIF        abs alive apply atom_to_binary atom_to_list binary_part binary_to_atom binary_to_existing_atom binary_to_float binary_to_integer bitstring_to_list binary_to_list binary_to_term bit_size byte_size check_old_code check_process_code concat_binary date delete_module demonitor disconnect_node element erase error exit float float_to_binary float_to_list garbage_collect get get_keys group_leader halt hd integer_to_binary integer_to_list iolist_to_binary iolist_size is_alive is_atom is_binary is_bitstring is_boolean is_float is_function is_integer is_list is_number is_pid is_port is_process_alive is_record is_reference is_tuple length link list_to_atom list_to_binary list_to_bitstring list_to_existing_atom list_to_float list_to_integer list_to_pid list_to_tuple load_module make_ref max min module_loaded monitor monitor_node node nodes now open_port pid_to_list port_close port_command port_connect pre_loaded process_flag process_flag process_info process purge_module put register registered round self setelement size spawn spawn_link spawn_monitor spawn_opt split_binary statistics term_to_binary throw time tl trunc tuple_size tuple_to_list unlink unregister whereis
 
-  " Other BIFs
-  syn keyword erlangBIF        atom binary constant function integer
-  syn keyword erlangBIF        list number pid ports port_close port_info
-  syn keyword erlangBIF        reference record
-
-  " erlang:BIFs
-  syn keyword erlangBIF        check_process_code delete_module
-  syn keyword erlangBIF        get_cookie hash math module_loaded
-  syn keyword erlangBIF        preloaded processes purge_module set_cookie
-  syn keyword erlangBIF        set_node
-
-  " functions of math library
-  syn keyword erlangFunction   acos asin atan atan2 cos cosh exp
-  syn keyword erlangFunction   log log10 pi pow power sin sinh sqrt
-  syn keyword erlangFunction   tan tanh
-
-  " Other functions
-  syn keyword erlangFunction   call module_info parse_transform
-  syn keyword erlangFunction   undefined_function
-
-  " Modules
-  syn keyword erlangModule     error_handler
 endif
 
-if ! exists ("erlang_keywords")
-  " Constants and Directives
-  syn match   erlangDirective  "-behaviour\|-behavior"
-  syn match   erlangDirective  "-compile\|-define\|-else\|-endif\|-export\|-file"
-  syn match   erlangDirective  "-ifdef\|-ifndef\|-import\|-include_lib\|-include"
-  syn match   erlangDirective  "-module\|-record\|-undef"
 
-  syn match   erlangConstant   "-author\|-copyright\|-doc\|-vsn"
-
-  " Keywords
-  syn keyword erlangKeyword    after begin case catch
-  syn keyword erlangKeyword    cond end fun if
-  syn keyword erlangKeyword    let of query receive
-  syn keyword erlangKeyword    when
-  syn keyword erlangKeyword    try
+if exists("g:erlang_highlight_special_atoms") && g:erlang_highlight_special_atoms == 1
 
   " Processes
   syn keyword erlangProcess    creation current_function dictionary
@@ -168,7 +109,7 @@ if ! exists ("erlang_keywords")
   syn keyword erlangReserved   record record_index record_info
 
   " Extras
-  syn keyword erlangExtra      badarg nocookie false fun true
+  syn keyword erlangExtra      badarg nocookie
 
   " Signals
   syn keyword erlangSignal     badsig kill killed exit normal
@@ -193,9 +134,9 @@ if version >= 508 || !exists ("did_erlang_inits")
   HiLink erlangComment Comment
   HiLink erlangCommentAnnotation Special
   HiLink erlangTodo Todo
-  HiLink erlangSpecialCharacter Special
   HiLink erlangSeparator Normal
   HiLink erlangOperator Operator
+  HiLink erlangRightArrow Operator
 
   HiLink erlangStartString String
   HiLink erlangString String
@@ -209,18 +150,14 @@ if version >= 508 || !exists ("did_erlang_inits")
   HiLink erlangNumberFloat Float
   HiLink erlangNumberHex Number
 
-  HiLink erlangWord Normal
   HiLink erlangModifier Special
 
   " erlang_functions
   HiLink erlangFCall Function
   HiLink erlangBIF Function
-  HiLink erlangFunction Function
-  HiLink erlangModuleFunction Function
 
   " erlang_keywords
   HiLink erlangDirective Type
-  HiLink erlangConstant Type
   HiLink erlangKeyword Keyword
   HiLink erlangProcess Special
   HiLink erlangPort Special
