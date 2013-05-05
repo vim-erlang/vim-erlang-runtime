@@ -22,7 +22,8 @@
 " ==============
 
 " Only load this indent file when no other was loaded
-if exists("b:did_indent")
+" Vim 7 or later is needed
+if exists("b:did_indent") || version < 700
   finish
 else
   let b:did_indent = 1
