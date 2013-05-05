@@ -468,9 +468,9 @@ f(
 
 -type my_fun_type() :: fun()                  %% any function
                            | fun((...) -> Type)     %% any arity, returning Type
-                                        | fun(() -> Type)
-                                        | fun((A) -> Type)
-                                        | fun((A, B) -> Type).
+                                 | fun(() -> Type)
+                                       | fun((A) -> Type)
+                                             | fun((A, B) -> Type).
 -type my_bitstring_type :: <<>>
 | <<_:1>>
 | <<_:_*1>>
@@ -761,7 +761,7 @@ case_example(Signal) ->
     end.
 
 f() ->
-                                        end. % syntax error
+                               end. % syntax error
 
 f() ->
     case X,

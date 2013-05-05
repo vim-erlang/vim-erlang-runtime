@@ -31,23 +31,27 @@ endif
 " Case sensitive
 syn case match
 
+if version >= 600
+  setlocal iskeyword+=$,@-@
+endif
+
 if ! exists ("erlang_characters")
 
   " Basic elements
-  syn match   erlangComment          "%.*$" contains=erlangAnnotation,erlangTodo
-  syn match   erlangAnnotation       " \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|private\|equiv\|spec\|throws\)" contained
-  syn match   erlangAnnotation       "`[^']*'" contained
-  syn keyword erlangTodo             TODO FIXME XXX contained
   syn match   erlangSpecialCharacter ":\|_\|@\|\\\|\"\|\."
   syn match   erlangSeparator        "(\|)\|{\|}\|\[\|]\||\|||\|;\|,\|?\|->\|#" contained
+
+  " Comments
+  syn match   erlangComment          "%.*$" contains=erlangCommentAnnotation,erlangCommentTodo
+  syn match   erlangCommentAnnotation       " \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|private\|equiv\|spec\|throws\)" contained
+  syn match   erlangCommentAnnotation       "`[^']*'" contained
+  syn keyword erlangCommentTodo             TODO FIXME XXX contained
 
   " Strings and atoms
   syn region  erlangString           start=+"+ skip=+\\.+ end=+"+ contains=erlangStringModifier
   syn match   erlangStringModifier   "\~\a\|\\\a\|\\\\" contained
-
   syn region  erlangQuotedAtom       start=+'+ skip=+\\.+ end=+'+ contains=erlangQuotedAtomModifier
   syn match   erlangQuotedAtomModifier "\~\a\|\\\a\|\\\\" contained
-
 
   " Operators
   syn match   erlangOperator         "+\|-\|\*\|\/"
@@ -190,8 +194,8 @@ if version >= 508 || !exists ("did_erlang_inits")
 
   " erlang_characters
   HiLink erlangComment Comment
-  HiLink erlangAnnotation Special
-  HiLink erlangTodo Todo
+  HiLink erlangCommentAnnotation Special
+  HiLink erlangCommentTodo Todo
   HiLink erlangSpecialCharacter Special
   HiLink erlangSeparator Normal
   HiLink erlangOperator Operator
@@ -212,6 +216,7 @@ if version >= 508 || !exists ("did_erlang_inits")
   HiLink erlangNumberHex Number
 
   HiLink erlangWord Normal
+  HiLink erlangChar Special
 
   " erlang_functions
   HiLink erlangFCall Function
