@@ -70,7 +70,7 @@ if ! exists ("erlang_characters")
   " Ignore '_' and '-' in words
   syn match   erlangWord             "\h\+[[:alnum:]@]*"
 
-  syn match   erlangModifier         /\$./
+  syn match   erlangModifier         /\$\\\?./
 endif
 
 if ! exists ("erlang_functions")
