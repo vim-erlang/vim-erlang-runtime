@@ -47,11 +47,12 @@ if ! exists ("erlang_characters")
   syn match   erlangCommentAnnotation       "`[^']*'" contained
   syn keyword erlangTodo             TODO FIXME XXX contained
 
-  " Strings and atoms
-  syn region  erlangString           start=+"+ skip=+\\.+ end=+"+ contains=erlangStringModifier
-  syn match   erlangStringModifier   "\~\a\|\\\a\|\\\\" contained
-  syn region  erlangQuotedAtom       start=+'+ skip=+\\.+ end=+'+ contains=erlangQuotedAtomModifier
-  syn match   erlangQuotedAtomModifier "\~\a\|\\\a\|\\\\" contained
+  " Strings, atoms, characters
+  syn region  erlangString           start=/"/ end=/"/ contains=erlangStringModifier
+  syn region  erlangQuotedAtom       start=/'/ end=/'/ contains=erlangQuotedAtomModifier
+  syn match   erlangStringModifier     '\~\a\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)' contained
+  syn match   erlangQuotedAtomModifier '\~\a\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)' contained
+  syn match   erlangModifier           '\$\%([^\\]\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\^.\|.\)\)'
 
   " Operators
   syn match   erlangOperator         "+\|-\|\*\|\/"
@@ -60,17 +61,13 @@ if ! exists ("erlang_characters")
   syn match   erlangOperator         "==\|/=\|=:=\|=/=\|<\|=<\|>\|>="
   syn match   erlangOperator         "++\|--\|=\|!\|<-"
 
-  " Numbers
-  syn match   erlangNumberInteger    "\d\+" contains=erlangSeparator
-  syn match   erlangNumberFloat1     "\d\+\.\d\+" contains=erlangSeparator
-  syn match   erlangNumberFloat2     "\d\+\(\.\d\+\)\=[eE][+-]\=\d\+\(\.\d\+\)\=" contains=erlangSeparator
-  syn match   erlangNumberFloat3     "\d\+[#]\x\+" contains=erlangSeparator
-  syn match   erlangNumberHex        "$\x\+" contains=erlangSeparator
+  " Integers (minimum base is 2, maximum is 36.)
+  syn match   erlangNumberInteger '\<\d\+\>'
+  syn match   erlangNumberInteger '\<\%([2-9]\|[12]\d\|3[0-6]\)\+#[[:alnum:]]\+\>'
+  syn match   erlangNumberFloat   '\<\d\+\.\d\+\%([eE][+-]\=\d\+\)\=\>'
 
   " Ignore '_' and '-' in words
   syn match   erlangWord             "\h\+[[:alnum:]@]*"
-
-  syn match   erlangModifier         /\$\\\?./
 endif
 
 if ! exists ("erlang_functions")
@@ -209,10 +206,7 @@ if version >= 508 || !exists ("did_erlang_inits")
   HiLink erlangQuotedAtomModifier Special
 
   HiLink erlangNumberInteger Number
-  HiLink erlangNumberFloat1 Float
-  HiLink erlangNumberFloat2 Float
-  HiLink erlangNumberFloat3 Float
-  HiLink erlangNumberFloat4 Float
+  HiLink erlangNumberFloat Float
   HiLink erlangNumberHex Number
 
   HiLink erlangWord Normal

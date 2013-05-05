@@ -37,10 +37,46 @@ number_examples() ->
     $A,
     $\n,
     2#101,
-    16#1f,
+    2#102, % bad
+    8#17,
+    8#19, % bad
+    16#ff,
+    16#fg, % bad
+    17#fg,
     2.3,
     2.3e3,
-    2.3e-3.
+    2e3, % bad
+    2.3e-3,
+    2.3e1.2. % bad
+
+number_with_dollar() ->
+    $\b,
+    $\d,
+    $\e,
+    $\f,
+    $\n,
+    $\r,
+    $\s,
+    $\t,
+    $\v,
+    $\a,
+    $\c,
+    $\1,
+    $\11,
+    $\111,
+    $\1111, % The last digit is not part of the modifier
+    $\88, % "8" is not an octal digit
+    $\x1, % Incorrect
+    $\x11,
+    $\xaF,
+    $\x111, % The last digit is not part of the modifier
+    $\x{1},
+    $\x{abcDEF},
+    $\^a, $\^z,
+    $\^A, $\^Z,
+    $\',
+    $\",
+    $\\.
 
 %%% ===========================================================================
 %%% 2.3 Atom
@@ -98,13 +134,19 @@ escape_sequences() ->
     "\s",
     "\t",
     "\v",
+    "\a", % no such modifier
+    "\c", % no such modifier
     "\1",
     "\11",
     "\111",
+    "\1111", % The last digit is not part of the modifier
+    "\88", % "8" is not an octal digit
+    "\x1", % Incorrect
     "\x11",
+    "\xaF",
+    "\x111", % The last digit is not part of the modifier
     "\x{1}",
-    "\x{11}",
-    "\x{111}",
+    "\x{abcDEF}",
     "\^a \^z ",
     "\^A \^Z",
     "\'",
@@ -126,8 +168,7 @@ escape_sequences() ->
     '\111',
     '\x11',
     '\x{1}',
-    '\x{11}',
-    '\x{111}',
+    '\x{abcDEF}',
     '\^a \^z ',
     '\^A \^Z',
     '\'',
