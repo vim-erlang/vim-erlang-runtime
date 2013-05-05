@@ -2,7 +2,7 @@
 " Language:     Erlang (http://www.erlang.org)
 " Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
 " Former Maintainer:  Kreąimir Marľić (Kresimir Marzic) <kmarzic@fly.srk.fer.hr>
-" Last Update:  2013-Mar-04
+" Last Update:  2013-Mar-05
 " License:      Vim license
 " URL:          https://github.com/hcs42/vim-erlang
 
