@@ -1506,6 +1506,16 @@ f() ->
     end,
     ok.
 
+tricky() ->
+    $(
+    fun % comment
+        (A) ->
+            fun i/0,
+            fun % (
+            i/0
+    end,
+    ok.
+
 %%% ===========================================================================
 %%% 7.18 Catch and Throw
 %%% ===========================================================================
@@ -2310,6 +2320,41 @@ f() ->
      A,
      B
     )
+
+    ok.
+
+tricky() ->
+    begin my_func(blabla, $)) end,
+    my_func(blabla, $)),
+    my_func(blabla, $(),
+    my_func(blabla, $(),
+    my_func(blabla, $)),
+    my_func(blabla),
+
+    begin my_func(
+            blabla,
+            $)
+           )
+    end,
+
+    my_func(
+      blabla,
+      $)
+     ),
+
+    my_func(
+      blabla,
+      $(
+     ),
+
+    my_func(blabla, $(
+           ),
+
+    my_func(blabla, $)
+           ),
+
+    my_func(blabla
+           ),
 
     ok.
 
