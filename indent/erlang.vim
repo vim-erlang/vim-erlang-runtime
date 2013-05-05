@@ -768,7 +768,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
       let [token, curr_vcol, curr_col] = indtokens[i]
       call s:Log('  Analyzing the following token: ' . string(indtokens[i]))
 
-      if len(stack) > 256 " TODO
+      if len(stack) > 256 " TODO: magic number
         return s:IndentError('Stack too long', token, stack)
       endif
 
@@ -1362,69 +1362,6 @@ function! ErlangIndent()
 
   return new_col
 
-endfunction
-
-" Unit tests {{{1
-" ==========
-
-function! s:AssertEqual(a, b)
-  if type(a:a) == type(a:b) && a:a == a:b
-    return 1
-  else
-    let t = ["Test failed: The following values are not equal:\n",
-            \a:a, "\n",
-            \a:b, "\n"]
-    echo join(t, '')
-    return 0
-  endif
-endfunction
-
-function! s:TestGetTokensFromLine()
-
-  call s:AssertEqual(s:GetTokensFromLine('', 0, 0, 4), [])
-
-  " Tabs and spaces
-  call s:AssertEqual(s:GetTokensFromLine("a  b", 0, 0, 4), [
-        \ ['a', 0],
-        \ ['b', 3]])
-
-  call s:AssertEqual(s:GetTokensFromLine("\ta", 0, 0, 4), [
-        \ ['a', 4]])
-
-  call s:AssertEqual(s:GetTokensFromLine(" \t  a", 0, 0, 4), [
-        \ ['a', 6]])
-
-  call s:AssertEqual(s:GetTokensFromLine("a\tb\t\tc", 0, 0, 4), [
-        \ ['a', 0],
-        \ ['b', 4],
-        \ ['c', 12]])
-
-  call s:AssertEqual(s:GetTokensFromLine("\t\"a", 1, 0, 4), [
-        \ ['<string_end>', 2],
-        \ ['a', 5]])
-
-  call s:AssertEqual(s:GetTokensFromLine("\t\"a\tb\"c", 0, 0, 4), [
-        \ ['<string>', 4],
-        \ ['c', 10]])
-
-endfunction
-
-function! TestErlangIndent()
-  call s:TestGetTokensFromLine()
-  echo "Test finished."
-endfunction
-
-function! ErlangShowTokensInLine(line)
-  echo "Line: " . a:line
-  let indtokens = s:GetTokensFromLine(a:line, 0, 0, &tabstop)
-  echo "Tokens:"
-  for it in indtokens
-    echo it
-  endfor
-endfunction
-
-function! ErlangShowTokensInCurrentLine()
-  return ErlangShowTokensInLine(getline('.'))
 endfunction
 
 " Cleanup {{{1

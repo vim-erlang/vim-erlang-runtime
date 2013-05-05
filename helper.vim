@@ -26,9 +26,6 @@ function! RereadIndent()
     let g:erlang_indent_searchpair_timeout = 20000
 endfunction
 
-" Unit tests
-noremap <buffer> <F2> :call TestErlangIndent()<cr>
-
 " Indent the current line
 noremap <buffer> <F3> :call IndentCurrentLinePerf()<cr>
 noremap <buffer> <s-F3> :call IndentCurrentLineLog()<cr>
