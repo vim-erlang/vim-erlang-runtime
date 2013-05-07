@@ -2,7 +2,7 @@
 " Language:     Erlang (http://www.erlang.org)
 " Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
 " Former Maintainer:  Kreąimir Marľić (Kresimir Marzic) <kmarzic@fly.srk.fer.hr>
-" Last Update:  2013-Mar-05
+" Last Update:  2013-Mar-07
 " License:      Vim license
 " URL:          https://github.com/hcs42/vim-erlang
 
@@ -10,12 +10,12 @@
 "
 " There are two optional sets of highlighting:
 "
-" 1. The BIFs are highlighted by default. To disable this, put this in your
-"    vimrc:
+" 1. The BIFs (built-in functions) are highlighted by default. To disable
+"    this, put the following line in your vimrc:
 "
 "      let g:erlang_highlight_bifs = 0
 "
-" 2. To enable highlighting some speciak atoms, put this in your vimrc:
+" 2. To enable highlighting some special atoms, put this in your vimrc:
 "
 "      let g:erlang_highlight_special_atoms = 1
 
