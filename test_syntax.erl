@@ -1,3 +1,10 @@
+%%% Vim syntax highlight example file
+%%%
+%%% Language:   Erlang (http://www.erlang.org)
+%%% Author:     Csaba Hoch <csaba.hoch@gmail.com>
+%%% License:    Vim license (http://vimdoc.sourceforge.net/htmldoc/uganda.html)
+%%% URL:        https://github.com/hcs42/vim-erlang
+
 %%% The organization of this file follows the Erlang Reference Manual:
 %%%
 %%% http://erlang.org/doc/reference_manual/users_guide.html
