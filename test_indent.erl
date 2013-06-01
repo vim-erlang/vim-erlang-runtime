@@ -1138,6 +1138,14 @@ f() ->
     end.
 
 f() ->
+    receive
+        A ->
+            "receive"
+    after
+        T -> T end,
+    ok.
+
+f() ->
     ok, receive
         after
             T -> T

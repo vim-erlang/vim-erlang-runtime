@@ -13,8 +13,8 @@ Vim 7.3.
 The indentation script can be tested in the following way:
 
 - Copy `syntax/erlang.vim` into `~/syntax`.
-- Open `test.erl` in Vim from this directory. (`test.erl` always shows how the
-  Erlang code is indented by the script – not how it should be.)
+- Open `test_indent.erl` in Vim from this directory. (`test_indent.erl` always
+  shows how the Erlang code is indented by the script – not how it should be.)
 - Source `helper.vim` (`:source helper.vim`)
 - Press F1 to load the new indentation (`indent/erlang.vim`).
 - Press F3 to reindent the current line. Press shift-F3 to print a log.
