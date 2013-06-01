@@ -61,7 +61,7 @@ syn match erlangSeparator           '(\|)\|{\|}\|\[\|]\||\|||\|;\|,\|?\|#'
 syn match erlangRightArrow          '->'
 
 " Functions call
-syn match   erlangFCall             '\<\%(\a[[:alnum:]@]*\s*\.\s*\)*\a[[:alnum:]@]*\s*:\s*\a[[:alnum:]@]*\>'
+syn match   erlangModFuncCall       '\<\%(\a[[:alnum:]_@]*\s*\.\s*\)*\a[[:alnum:]_@]*\s*:\s*\a[[:alnum:]_@]*\>'
 
 " Constants and Directives
 syn match   erlangDirective         '-\%(behaviour\|behavior\|compile\|define\|else\|endif\|export\|file\|ifdef\|ifndef\|import\|include_lib\|include\|module\|record\|undef\|author\|copyright\|doc\|vsn\|on_load\|export_type\)\>'
@@ -153,7 +153,7 @@ if version >= 508 || !exists ("did_erlang_inits")
   HiLink erlangModifier Special
 
   " erlang_functions
-  HiLink erlangFCall Function
+  HiLink erlangModFuncCall Function
   HiLink erlangBIF Function
 
   " erlang_keywords
