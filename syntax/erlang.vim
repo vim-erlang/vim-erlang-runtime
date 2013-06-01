@@ -48,6 +48,7 @@ syn match erlangComment           '%.*$' contains=erlangCommentAnnotation,erlang
 syn match erlangCommentAnnotation ' \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|private\|equiv\|spec\|throws\)' contained
 syn match erlangCommentAnnotation /`[^']*'/ contained
 syn keyword erlangTodo            TODO FIXME XXX contained
+syn match erlangShebang           '^#!.*'
 
 " Numbers (minimum base is 2, maximum is 36.)
 syn match erlangNumberInteger '\<\d\+\>'
@@ -157,6 +158,7 @@ if version >= 508 || !exists("did_erlang_inits")
   HiLink erlangComment Comment
   HiLink erlangCommentAnnotation Special
   HiLink erlangTodo Todo
+  HiLink erlangShebang Comment
 
   " Numbers
   HiLink erlangNumberInteger Number
