@@ -81,7 +81,7 @@ syn match erlangGlobalFuncRef  '\<\%(\a[[:alnum:]_@]*\%(\s\|\n\|%.*\n\)*\.\%(\s\
 syn match erlangVariable '\<[A-Z_][[:alnum:]_@]*'
 syn match erlangMacro    '??\=[[:alnum:]_@]\+'
 syn match erlangMacro    '\%(-define(\)\@<=[[:alnum:]_@]\+'
-syn match erlangRecord   '#\s*\l\[[:alnum:]_@]*'
+syn match erlangRecord   '#\s*\l[[:alnum:]_@]*'
 
 " Bitstrings
 syn match erlangBitType '\%(\/\%(\s\|\n\|%.*\n\)*\)\@<=\%(integer\|float\|binary\|bytes\|bitstring\|bits\|binary\|utf8\|utf16\|utf32\|signed\|unsigned\|big\|little\|native\|unit\)\%(\%(\s\|\n\|%.*\n\)*-\%(\s\|\n\|%.*\n\)*\%(integer\|float\|binary\|bytes\|bitstring\|bits\|binary\|utf8\|utf16\|utf32\|signed\|unsigned\|big\|little\|native\|unit\)\)*' contains=erlangComment
