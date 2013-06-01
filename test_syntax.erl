@@ -127,6 +127,12 @@ multiline_string() ->
 bools() ->
     true, false.
 
+true() ->
+    true.
+
+false() ->
+    false.
+
 %%% ===========================================================================
 %%% 2.14 Escape sequences
 %%% ===========================================================================
@@ -199,11 +205,20 @@ escape_sequences() ->
 -behaviour(Behaviour).
 -behavior(Behaviour).
 -file(File, Line).
+-other(File, Line).
 
 macros() ->
     ?FILE, ?LINE.
 
 -export_type([my_struct_type/0, orddict/2]).
+
+-export(Functions). -export(Functions).
+
+-
+export(Functions).
+
+  - % comment
+export(Functions).
 
 %%% ===========================================================================
 %%% 4.3 Comments
@@ -284,7 +299,19 @@ variables() ->
 func_calls() ->
 
     func(),
+    func (),
+
+    func
+    (),
+
+    func % comment
+    (),
+
+    a:b, % bad
+
     mod:func(),
+    my_mod:my_func(),
+    mod_:func_(),
 
     1mod:func(), % bad
     @mod:func(), % bad
@@ -293,7 +320,20 @@ func_calls() ->
 
     mod
     :
+    func(),
+
+    mod % comment
+    : % comment
     func().
+
+function_call_examples() ->
+    ''(),
+    hello(),
+    phone_number(),
+    hello@you(),
+    'Monday'(),
+    'phone number'(),
+    case@case().
 
 %%% ===========================================================================
 %%% 7.7 If
@@ -447,7 +487,51 @@ bit_syntax_types() ->
 
      <<A:1/integer-native-unit:1>>,
 
+     <<A
+       :
+       1
+       /
+       integer
+       -
+       native
+       -
+       unit
+       :
+       1
+     >>,
+
+     <<A % comment
+       : % comment
+       1 % comment
+       / % comment
+       integer % comment
+       - % comment
+       native % comment
+       - % comment
+       unit % comment
+       : % comment
+       1 % comment
+     >>, % comment
+
      <<$a/utf8,$b/utf8,$c/utf8>>.
+
+just_atoms() ->
+    integer,
+    float,
+    binary,
+    bytes,
+    bitstring,
+    bits,
+    utf8,
+    utf16,
+    utf32,
+    signed,
+    unsigned,
+    big,
+    little,
+    native,
+    unit,
+    utf8.
 
 %%% ===========================================================================
 %%% 7.17 Fun Expressions
@@ -533,6 +617,9 @@ old_guards() when abs(Number);
                   tuple_size(Tuple) ->
     ok.
 
+not_guards() when myfunc(Number) ->
+    ok.
+
 %%% ===========================================================================
 %%% 8 The Preprocessor
 %%% ===========================================================================
@@ -552,6 +639,10 @@ old_guards() when abs(Number);
 %%% ===========================================================================
 
 -define(TIMEOUT, 200).
+-define(timeout, 200).
+-define(_Timeout, 200).
+-define(_timeout, 200).
+-define(_, 200).
 
 call(Request) ->
     server:call(refserver, Request, ?TIMEOUT).
@@ -559,14 +650,17 @@ call(Request) ->
 -define(MACRO1(X, Y), {a, X, b, Y}).
 
 bar(X) ->
+    ?MACRO1,
+    ??MACRO1,
     ?MACRO1(a, b),
     ?MACRO1(X, 123).
+    ??MACRO1(X, 123).
 
 %%% ===========================================================================
 %%% 8.3 Predefined Macros
 %%% ===========================================================================
 
-predefined_macros ->
+predefined_macros() ->
     ?MODULE,
     ?MODULE_STRING,
     ?FILE,
@@ -589,8 +683,9 @@ predefined_macros ->
 
 -define(TESTCALL(Call), io:format("Call ~s: ~w~n", [??Call, Call])).
 
-?TESTCALL(myfunction(1,2)),
-?TESTCALL(you:function(2,1)).
+f() ->
+    ?TESTCALL(myfunction(1,2)),
+    ?TESTCALL(you:function(2,1)).
 
 %%% ===========================================================================
 %%% 9 Records
@@ -609,7 +704,7 @@ access_fields(Name, Tab) ->
     lists:keysearch(Name, #person.name, List).
 
 update_fields() ->
-    person#Person{field1=Expr1, field1=ExprK}.
+    Person#person{field1=Expr1, field1=ExprK}.
 
 %%% ===========================================================================
 %%% 11 Processes
@@ -653,3 +748,12 @@ distribution_bifs() ->
     node(Arg),
     nodes(),
     nodes(Arg).
+
+just_atoms() ->
+    disconnect_node,
+    erlang:get_cookie,
+    erlang:set_cookie,
+    is_alive,
+    monitor_node,
+    node,
+    nodes.
