@@ -3,12 +3,29 @@
 This is an improved version of the Erlang indentation and syntax shipped with
 Vim 7.3.
 
-## Usage
+## Installation
 
-- Copy `syntax/erlang.vim` into `~/syntax`.
-- Copy `indent/erlang.vim` into `~/indent`.
+### Method 1
+
+- Clone this repository:
+
+      $ mkdir -p ~/.vim/bundle
+      $ cd ~/.vim/bundle
+      $ git clone https://github.com/hcs42/vim-erlang
+
+- Add the repository path to `runtimepath` in your `.vimrc`:
+
+      :set runtimepath^=~/.vim/bundle/vim-erlang/
+
+### Method 2
+
+- Copy `syntax/erlang.vim` into `~/.vim/syntax/`.
+- Copy `indent/erlang.vim` into `~/.vim/indent/`.
 
 ## Development and testing
+
+This section is relevant only if you want to be involved in the development of
+the script.
 
 The indentation script can be tested in the following way:
 
