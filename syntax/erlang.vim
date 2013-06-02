@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     Erlang (http://www.erlang.org)
 " Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
-" Last Update:  2013-Jun-01
+" Last Update:  2013-Jun-02
 " License:      Vim license
 " URL:          https://github.com/hcs42/vim-erlang
 
@@ -88,7 +88,7 @@ syn match erlangBitType '\%(\/\%(\s\|\n\|%.*\n\)*\)\@<=\%(integer\|float\|binary
 
 " Constants and Directives
 syn match erlangUnknownAttribute '-\%(\s\|\n\|%.*\n\)*\l[[:alnum:]_@]*' contains=erlangComment
-syn match erlangAttribute '-\%(\s\|\n\|%.*\n\)*\%(behaviou\=r\|compile\|export\(_type\)\=\|file\|import\|module\|author\|copyright\|doc\|vsn\|on_load\)' contains=erlangComment
+syn match erlangAttribute '-\%(\s\|\n\|%.*\n\)*\%(behaviou\=r\|compile\|export\(_type\)\=\|file\|import\|module\|author\|copyright\|doc\|vsn\|on_load\)\>' contains=erlangComment
 syn match erlangInclude   '-\%(\s\|\n\|%.*\n\)*\%(include\|include_lib\)\>' contains=erlangComment
 syn match erlangRecordDef '-\%(\s\|\n\|%.*\n\)*record\>' contains=erlangComment
 syn match erlangDefine    '-\%(\s\|\n\|%.*\n\)*\%(define\|undef\)\>' contains=erlangComment
