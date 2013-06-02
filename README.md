@@ -9,13 +9,13 @@ Vim 7.3.
 
 - Clone this repository:
 
-      $ mkdir -p ~/.vim/bundle
-      $ cd ~/.vim/bundle
-      $ git clone https://github.com/hcs42/vim-erlang
+        $ mkdir -p ~/.vim/bundle
+        $ cd ~/.vim/bundle
+        $ git clone https://github.com/hcs42/vim-erlang
 
 - Add the repository path to `runtimepath` in your `.vimrc`:
 
-      :set runtimepath^=~/.vim/bundle/vim-erlang/
+        :set runtimepath^=~/.vim/bundle/vim-erlang/
 
 ### Method 2
 
