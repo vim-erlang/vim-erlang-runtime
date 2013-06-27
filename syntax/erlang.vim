@@ -88,7 +88,7 @@ syn match erlangBitType '\%(\/\%(\s\|\n\|%.*\n\)*\)\@<=\%(integer\|float\|binary
 
 " Constants and Directives
 syn match erlangUnknownAttribute '-\%(\s\|\n\|%.*\n\)*\l[[:alnum:]_@]*' contains=erlangComment
-syn match erlangAttribute '-\%(\s\|\n\|%.*\n\)*\%(behaviou\=r\|compile\|export\|file\|import\|module\|author\|copyright\|doc\|vsn\|on_load\|export_type\)' contains=erlangComment
+syn match erlangAttribute '-\%(\s\|\n\|%.*\n\)*\%(behaviou\=r\|compile\|export\(_type\)\=\|file\|import\|module\|author\|copyright\|doc\|vsn\|on_load\)' contains=erlangComment
 syn match erlangInclude   '-\%(\s\|\n\|%.*\n\)*\%(include\|include_lib\)\>' contains=erlangComment
 syn match erlangRecordDef '-\%(\s\|\n\|%.*\n\)*record\>' contains=erlangComment
 syn match erlangDefine    '-\%(\s\|\n\|%.*\n\)*\%(define\|undef\)\>' contains=erlangComment
