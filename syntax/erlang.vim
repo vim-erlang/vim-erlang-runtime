@@ -36,6 +36,9 @@ elseif exists("b:current_syntax")
     finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " Case sensitive
 syn case match
 
@@ -255,5 +258,8 @@ if version >= 508 || !exists("did_erlang_inits")
 endif
 
 let b:current_syntax = "erlang"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: sw=2 et
