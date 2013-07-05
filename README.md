@@ -1,7 +1,6 @@
 # Erlang indentation and syntax for Vim
 
-This is an improved version of the Erlang indentation and syntax shipped with
-Vim 7.3.
+This is the Erlang indentation and syntax that is shipped with Vim (from Vim 7.4).
 
 ## Installation
 
