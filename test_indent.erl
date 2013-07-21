@@ -2901,3 +2901,11 @@ eval(Fun, Arg) ->
         true ->
             true
                        end.
+
+eval(Fun, Arg) ->
+    case X of
+        case End() of
+            true ->
+                true
+    end
+    end.
