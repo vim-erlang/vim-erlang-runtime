@@ -2900,12 +2900,12 @@ eval(Fun, Arg) ->
     case handle_result(Fun(Arg)) of
         true ->
             true
-                       end.
+    end.
 
 eval(Fun, Arg) ->
     case X of
         case End() of
             true ->
                 true
-    end
+        end
     end.

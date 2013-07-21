@@ -713,7 +713,7 @@ endfunction
 function! s:SearchEndPair(lnum, curr_col)
   return s:SearchPair(
          \ a:lnum, a:curr_col,
-         \ '\<\%(case\|try\|begin\|receive\|if\)\>\|' .
+         \ '\C\<\%(case\|try\|begin\|receive\|if\)\>\|' .
          \ '\<fun\>\%(\s\|\n\|%.*$\)*(',
          \ '',
          \ '\<end\>')
