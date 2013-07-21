@@ -917,7 +917,6 @@ function! s:ErlangCalcIndent2(lnum, stack)
         if ret | return res | endif
 
       elseif token ==# 'fun'
-        call s:Log('    xxxxxxxxxxxxxxxxx token = ' . token)
         let next_indtoken = s:NextIndToken(lnum, i)
         call s:Log('    Next indtoken = ' . string(next_indtoken))
 
