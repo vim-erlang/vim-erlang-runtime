@@ -2887,3 +2887,17 @@ rand_pprint_opts() ->
                     iolist_to_binary([ "Random pprint w/ opt: ", io_lib:format("~p", [Opt]) ]) end,
     [ { Title(Opt), fun() -> ?assertEqual(true, Pred( catch( F(I, [Opt]) ) )) end }
       || {I, Opt, Pred} <- Tests ].
+
+%%% ===========================================================================
+%%% Issue #14: https://github.com/hcs42/vim-erlang/issues/14
+%%% ===========================================================================
+
+eval(Fun, Arg) ->
+    handle_result(Fun(Arg),
+                      true).
+
+eval(Fun, Arg) ->
+    case handle_result(Fun(Arg)) of
+        true ->
+            true
+                       end.
