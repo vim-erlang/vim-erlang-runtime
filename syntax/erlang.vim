@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:     Erlang (http://www.erlang.org)
 " Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
-" Last Update:  2013-Jun-02
+" Contributor:  Adam Rutkowski <hq@mtod.org>
+" Last Update:  2013-Nov-23
 " License:      Vim license
 " URL:          https://github.com/hcs42/vim-erlang
 
