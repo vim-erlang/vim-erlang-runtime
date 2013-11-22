@@ -19,7 +19,7 @@
 
 reserved_words() ->
     after and andalso band begin bnot bor bsl bsr bxor case catch cond div end
-    fun if let not of or orelse query receive rem try when xor.
+    fun if let not of or orelse receive rem try when xor.
 
 %%% ===========================================================================
 %%% 1.6 Character Set

@@ -99,7 +99,7 @@ syn match erlangPreCondit '^\s*-\%(\s\|\n\|%.*\n\)*\%(ifdef\|ifndef\|else\|endif
 syn match erlangType      '^\s*-\%(\s\|\n\|%.*\n\)*\%(spec\|type\|opaque\|callback\)\>' contains=erlangComment
 
 " Keywords
-syn keyword erlangKeyword after begin case catch cond end fun if let of query
+syn keyword erlangKeyword after begin case catch cond end fun if let of
 syn keyword erlangKeyword receive when try
 
 " Build-in-functions (BIFs)
