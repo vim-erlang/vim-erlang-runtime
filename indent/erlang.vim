@@ -1327,6 +1327,26 @@ function! ErlangIndent()
     return -1
   endif
 
+  " If the line starts with the comment, and so is the previous non-blank line
+  if currline =~# '^\s*%'
+    let lnum = prevnonblank(v:lnum - 1)
+    if lnum ==# 0
+      call s:Log('First non-empty line of the file -> return 0.')
+      return 0
+    else
+      let ml = matchlist(getline(lnum), '^\(\s*\)%')
+      " If the previous line also starts with a comment, then return the same
+      " indentation that line has. Otherwise exit from this special "if" and
+      " don't care that the current line is a comment.
+      if !empty(ml)
+        let new_col = s:CalcVCol(ml[1], 0, len(ml[1]) - 1, 0, &tabstop)
+        call s:Log('Comment line after another comment line -> ' .
+                  \'use same indent: ' . new_col)
+        return new_col
+      endif
+    endif
+  endif
+
   let ml = matchlist(currline,
                     \'^\(\s*\)\(\%(end\|of\|catch\|after\)\>\|[)\]}]\|>>\)')
 
