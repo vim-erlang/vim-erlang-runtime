@@ -764,3 +764,43 @@ just_atoms() ->
 
 #!/usr/bin/env escript
 #!/usr/bin/escript
+
+%%% ===========================================================================
+%%% io:format
+%%% ===========================================================================
+
+%%% http://erlang.org/doc/man/io.html#format-1
+io_format_control_sequences() ->
+    '~a', % no highlight
+    "~cxx~10.5cxx~-10.5cxx~.5cxx~10.cxx~tcxx~1tc", % highlight
+    "~-.5cxx~t1c", % no highlight
+    "~fxx~22fxx~-22.11fxx~.11fxx~.*fxx~.*.1f", % highlight
+    "~2n ~1~ ~1i", % no highlight
+    "|~10s|~n", 
+
+    io:fwrite("|~10.5c|~-10.5c|~5c|~n", [$a, $b, $c]),
+    io:fwrite("~tc~n",[1024]),
+    io:fwrite("~c~n",[1024]),
+    io:fwrite("|~10w|~n", [{hey, hey, hey}]),
+    io:fwrite("|~10s|~n", [io_lib:write({hey, hey, hey})]),
+    io:fwrite("|~-10.8s|~n", [io_lib:write({hey, hey, hey})]),
+    io:fwrite("~ts~n",[[1024]]),
+    io:fwrite("~s~n",[[1024]]),
+    io:fwrite("~w~n", [T]),
+    io:fwrite("~62p~n", [T]),
+    io:fwrite("Here T = ~62p~n", [T]),
+    io:fwrite("~15p~n", [S]),
+    io:fwrite("~15lp~n", [S],
+    io:fwrite("~p~n",[[1024]]),
+    io:fwrite("~tp~n",[[1024]]),
+    io:fwrite("~tp~n", [<<128,128>>]),
+    io:fwrite("~tp~n", [<<208,128>>]),
+    io:fwrite("~W~n", [T,9]),
+    io:fwrite("~62P~n", [T,9]),
+    io:fwrite("~.16B~n", [31]),
+    io:fwrite("~.2B~n", [-19]),
+    io:fwrite("~.36B~n", [5*36+35],
+    io:fwrite("~X~n", [31,"10#"]),
+    io:fwrite("~.16X~n", [-31,"0x"]),
+    io:fwrite("~.10#~n", [31]),
+    io:fwrite("~.16#~n", [-31]).
