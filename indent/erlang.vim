@@ -56,7 +56,8 @@ endfunction
 " Line tokenizer library {{{1
 " ======================
 
-" Indtokens are "indentation tokens".
+" Indtokens are "indentation tokens". See their exact format in the
+" documentaiton of the s:GetTokensFromLine function.
 
 " Purpose:
 "   Calculate the new virtual column after the given segment of a line.
@@ -120,8 +121,9 @@ endfunction
 "   indtokens = [indtoken]
 "   indtoken = [token, vcol, col]
 "   token = string (examples: 'begin', '<quoted_atom>', '}')
-"   vcol = integer (the virtual column of the first character of the token)
-"   col = integer
+"   vcol = integer (the virtual column of the first character of the token;
+"                   counting starts from 0)
+"   col = integer (counting starts from 0)
 function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
                              \tabstop)
 
@@ -665,11 +667,14 @@ endfunction
 "   stack: [token]
 "   token: string
 "   stored_vcol: integer
+"   lnum: the line number of the "end of clause" mark (or 0 if we hit the
+"         beginning of the file)
+"   i: the index of the "end of clause" token within its own line
 " Returns:
 "   result: [should_return, indent]
 "   should_return: bool -- if true, the caller should return `indent` to Vim
 "   indent -- integer
-function! s:BeginningOfClauseFound(stack, token, stored_vcol)
+function! s:BeginningOfClauseFound(stack, token, stored_vcol, lnum, i)
   if !empty(a:stack) && a:stack[0] ==# 'when'
     call s:Log('    BeginningOfClauseFound: "when" found in stack')
     call s:Pop(a:stack)
@@ -687,13 +692,45 @@ function! s:BeginningOfClauseFound(stack, token, stored_vcol)
       return [1, a:stored_vcol + &sw]
     elseif a:stack[0] ==# ';'
       call s:Pop(a:stack)
-      if empty(a:stack)
-        call s:Log('    Stack is ["->", ";"], so LTI is in a function head ' .
-                  \'-> return')
-        return [0, a:stored_vcol]
-      else
+
+      if !empty(a:stack)
         return [1, s:UnexpectedToken(a:token, a:stack)]
       endif
+
+      if a:lnum ==# 0
+        " Set lnum and i to be NextIndToken-friendly
+        let lnum = 1
+        let i = -1 
+      else
+        let lnum = a:lnum
+        let i = a:i
+      endif
+
+      " Are we after a "-spec func() ...;" clause?
+      let [next1_indtoken, next1_lnum, next1_i] = s:NextIndToken(lnum, i)
+      if !empty(next1_indtoken) && next1_indtoken[0] =~# '-'
+        let [next2_indtoken, next2_lnum, next2_i] =
+           \s:NextIndToken(next1_lnum, next1_i)
+        if !empty(next2_indtoken) && next2_indtoken[0] =~# 'spec'
+          let [next3_indtoken, next3_lnum, next3_i] =
+             \s:NextIndToken(next2_lnum, next2_i)
+          if !empty(next3_indtoken)
+            let [next4_indtoken, next4_lnum, next4_i] =
+               \s:NextIndToken(next3_lnum, next3_i)
+            if !empty(next4_indtoken)
+              " Yes, we are.
+              call s:Log('    Stack is ["->", ";"], so LTI is in a "-spec" ' .
+                        \'attribute -> return')
+              return [1, next4_indtoken[1]]
+            endif
+          endif
+        endif
+      endif
+
+      call s:Log('    Stack is ["->", ";"], so LTI is in a function head ' .
+                \'-> return')
+      return [1, a:stored_vcol]
+
     else
       return [1, s:UnexpectedToken(a:token, a:stack)]
     endif
@@ -762,7 +799,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
     " Hit the start of the file
     if lnum ==# 0
       let [ret, res] = s:BeginningOfClauseFound(stack, 'beginning_of_file',
-                                               \stored_vcol)
+                                               \stored_vcol, 0, 0)
       if ret | return res | endif
 
       return 0
@@ -781,7 +818,8 @@ function! s:ErlangCalcIndent2(lnum, stack)
       endif
 
       if token ==# '<end_of_clause>'
-        let [ret, res] = s:BeginningOfClauseFound(stack, token, stored_vcol)
+        let [ret, res] = s:BeginningOfClauseFound(stack, token, stored_vcol,
+                                                 \lnum, i)
         if ret | return res | endif
 
         if stored_vcol ==# -1

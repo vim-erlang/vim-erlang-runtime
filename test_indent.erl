@@ -509,8 +509,8 @@ func() ->
 
 % Overloading
 -spec func(A, B) -> ReturnType;
-(A,
- B) -> ReturnType.
+          (A,
+           B) -> ReturnType.
 func() ->
     ok.
 
