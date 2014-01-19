@@ -544,7 +544,7 @@ function! s:IsCatchStandalone(lnum, i)
 
   let prev_token = prev_indtoken[0]
 
-  if prev_token =~# '[A-Z_@0-9]'
+  if prev_token =~# '^[A-Z_@0-9]'
     let is_standalone = 0
   elseif prev_token =~# '[a-z]'
     if index(['after', 'and', 'andalso', 'band', 'begin', 'bnot', 'bor', 'bsl',
