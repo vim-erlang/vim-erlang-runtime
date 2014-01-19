@@ -386,9 +386,12 @@ endfunction
 "   lnum: integer
 "   direction: 'up' | 'down'
 " Returns:
-"   result: [] -- the result is an empty list if we hit the beginning or end
-"                  of the file
-"           | indtoken
+"   result: [[], 0, 0]
+"             -- the result is an empty list if we hit the beginning or end of
+"             the file
+"           | [indtoken, lnum, i]
+"             -- the content, lnum and token index of the next (or previous)
+"             indtoken
 function! s:FindIndToken(lnum, dir)
   let lnum = a:lnum
   while 1
@@ -396,7 +399,7 @@ function! s:FindIndToken(lnum, dir)
     let [lnum, indtokens] = s:TokenizeLine(lnum, a:dir)
     if lnum ==# 0
       " We hit the beginning or end of the file
-      return []
+      return [[], 0, 0]
     elseif !empty(indtokens)
       " We found a non-empty line. If we were moving up, we return the last
       " token of this line. Otherwise we return the first token if this line.
