@@ -1401,6 +1401,24 @@ function! ErlangIndent()
 
 endfunction
 
+" ErlangShowTokensInLine functions {{{1
+" ================================
+
+" These functions are useful during development.
+
+function! ErlangShowTokensInLine(line)
+  echo "Line: " . a:line
+  let indtokens = s:GetTokensFromLine(a:line, 0, 0, &tabstop)
+  echo "Tokens:"
+  for it in indtokens
+    echo it
+  endfor
+endfunction
+
+function! ErlangShowTokensInCurrentLine()
+  return ErlangShowTokensInLine(getline('.'))
+endfunction
+
 " Cleanup {{{1
 " =======
 
