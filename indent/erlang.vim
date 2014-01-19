@@ -119,7 +119,7 @@ endfunction
 " Returns:
 "   indtokens = [indtoken]
 "   indtoken = [token, vcol, col]
-"   token = string (examples: 'begin', '<variable>', '}')
+"   token = string (examples: 'begin', '<quoted_atom>', '}')
 "   vcol = integer (the virtual column of the first character of the token)
 "   col = integer
 function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
@@ -398,7 +398,10 @@ function! s:FindIndToken(lnum, dir)
       " We hit the beginning or end of the file
       return []
     elseif !empty(indtokens)
-      return indtokens[a:dir ==# 'up' ? -1 : 0]
+      " We found a non-empty line. If we were moving up, we return the last
+      " token of this line. Otherwise we return the first token if this line.
+      let i = (a:dir ==# 'up' ? len(indtokens) - 1 : 0)
+      return [indtokens[i], lnum, i]
     endif
   endwhile
 endfunction
@@ -417,7 +420,7 @@ function! s:PrevIndToken(lnum, i)
 
   " If the current line has a previous token, return that
   if a:i > 0
-    return s:all_tokens[a:lnum][a:i - 1]
+    return [s:all_tokens[a:lnum][a:i - 1], a:lnum, a:i - 1]
   else
     return s:FindIndToken(a:lnum, 'up')
   endif
@@ -437,7 +440,7 @@ function! s:NextIndToken(lnum, i)
 
   " If the current line has a next token, return that
   if len(s:all_tokens[a:lnum]) > a:i + 1
-    return s:all_tokens[a:lnum][a:i + 1]
+    return [s:all_tokens[a:lnum][a:i + 1], a:lnum, a:i + 1]
   else
     return s:FindIndToken(a:lnum, 'down')
   endif
@@ -535,7 +538,7 @@ endfunction
 "   is_standalone: bool
 function! s:IsCatchStandalone(lnum, i)
   call s:Log('    IsCatchStandalone called: lnum=' . a:lnum . ', i=' . a:i)
-  let prev_indtoken = s:PrevIndToken(a:lnum, a:i)
+  let [prev_indtoken, _, _] = s:PrevIndToken(a:lnum, a:i)
 
   " If we hit the beginning of the file, it is not a catch in a try block
   if prev_indtoken == []
@@ -714,7 +717,7 @@ function! s:SearchEndPair(lnum, curr_col)
   return s:SearchPair(
          \ a:lnum, a:curr_col,
          \ '\C\<\%(case\|try\|begin\|receive\|if\)\>\|' .
-         \ '\<fun\>\%(\s\|\n\|%.*$\)*(',
+         \ '\<fun\>\%(\s\|\n\|%.*$\|[A-Z_@][a-zA-Z_@]*\)*(',
          \ '',
          \ '\<end\>')
 endfunction
@@ -917,8 +920,17 @@ function! s:ErlangCalcIndent2(lnum, stack)
         if ret | return res | endif
 
       elseif token ==# 'fun'
-        let next_indtoken = s:NextIndToken(lnum, i)
+        let [next_indtoken, next_lnum, next_i] = s:NextIndToken(lnum, i)
         call s:Log('    Next indtoken = ' . string(next_indtoken))
+
+        if !empty(next_indtoken) && next_indtoken[0] =~# '^[A-Z_@]'
+          " The "fun" is followed by a variable, so we might have a named fun:
+          " "fun Fun() -> ok end". Thus we take the next token to decide
+          " whether this is a function definition ("fun()") or just a function
+          " reference ("fun Mod:Fun").
+          let [next_indtoken, _, _] = s:NextIndToken(next_lnum, next_i)
+          call s:Log('    Next indtoken = ' . string(next_indtoken))
+        endif
 
         if !empty(next_indtoken) && next_indtoken[0] ==# '('
           " We have an anonymous function definition
