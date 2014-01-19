@@ -1358,6 +1358,9 @@ bit_syntax() ->
 f() ->
     fun func/0,
     fun mod:func/0,
+    fun mod : func/0,
+    fun Mod:func/0,
+    fun Mod : func/0,
     fun (A) -> A end,
     fun (A) -> A; (B) -> B end,
     ok.
@@ -1515,7 +1518,7 @@ f() ->
     ok.
 
 tricky() ->
-    $(
+    $(,
     fun % comment
         (A) ->
             fun i/0,
@@ -2949,3 +2952,152 @@ maps() ->
 
     M1 = #{ E0 => E1 ||
             K := V <- M0 }.
+
+%%% ===========================================================================
+%%% Funs with names
+%%% ===========================================================================
+
+%%% http://www.erlang.org/eeps/eep-0037.html
+
+% fun - without linebreaks
+f() ->
+    fun Fun (A) -> A;
+        Fun (B) -> B end,
+    ok.
+
+% fun - with some linebreaks
+f() ->
+    fun Fun(A) -> A
+    end,
+    fun Fun(A) -> A;
+        Fun(B) -> B
+    end,
+    ok.
+
+% fun - with more linebreaks
+f() ->
+    fun Fun(A) ->
+            A
+    end,
+    fun Fun(A) ->
+            A;
+        Fun(B) ->
+            B
+    end,
+    ok.
+
+% fun - with more space
+f() ->
+    fun  Fun(A) -> A;
+         Fun(B) -> B
+    end,
+    fun   Fun(A) ->
+            A;
+          Fun(B) ->
+            B
+    end,
+    ok.
+
+% fun - with extra linebreaks
+f() ->
+
+    fun
+        Fun(A) ->
+            A
+    end,
+
+    fun
+        Fun(A) ->
+            A;
+        Fun(B) ->
+            B
+    end,
+    ok.
+
+% fun - without linebreaks + when
+f() ->
+    fun Fun(A) when A > 0 -> A end,
+    fun Fun(A) when A > 0 -> A; Fun(B) when B > 0 -> B end,
+    ok.
+
+% fun - with some linebreaks + when
+f() ->
+    fun Fun(A) when A > 0 -> A
+    end,
+    fun Fun(A) when A > 0 -> A;
+        Fun(B) when B > 0 -> B
+    end,
+    ok.
+
+% fun - with more linebreaks + when
+f() ->
+    fun Fun(A) when A > 0 ->
+            A
+    end,
+    fun  Fun(A) when A > 0 ->
+            A;
+         Fun(B) when B > 0 ->
+            B
+    end,
+    ok.
+
+% fun - with some linebreaks with less space + when
+f() ->
+    fun Fun(A) when A > 0 -> A
+    end,
+    fun Fun(A) when A > 0 -> A;
+        Fun(B) when B > 0 -> B
+    end,
+    ok.
+
+% fun - with more linebreaks with less space + when
+f() ->
+    fun Fun(A) when A > 0 ->
+            A
+    end,
+    fun Fun(A) when A > 0 ->
+            A;
+        Fun(B) when B > 0 ->
+            B
+    end,
+    ok.
+
+% fun - with extra linebreaks + when
+f() ->
+
+    fun
+        Fun(A) when A > 0 ->
+            A
+    end,
+
+    fun
+        Fun(A) when A > 0 ->
+            A;
+        Fun(B) when B > 0 ->
+            B
+    end,
+    ok.
+
+% fun - linebreaks after 'when'
+f() ->
+    fun Fun(A) when
+              A > 0 -> A
+    end,
+    fun Fun(A) when
+              A > 0 -> A;
+        Fun(B) when
+              B > 0 -> B
+    end,
+    ok.
+
+tricky() ->
+    $(,
+    fun % comment
+        Fun (A) ->
+            fun i/0,
+            fun % Fun(
+            i/0;
+        Fun (B) ->
+            ok
+    end,
+    ok.
