@@ -6,7 +6,6 @@ endif
 " Indentation "
 " ----------- "
 
-" Automatic comments are not always helpful for test.erl
 setlocal debug=msg,throw
 
 " Automatic indentkeys are not always helpful for developing the indentation
