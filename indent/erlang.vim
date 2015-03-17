@@ -1398,6 +1398,27 @@ function! ErlangIndent()
         return new_col
       endif
     endif
+  else " else, if the previous line ended with '='
+    let lnum = prevnonblank(v:lnum - 1)
+    if lnum ==# 0
+      call s:Log('First non-empty line of the file -> return 0.')
+      return 0
+    else
+      let ml = matchlist(getline(lnum), '=\(s*\)')
+      " If the previous line ended with a '=', then indent by one sw
+      " Example:
+      " ThisIsALongVariable =
+      "     case X of
+      "         [] -> ok;
+      "         _ -> error
+      "     end,
+      if !empty(ml)
+        let new_col = s:ErlangCalcIndent(v:lnum - 1, [])
+        let new_col += &sw
+        echoerr new_col
+        return new_col
+      endif
+    endif
   endif
 
   let ml = matchlist(currline,
