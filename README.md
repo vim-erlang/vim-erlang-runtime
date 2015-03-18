@@ -10,7 +10,7 @@ This is the Erlang indentation and syntax that is shipped with Vim (from Vim 7.4
 
         $ mkdir -p ~/.vim/bundle
         $ cd ~/.vim/bundle
-        $ git clone https://github.com/hcs42/vim-erlang-runtime
+        $ git clone https://github.com/vim-erlang/vim-erlang-runtime
 
 - Add the repository path to `runtimepath` in your `.vimrc`:
 
