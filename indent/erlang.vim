@@ -1415,7 +1415,6 @@ function! ErlangIndent()
       if !empty(ml)
         let new_col = s:ErlangCalcIndent(v:lnum - 1, [])
         let new_col += &sw
-        echoerr new_col
         return new_col
       endif
     endif
