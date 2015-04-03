@@ -224,8 +224,16 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
       " This is handled separately so that "=<<" will be parsed as
       " ['=', '<<'] instead of ['=<', '<']. Although Erlang parses it
       " currently in the latter way, that may be fixed some day.
-      call add(indtokens, [a:line[i], vcol, i])
-      let next_i = i + 1
+
+      " Also, take a peak into the future: if the next character is =, we need to parse
+      " it as '==' in one step
+      if i + 1 < linelen && a:line[i+1] ==# '='
+        call add(indtokens, [a:line[i : i + 1], vcol, i])
+        let next_i = i + 2
+      else
+        call add(indtokens, [a:line[i], vcol, i])
+        let next_i = i + 1
+      endif
 
     " Three-character tokens
     elseif i + 1 < linelen &&
@@ -235,7 +243,7 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
 
     " Two-character tokens
     elseif i + 1 < linelen &&
-         \ index(['->', '<<', '>>', '||', '==', '/=', '=<', '>=', '++', '--',
+         \ index(['->', '<<', '>>', '||', '/=', '=<', '>=', '++', '--',
          \        '::'],
          \       a:line[i : i + 1]) != -1
       call add(indtokens, [a:line[i : i + 1], vcol, i])
