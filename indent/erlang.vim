@@ -17,6 +17,7 @@
 " - LTI = Line to indent.
 " - The index of the first line is 1, but the index of the first column is 0.
 
+
 " Initialization {{{1
 " ==============
 
@@ -38,6 +39,10 @@ endif
 
 let s:cpo_save = &cpo
 set cpo&vim
+
+if !exists("g:erlang_shift_trailing_match")
+  let g:erlang_shift_trailing_match=0
+endif
 
 " Logging library {{{1
 " ===============
@@ -773,7 +778,8 @@ endfunction
 " ================
 
 " Purpose:
-"   Calculate the indentation of the given line.
+"   Calculate the indentation of the given line. Adds an extra shiftwidth on the
+"   line after a trailing '=', unless g:erlang_shift_trailing_match = 0.
 " Parameters:
 "   lnum: integer -- index of the line for which the indentation should be
 "                    calculated
@@ -785,7 +791,8 @@ endfunction
 function! s:ErlangCalcIndent(lnum, stack)
   let oob_stack = []
   let res = s:ErlangCalcIndent2(a:lnum, a:stack, oob_stack)
-  if !empty(oob_stack) && oob_stack[0] ==# '='
+  if g:erlang_shift_trailing_match &&
+        \ !empty(oob_stack) && oob_stack[0] ==# '='
     call s:Log("extra shift due to oob_stack[0] = '='")
     call s:Log("  oob_stack = " . string(oob_stack))
     let res = res + &sw
@@ -1373,6 +1380,11 @@ function! s:ErlangCalcIndent2(lnum, stack, oob_stack)
      \ (!empty(indtokens) && indtokens[0][0] != '<string_end>' &&
      \                       indtokens[0][0] != '<quoted_atom_end>')
       call s:Log('    Empty stack at the beginning of the line -> check if shifted')
+      if !g:erlang_shift_trailing_match
+        call s:Log('    Shifting deactivated, returning')
+        return stored_vcol
+      endif
+
       " Check if this line has been shifted due to a '=' in the line before
       let prev_lnum = prevnonblank(lnum - 1)
       if prev_lnum ==# 0
