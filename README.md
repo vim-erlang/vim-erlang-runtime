@@ -21,6 +21,25 @@ This is the Erlang indentation and syntax that is shipped with Vim (from Vim 7.4
 - Copy `syntax/erlang.vim` into `~/.vim/syntax/`.
 - Copy `indent/erlang.vim` into `~/.vim/indent/`.
 
+### Installing using vim-plug
+
+1. Install vim-plug using the [instructions][vim-plug]
+2. Add vim-erlang-runtime to your plugin list in `.vimrc` and re-source it:
+
+    insert vim-erlang-runtime
+    ```
+    '' Erlang Runtime
+    Plug 'vim-erlang/vim-erlang-runtime'
+    ```
+    between
+    `call plug#begin('~/.vim/plugged')`
+
+    and
+    `call plug#end()`
+3. Run `:PlugInstall`
+
+[vim-plug]:https://github.com/junegunn/vim-plug
+
 ## Development and testing
 
 This section is relevant only if you want to be involved in the development of
