@@ -85,6 +85,7 @@ syn match erlangVariable '\<[A-Z_][[:alnum:]_@]*'
 syn match erlangMacro    '??\=[[:alnum:]_@]\+'
 syn match erlangMacro    '\%(-define(\)\@<=[[:alnum:]_@]\+'
 syn match erlangMap      '#'
+syn match erlangRecord   '#\'\<[A-Z_][[:alnum:]_@]*\''
 syn match erlangRecord   '#\s*\l[[:alnum:]_@]*'
 
 " Shebang (this line has to be after the ErlangMap)
