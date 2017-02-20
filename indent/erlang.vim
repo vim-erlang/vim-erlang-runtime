@@ -526,7 +526,9 @@ endfunction
 "       ok.          % IsLineAtomContinuation = false
 function! s:IsLineAtomContinuation(lnum)
   if has('syntax_items')
-    return synIDattr(synID(a:lnum, 1, 0), 'name') =~# '^erlangQuotedAtom'
+    let syn_name = synIDattr(synID(a:lnum, 1, 0), 'name')
+    return syn_name =~# '^erlangQuotedAtom' ||
+         \ syn_name =~# '^erlangQuotedRecord'
   else
     return 0
   endif

@@ -86,6 +86,7 @@ syn match erlangMacro    '??\=[[:alnum:]_@]\+'
 syn match erlangMacro    '\%(-define(\)\@<=[[:alnum:]_@]\+'
 syn match erlangMap      '#'
 syn match erlangRecord   '#\s*\l[[:alnum:]_@]*'
+syn region erlangQuotedRecord        start=/#\s*'/ end=/'/ contains=erlangQuotedAtomModifier
 
 " Shebang (this line has to be after the ErlangMap)
 syn match erlangShebang  '^#!.*'
@@ -205,6 +206,7 @@ if version >= 508 || !exists("did_erlang_inits")
     HiLink erlangVariable Normal
     HiLink erlangMacro Normal
     HiLink erlangRecord Normal
+    HiLink erlangQuotedRecord Normal
     HiLink erlangMap Normal
   else
     HiLink erlangAtom String
@@ -215,6 +217,7 @@ if version >= 508 || !exists("did_erlang_inits")
     HiLink erlangVariable Identifier
     HiLink erlangMacro Macro
     HiLink erlangRecord Structure
+    HiLink erlangQuotedRecord Structure
     HiLink erlangMap Structure
   endif
 
