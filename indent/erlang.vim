@@ -4,9 +4,9 @@
 " Contributors: Edwin Fine <efine145_nospam01 at usa dot net>
 "               Pawel 'kTT' Salata <rockplayer.pl@gmail.com>
 "               Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
-" Last Update:  2013-Jul-21
+" Last Update:  2017-Feb-28
 " License:      Vim license
-" URL:          https://github.com/hcs42/vim-erlang
+" URL:          https://github.com/vim-erlang/vim-erlang-runtime
 
 " Note About Usage:
 "   This indentation script works best with the Erlang syntax file created by

@@ -2,9 +2,9 @@
 " Language:     Erlang (http://www.erlang.org)
 " Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
 " Contributor:  Adam Rutkowski <hq@mtod.org>
-" Last Update:  2013-Nov-23
+" Last Update:  2017-Feb-28
 " License:      Vim license
-" URL:          https://github.com/hcs42/vim-erlang
+" URL:          https://github.com/vim-erlang/vim-erlang-runtime
 
 " Acknowledgements: This script was originally created by Kresimir Marzic [1].
 " The script was then revamped by Csaba Hoch [2]. During the revamp, the new
