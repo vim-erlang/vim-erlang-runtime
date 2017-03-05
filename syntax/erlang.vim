@@ -2,7 +2,7 @@
 " Language:     Erlang (http://www.erlang.org)
 " Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
 " Contributor:  Adam Rutkowski <hq@mtod.org>
-" Last Update:  2017-Feb-28
+" Last Update:  2017-Mar-05
 " License:      Vim license
 " URL:          https://github.com/vim-erlang/vim-erlang-runtime
 
@@ -162,9 +162,9 @@ hi def link erlangNumberFloat Float
 hi def link erlangString String
 
 if s:old_style
-  hi def link erlangQuotedAtom Type
+hi def link erlangQuotedAtom Type
 else
-  hi def link erlangQuotedAtom String
+hi def link erlangQuotedAtom String
 endif
 
 hi def link erlangStringModifier Special
@@ -175,62 +175,62 @@ hi def link erlangModifier Special
 hi def link erlangOperator Operator
 hi def link erlangRightArrow Operator
 if s:old_style
-  hi def link erlangBracket Normal
-  hi def link erlangPipe Normal
+hi def link erlangBracket Normal
+hi def link erlangPipe Normal
 else
-  hi def link erlangBracket Delimiter
-  hi def link erlangPipe Delimiter
+hi def link erlangBracket Delimiter
+hi def link erlangPipe Delimiter
 endif
 
 " Atoms, functions, variables, macros
 if s:old_style
-  hi def link erlangAtom Normal
-  hi def link erlangLocalFuncCall Normal
-  hi def link erlangLocalFuncRef Normal
-  hi def link erlangGlobalFuncCall Function
-  hi def link erlangGlobalFuncRef Function
-  hi def link erlangVariable Normal
-  hi def link erlangMacro Normal
-  hi def link erlangRecord Normal
-  hi def link erlangQuotedRecord Normal
-  hi def link erlangMap Normal
+hi def link erlangAtom Normal
+hi def link erlangLocalFuncCall Normal
+hi def link erlangLocalFuncRef Normal
+hi def link erlangGlobalFuncCall Function
+hi def link erlangGlobalFuncRef Function
+hi def link erlangVariable Normal
+hi def link erlangMacro Normal
+hi def link erlangRecord Normal
+hi def link erlangQuotedRecord Normal
+hi def link erlangMap Normal
 else
-  hi def link erlangAtom String
-  hi def link erlangLocalFuncCall Normal
-  hi def link erlangLocalFuncRef Normal
-  hi def link erlangGlobalFuncCall Normal
-  hi def link erlangGlobalFuncRef Normal
-  hi def link erlangVariable Identifier
-  hi def link erlangMacro Macro
-  hi def link erlangRecord Structure
-  hi def link erlangQuotedRecord Structure
-  hi def link erlangMap Structure
+hi def link erlangAtom String
+hi def link erlangLocalFuncCall Normal
+hi def link erlangLocalFuncRef Normal
+hi def link erlangGlobalFuncCall Normal
+hi def link erlangGlobalFuncRef Normal
+hi def link erlangVariable Identifier
+hi def link erlangMacro Macro
+hi def link erlangRecord Structure
+hi def link erlangQuotedRecord Structure
+hi def link erlangMap Structure
 endif
 
 " Bitstrings
 if !s:old_style
-  hi def link erlangBitType Type
+hi def link erlangBitType Type
 endif
 
 " Constants and Directives
 if s:old_style
-  hi def link erlangAttribute Type
-  hi def link erlangMacroDef Type
-  hi def link erlangUnknownAttribute Normal
-  hi def link erlangInclude Type
-  hi def link erlangRecordDef Type
-  hi def link erlangDefine Type
-  hi def link erlangPreCondit Type
-  hi def link erlangType Type
+hi def link erlangAttribute Type
+hi def link erlangMacroDef Type
+hi def link erlangUnknownAttribute Normal
+hi def link erlangInclude Type
+hi def link erlangRecordDef Type
+hi def link erlangDefine Type
+hi def link erlangPreCondit Type
+hi def link erlangType Type
 else
-  hi def link erlangAttribute Keyword
-  hi def link erlangMacroDef Macro
-  hi def link erlangUnknownAttribute Normal
-  hi def link erlangInclude Include
-  hi def link erlangRecordDef Keyword
-  hi def link erlangDefine Define
-  hi def link erlangPreCondit PreCondit
-  hi def link erlangType Type
+hi def link erlangAttribute Keyword
+hi def link erlangMacroDef Macro
+hi def link erlangUnknownAttribute Normal
+hi def link erlangInclude Include
+hi def link erlangRecordDef Keyword
+hi def link erlangDefine Define
+hi def link erlangPreCondit PreCondit
+hi def link erlangType Type
 endif
 
 " Keywords
@@ -240,13 +240,13 @@ hi def link erlangKeyword Keyword
 hi def link erlangBIF Function
 
 if s:old_style
-  hi def link erlangBoolean Statement
-  hi def link erlangExtra Statement
-  hi def link erlangSignal Statement
+hi def link erlangBoolean Statement
+hi def link erlangExtra Statement
+hi def link erlangSignal Statement
 else
-  hi def link erlangBoolean Boolean
-  hi def link erlangExtra Statement
-  hi def link erlangSignal Statement
+hi def link erlangBoolean Boolean
+hi def link erlangExtra Statement
+hi def link erlangSignal Statement
 endif
 
 
