@@ -40,6 +40,10 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
+if !exists("g:erlang_shift_trailing_match")
+  let g:erlang_shift_trailing_match=0
+endif
+
 " Logging library {{{1
 " ===============
 
@@ -224,8 +228,16 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
       " This is handled separately so that "=<<" will be parsed as
       " ['=', '<<'] instead of ['=<', '<']. Although Erlang parses it
       " currently in the latter way, that may be fixed some day.
-      call add(indtokens, [a:line[i], vcol, i])
-      let next_i = i + 1
+
+      " Also, take a peak into the future: if the next character is =, we need to parse
+      " it as '==' in one step
+      if i + 1 < linelen && a:line[i+1] ==# '='
+        call add(indtokens, [a:line[i : i + 1], vcol, i])
+        let next_i = i + 2
+      else
+        call add(indtokens, [a:line[i], vcol, i])
+        let next_i = i + 1
+      endif
 
     " Three-character tokens
     elseif i + 1 < linelen &&
@@ -235,7 +247,7 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
 
     " Two-character tokens
     elseif i + 1 < linelen &&
-         \ index(['->', '<<', '>>', '||', '==', '/=', '=<', '>=', '++', '--',
+         \ index(['->', '<<', '>>', '||', '/=', '=<', '>=', '++', '--',
          \        '::'],
          \       a:line[i : i + 1]) != -1
       call add(indtokens, [a:line[i : i + 1], vcol, i])
@@ -768,7 +780,8 @@ endfunction
 " ================
 
 " Purpose:
-"   Calculate the indentation of the given line.
+"   Calculate the indentation of the given line. Adds an extra shiftwidth on the
+"   line after a trailing '=', unless g:erlang_shift_trailing_match = 0.
 " Parameters:
 "   lnum: integer -- index of the line for which the indentation should be
 "                    calculated
@@ -778,18 +791,26 @@ endfunction
 "                      otherwise it means "indent the line with `indent`
 "                      number of spaces or equivalent tabs"
 function! s:ErlangCalcIndent(lnum, stack)
-  let res = s:ErlangCalcIndent2(a:lnum, a:stack)
+  let oob_stack = []
+  let res = s:ErlangCalcIndent2(a:lnum, a:stack, oob_stack)
+  if g:erlang_shift_trailing_match &&
+        \ !empty(oob_stack) && oob_stack[0] ==# '='
+    call s:Log("extra shift due to oob_stack[0] = '='")
+    call s:Log("  oob_stack = " . string(oob_stack))
+    let res = res + &sw
+  endif
   call s:Log("ErlangCalcIndent returned: " . res)
   return res
 endfunction
 
-function! s:ErlangCalcIndent2(lnum, stack)
+function! s:ErlangCalcIndent2(lnum, stack, oob_stack)
 
   let lnum = a:lnum
   let stored_vcol = -1 " Virtual column of the first character of the token that
                    " we currently think we might align to.
   let mode = 'normal'
   let stack = a:stack
+  let oob_stack = a:oob_stack
   let semicolon_abscol = ''
 
   " Walk through the lines of the buffer backwards (starting from the
@@ -1006,6 +1027,10 @@ function! s:ErlangCalcIndent2(lnum, stack)
         else
           " Pass: we have a function reference (e.g. "fun f/0")
         endif
+
+      elseif token ==# '=' && last_token_of_line &&
+            \ index(stack, 'align_to_begin_element') == -1
+        call s:Push(oob_stack, '=')
 
       elseif token ==# '['
         " Emacs compatibility
@@ -1356,8 +1381,27 @@ function! s:ErlangCalcIndent2(lnum, stack)
     if empty(stack) && stored_vcol != -1 &&
      \ (!empty(indtokens) && indtokens[0][0] != '<string_end>' &&
      \                       indtokens[0][0] != '<quoted_atom_end>')
-      call s:Log('    Empty stack at the beginning of the line -> return')
-      return stored_vcol
+      call s:Log('    Empty stack at the beginning of the line -> check if shifted')
+      if !g:erlang_shift_trailing_match
+        call s:Log('    Shifting deactivated, returning')
+        return stored_vcol
+      endif
+
+      " Check if this line has been shifted due to a '=' in the line before
+      let prev_lnum = prevnonblank(lnum - 1)
+      if prev_lnum ==# 0
+        cal s:Log('  -> return')
+        return stored_vcol
+      else
+        let prev_oob_stack = []
+        let res = s:ErlangCalcIndent2(prev_lnum, [], prev_oob_stack)
+        if !empty(prev_oob_stack)
+          call s:Log('  Previous line with oob stack: ' . string(prev_oob_stack))
+          call s:Log('  Unshifting')
+          return stored_vcol - &sw
+        endif
+        return stored_vcol
+      endif
     endif
 
     let lnum -= 1
