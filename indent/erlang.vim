@@ -1400,6 +1400,29 @@ function! ErlangIndent()
         return new_col
       endif
     endif
+  else " else, if the previous line ended with '='
+    let lnum = prevnonblank(v:lnum - 1)
+    if lnum ==# 0
+      call s:Log('First non-empty line of the file -> return 0.')
+      return 0
+    else
+      let ml = matchlist(getline(lnum), '^\(s*\)[^%]*=\(s*\)$')
+      " If the previous line:
+      "     1. is not commented and
+      "     2. ends with a '=' sign (possibly with trailing space)
+      " then indent by one shiftwidth.
+      " Example:
+      " ThisIsALongVariable =
+      "     case X of
+      "         [] -> ok;
+      "         _ -> error
+      "     end,
+      if !empty(ml)
+        let new_col = s:ErlangCalcIndent(v:lnum - 1, [])
+        let new_col += &sw
+        return new_col
+      endif
+    endif
   endif
 
   let ml = matchlist(currline,
