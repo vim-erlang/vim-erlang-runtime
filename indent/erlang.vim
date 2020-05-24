@@ -241,6 +241,13 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
       call add(indtokens, [a:line[i : i + 1], vcol, i])
       let next_i = i + 2
 
+    " Two-character opening tokens with one-character closing token
+    elseif i + 1 < linelen &&
+         \ index(['#{'],
+         \       a:line[i : i + 1]) != -1
+      call add(indtokens, [a:line[i : i + 1], vcol, i + 1])
+      let next_i = i + 2
+
     " Other character: , ; < > ( ) [ ] { } # + - * / : ? = ! |
     else
       call add(indtokens, [a:line[i], vcol, i])
@@ -1019,10 +1026,11 @@ function! s:ErlangCalcIndent2(lnum, stack)
                                             \stored_vcol, '>>', 2)
         if ret | return res | endif
 
-      elseif token ==# '(' || token ==# '{'
+      elseif token ==# '(' || token ==# '{' || token ==# '#{'
 
         let end_token = (token ==# '(' ? ')' :
-                        \token ==# '{' ? '}' : 'error')
+                        \token ==# '{' ? '}' :
+                        \token ==# '#{' ? '}' : 'error')
 
         if empty(stack)
           " We found the opening paren whose block contains the LTI.
@@ -1091,9 +1099,19 @@ function! s:ErlangCalcIndent2(lnum, stack)
             "     {
             "       stored_vcol
             "     } % LTI
+            "
+            "     #{
+            "        stored_vcol
+            "      } % LTI
             " }}}
             call s:Log('    "' . token . '" token (whose closing token ' .
                       \'starts LTI) found -> return')
+
+            " Extra 1 space before a map closing brace
+            if token ==# '#{'
+              return curr_vcol + 1
+            endif
+
             return curr_vcol
           elseif stored_vcol ==# -1
             " Examples: {{{
@@ -1115,6 +1133,12 @@ function! s:ErlangCalcIndent2(lnum, stack)
             " }}}
             call s:Log('    "' . token .
                       \'" token (which directly precedes LTI) found -> return')
+
+            " Extra 1 space after a map opening brace
+            if token ==# '#{'
+              return curr_vcol + 2
+            endif
+
             return curr_vcol + 1
           else
             " Examples: {{{
