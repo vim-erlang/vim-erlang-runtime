@@ -44,7 +44,7 @@ setlocal iskeyword+=$,@-@
 
 " Comments
 syn match erlangComment           '%.*$' contains=erlangCommentAnnotation,erlangTodo
-syn match erlangCommentAnnotation ' \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|private\|equiv\|spec\|throws\)' contained
+syn match erlangCommentAnnotation ' \@<=@\%(clear\|docfile\|end\|headerfile\|todo\|TODO\|type\|author\|copyright\|doc\|reference\|see\|since\|title\|version\|deprecated\|hidden\|param\|private\|equiv\|spec\|throws\)' contained
 syn match erlangCommentAnnotation /`[^']*'/ contained
 syn keyword erlangTodo            TODO FIXME XXX contained
 
