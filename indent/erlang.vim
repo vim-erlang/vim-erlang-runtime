@@ -4,7 +4,7 @@
 " Contributors: Edwin Fine <efine145_nospam01 at usa dot net>
 "               Pawel 'kTT' Salata <rockplayer.pl@gmail.com>
 "               Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
-" Last Update:  2017-Feb-28
+" Last Update:  2020-Jun-11
 " License:      Vim license
 " URL:          https://github.com/vim-erlang/vim-erlang-runtime
 

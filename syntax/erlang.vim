@@ -2,7 +2,7 @@
 " Language:     Erlang (http://www.erlang.org)
 " Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
 " Contributor:  Adam Rutkowski <hq@mtod.org>
-" Last Update:  2019-Jun-18
+" Last Update:  2020-May-26
 " License:      Vim license
 " URL:          https://github.com/vim-erlang/vim-erlang-runtime
 
