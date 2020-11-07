@@ -1,5 +1,6 @@
 " Vim ftplugin file
 " Language:     Erlang
+" Maintainer:   Csaba Hoch <csaba.hoch@gmail.com>
 " Author:       Oscar Hellström <oscar@oscarh.net>
 " Contributors: Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
 "               Eduardo Lopez (http://github.com/tapichu)
