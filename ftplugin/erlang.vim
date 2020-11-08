@@ -46,6 +46,11 @@ function s:SetErlangOptions()
 
 	setlocal formatoptions+=ro
 	let &l:keywordprg = g:erlang_keywordprg
+
+        setlocal suffixesadd=.erl,.hrl
+
+        let &l:include = '^\s*-\%(include\|include_lib\)\s*("\zs\f*\ze")'
+        let &l:define  = '^\s*-\%(define\|record\|type\|opaque\)'
 endfunction
 
 function GetErlangFold(lnum)
@@ -82,7 +87,7 @@ endfunction
 call s:SetErlangOptions()
 
 let b:undo_ftplugin = "setlocal foldmethod< foldexpr< foldtext<"
-	\ . " comments< commentstring< formatoptions<"
+	\ . " comments< commentstring< formatoptions< suffixesadd< include< define<"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
