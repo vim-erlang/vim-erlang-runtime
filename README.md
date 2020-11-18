@@ -89,3 +89,58 @@ Notes:
   ```bash
   -c ':set runtimepath^=~/.vim/bundle/vim-erlang-runtime/'
   ```
+
+## Running vader tests
+
+The tests for the `include` and `define` options in `test_include_search.vader`
+are run using the [vader](https://github.com/junegunn/vader.vim) Vim plugin.
+
+A common pattern to use for test cases is to do
+
+```vim
+Given:
+  text to test
+
+Do:
+  daw
+
+Expect:
+  to text
+```
+
+The text that should be tested is placed in the `Given` block. A normal command
+is placed in the `Do` block and the expected output in the `Expect` block. The
+cursor is by default on the first column in the first line, and doing `daw`
+should therefore delete around the first word.
+
+The simplest way to run a vader test file is to open the test file in Vim and
+run `:Vader`. To run it from the command line, do `vim '+Vader!*' && echo
+Success || echo Failure`. If the environment variable `VADER_OUTPUT_FILE` is
+set, the results are written to this file.
+
+To test the code with only the wanted plugins loaded and without a vimrc, a
+similar command as for testing indentation can be run from the command line. The
+command below does the following:
+
+- Starts Vim with nocompatible set and without sourcing any vimrc.
+- Puts the current folder first in the runtimepath, such that the ftplugin,
+  indent etc. in the current folder are sourced first. Then the regular runtime
+  path is added and finally the path to where vader is installed is added (this
+  will be different depending on which plugin manager you use, the path below is
+  where vim-plug puts it).
+- Sources the vader plugin file so that the `Vader` command can be used.
+- Enables using filetype specific settings and indentation.
+- Runs all vader test files found in the current directory and then exits Vim.
+- Echoes `Success` if all test cases pass, else `Failure`.
+
+```bash
+vim -N -u NONE \
+    -c 'set runtimepath=.,$VIMRUNTIME,~/.vim/plugged/vader.vim' \
+    -c 'runtime plugin/vader.vim' \
+    -c 'filetype plugin indent on' \
+    -c 'Vader!*' \
+    && echo Success || echo Failure
+```
+
+For more details, see the [vader](https://github.com/junegunn/vader.vim)
+repository.
