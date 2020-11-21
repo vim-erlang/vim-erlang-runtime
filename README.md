@@ -40,16 +40,17 @@ This is the Erlang indentation and syntax that is shipped with Vim (from Vim 7.4
 
 [vim-plug]:https://github.com/junegunn/vim-plug
 
-## Development and testing
+## Development and testing the indentation script
 
 This section is relevant only if you want to be involved in the development of
-the script.
+the indentation script.
 
 The indentation script can be tested in the following way:
 
 - Copy `syntax/erlang.vim` into `~/syntax`.
-- Open `test_indent.erl` in Vim from this directory. (`test_indent.erl` always
-  shows how the Erlang code is indented by the script – not how it should be.)
+- Change to the `test` directory and open `test/test_indent.erl`.
+  (`test_indent.erl` always shows how the Erlang code is indented by the script
+  – not how it should be.)
 - Source `helper.vim` (`:source helper.vim`)
 - Press F1 to load the new indentation (`indent/erlang.vim`).
 - Press F3 to reindent the current line. Press shift-F3 to print a log.

@@ -20,7 +20,7 @@ function! RereadIndent()
         delfunction ErlangIndent
     endif
     unlet b:did_indent
-    so indent/erlang.vim
+    so ../indent/erlang.vim
     let g:erlang_unexpected_token_indent = 40
     let g:erlang_indent_searchpair_timeout = 20000
 endfunction
