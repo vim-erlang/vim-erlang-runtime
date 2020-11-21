@@ -1,42 +1,59 @@
-# Erlang indentation and syntax for Vim
+# Erlang runtime files for Vim
 
-This is the Erlang indentation and syntax that is shipped with Vim (from Vim 7.4).
+This repository contains the indentation, syntax and ftplugin scripts which are
+shipped with Vim for the Erlang programming language.
 
 ## Installation
 
-### Method 1
+### Installing manually
 
-- Clone this repository:
+1.  Clone this repository:
 
-        $ mkdir -p ~/.vim/bundle
-        $ cd ~/.vim/bundle
-        $ git clone https://github.com/vim-erlang/vim-erlang-runtime
+    ```
+    $ mkdir -p ~/.vim/bundle
+    $ cd ~/.vim/bundle
+    $ git clone https://github.com/vim-erlang/vim-erlang-runtime
+    ```
 
-- Add the repository path to `runtimepath` in your `.vimrc`:
+2.  Add the repository path to `runtimepath` in your `.vimrc`:
 
-        :set runtimepath^=~/.vim/bundle/vim-erlang-runtime/
+    ```
+    :set runtimepath^=~/.vim/bundle/vim-erlang-runtime/
+    ```
 
-### Method 2
+### Installing manually, alternative method
 
-- Copy `syntax/erlang.vim` into `~/.vim/syntax/`.
-- Copy `indent/erlang.vim` into `~/.vim/indent/`.
+1.  Copy `syntax/erlang.vim` into `~/.vim/syntax/`.
+
+2.  Copy `indent/erlang.vim` into `~/.vim/indent/`.
+
+3.  Copy `ftplugin/erlang.vim` into `~/.vim/ftplugin/`.
 
 ### Installing using vim-plug
 
-1. Install vim-plug using the [instructions][vim-plug]
-2. Add vim-erlang-runtime to your plugin list in `.vimrc` and re-source it:
+1.  Install vim-plug using the [instructions][vim-plug].
 
-    insert vim-erlang-runtime
+2.  Add vim-erlang-runtime to your plugin list in `.vimrc` by inserting the
+    following lines:
+
     ```
     '' Erlang Runtime
     Plug 'vim-erlang/vim-erlang-runtime'
     ```
+
     between
-    `call plug#begin('~/.vim/plugged')`
+
+    ```
+    call plug#begin('~/.vim/plugged')
+    ```
 
     and
-    `call plug#end()`
-3. Run `:PlugInstall`
+
+    ```
+    call plug#end()
+    ```
+
+3.  Run `:PlugInstall`.
 
 [vim-plug]:https://github.com/junegunn/vim-plug
 
@@ -47,21 +64,26 @@ the indentation script.
 
 The indentation script can be tested in the following way:
 
-- Copy `syntax/erlang.vim` into `~/syntax`.
-- Change to the `test` directory and open `test/test_indent.erl`.
-  (`test_indent.erl` always shows how the Erlang code is indented by the script
-  – not how it should be.)
-- Source `helper.vim` (`:source helper.vim`)
-- Press F1 to load the new indentation (`indent/erlang.vim`).
-- Press F3 to reindent the current line. Press shift-F3 to print a log.
-- Press F4 to reindent the current buffer.
-- Press F5 to show the tokens of the current line.
+1.  Copy `syntax/erlang.vim` into `~/syntax`.
 
-*Note:*
+2.  Change to the `test` directory and open `test/test_indent.erl`.
 
-- When the indentation scripts detects a syntax error in test mode (i.e. when it
-  was loaded with `F1` from `helper.vim`), it indents the line to column 40
-  instead of leaving it as it is. This behavior is useful for testing.
+    Note: `test_indent.erl` always shows how the Erlang code is indented by the
+    script – not how it should be.
+
+3.  Source `helper.vim` (`:source helper.vim`)
+
+4.  Press F1 to load the new indentation (`indent/erlang.vim`).
+
+5.  Press F3 to reindent the current line. Press shift-F3 to print a log.
+
+6.  Press F4 to reindent the current buffer.
+
+7.  Press F5 to show the tokens of the current line.
+
+Note: When the indentation scripts detects a syntax error in test mode (i.e.
+when it was loaded with `F1` from `helper.vim`), it indents the line to column
+40 instead of leaving it as it is. This behavior is useful for testing.
 
 ## Tip: indentation from the command line
 
