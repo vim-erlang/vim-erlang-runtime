@@ -4,6 +4,7 @@
 " Author:       Oscar Hellström <oscar@oscarh.net>
 " Contributors: Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
 "               Eduardo Lopez (http://github.com/tapichu)
+"               Arvid Bjurklint (http://github.com/slarwise)
 " License:      Vim license
 " Version:      2012/01/25
 
