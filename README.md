@@ -143,14 +143,15 @@ set, the results are written to this file.
 
 To test the code with only the wanted plugins loaded and without a vimrc, a
 similar command as for testing indentation can be run from the command line. The
-command below does the following:
+command below does the following, assuming that you are standing in the `test`
+directory:
 
 - Starts Vim with nocompatible set and without sourcing any vimrc.
-- Puts the current folder first in the runtimepath, such that the ftplugin,
-  indent etc. in the current folder are sourced first. Then the regular runtime
-  path is added and finally the path to where vader is installed is added (this
-  will be different depending on which plugin manager you use, the path below is
-  where vim-plug puts it).
+- Puts the directory above the current one, i.e. the root directory of this
+  repo, first in the runtimepath, such that the ftplugin, indent etc. from this
+  repo are sourced first. Then the regular runtime path is added and finally the
+  path to where vader is installed is added (this will be different depending on
+  which plugin manager you use, the path below is where vim-plug puts it).
 - Sources the vader plugin file so that the `Vader` command can be used.
 - Enables using filetype specific settings and indentation.
 - Runs all vader test files found in the current directory and then exits Vim.
@@ -158,7 +159,7 @@ command below does the following:
 
 ```bash
 vim -N -u NONE \
-    -c 'set runtimepath=.,$VIMRUNTIME,~/.vim/plugged/vader.vim' \
+    -c 'set runtimepath=..,$VIMRUNTIME,~/.vim/plugged/vader.vim' \
     -c 'runtime plugin/vader.vim' \
     -c 'filetype plugin indent on' \
     -c 'Vader!*' \
