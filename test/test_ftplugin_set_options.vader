@@ -32,13 +32,13 @@ After (Check if options/variables have been set correctly and clean up global va
   unlet! g:erlang_keywordprg
 
 Execute(Don't set any g:erlang_* variables):
-  source ftplugin/erlang.vim
+  source ../ftplugin/erlang.vim
 
 Execute(Set g:erlang_keywordprg):
   let g:erlang_keywordprg = 'mykeywordprg'
   let b:erlang_expected_values['&l:keywordprg'] = 'mykeywordprg'
 
-  source ftplugin/erlang.vim
+  source ../ftplugin/erlang.vim
 
 Execute(Set g:erlang_folding):
   let g:erlang_folding = 1
@@ -46,7 +46,7 @@ Execute(Set g:erlang_folding):
   let b:erlang_expected_values['&l:foldexpr'] = 'GetErlangFold(v:lnum)'
   let b:erlang_expected_values['&l:foldtext'] = 'ErlangFoldText()'
 
-  source ftplugin/erlang.vim
+  source ../ftplugin/erlang.vim
 
 Execute(Set g:erlang_keywordprg and g:erlang_folding):
   let g:erlang_keywordprg = 'mykeywordprg'
@@ -57,4 +57,4 @@ Execute(Set g:erlang_keywordprg and g:erlang_folding):
   let g:erlang_folding = 1
   let b:erlang_expected_values['&l:keywordprg'] = 'mykeywordprg'
 
-  source ftplugin/erlang.vim
+  source ../ftplugin/erlang.vim
