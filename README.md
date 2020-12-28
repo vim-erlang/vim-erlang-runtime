@@ -55,8 +55,6 @@ shipped with Vim for the Erlang programming language.
 
 3.  Run `:PlugInstall`.
 
-[vim-plug]:https://github.com/junegunn/vim-plug
-
 ## Development and testing the indentation script
 
 This section is relevant only if you want to be involved in the development of
@@ -101,24 +99,26 @@ vim -ENn -u NONE \
 
 Notes:
 
-- This can be for example added to a Makefile as a "re-indent rule".
-- You can use the `expandtab`, `shiftwidth` and `tabstop` options to customize
-  how to use space and tab characters. The command above uses only spaces, and
-  one level of indentation is 4 spaces.
-- If you would like to use a different version of the indentation script from
-  that one shipped in Vim (e.g. because you have Vim 7.3), then also add the
-  following as the first command parameter:
+-   This can be for example added to a Makefile as a "re-indent rule".
 
-  ```bash
-  -c ':set runtimepath^=~/.vim/bundle/vim-erlang-runtime/'
-  ```
+-   You can use the `expandtab`, `shiftwidth` and `tabstop` options to customize
+    how to use space and tab characters. The command above uses only spaces, and
+    one level of indentation is 4 spaces.
+
+-   If you would like to use a different version of the indentation script from
+    that one shipped in Vim (e.g. because you have Vim 7.3), then also add the
+    following as the first command parameter:
+
+    ```bash
+    -c ':set runtimepath^=~/.vim/bundle/vim-erlang-runtime/'
+    ```
 
 ## Running vader tests
 
 The tests for the `include` and `define` options in `test_include_search.vader`
-are run using the [vader](https://github.com/junegunn/vader.vim) Vim plugin.
+are run using the [vader][vader] Vim plugin.
 
-A common pattern to use for test cases is to do
+A common pattern to use for test cases is to do the following:
 
 ```vim
 Given:
@@ -141,21 +141,8 @@ run `:Vader`. To run it from the command line, do `vim '+Vader!*' && echo
 Success || echo Failure`. If the environment variable `VADER_OUTPUT_FILE` is
 set, the results are written to this file.
 
-To test the code with only the wanted plugins loaded and without a vimrc, a
-similar command as for testing indentation can be run from the command line. The
-command below does the following, assuming that you are standing in the `test`
-directory:
-
-- Starts Vim with nocompatible set and without sourcing any vimrc.
-- Puts the directory above the current one, i.e. the root directory of this
-  repo, first in the runtimepath, such that the ftplugin, indent etc. from this
-  repo are sourced first. Then the regular runtime path is added and finally the
-  path to where vader is installed is added (this will be different depending on
-  which plugin manager you use, the path below is where vim-plug puts it).
-- Sources the vader plugin file so that the `Vader` command can be used.
-- Enables using filetype specific settings and indentation.
-- Runs all vader test files found in the current directory and then exits Vim.
-- Echoes `Success` if all test cases pass, else `Failure`.
+To test the code with only the wanted plugins loaded and without a vimrc, you
+can go to the `test` directory and execute the following command:
 
 ```bash
 vim -N -u NONE \
@@ -166,5 +153,26 @@ vim -N -u NONE \
     && echo Success || echo Failure
 ```
 
-For more details, see the [vader](https://github.com/junegunn/vader.vim)
-repository.
+The command does the following:
+
+1.  Starts Vim with nocompatible set and without sourcing any vimrc.
+
+2.  Puts the directory above the current one, i.e. the root directory of this
+    repo, first in the runtimepath, such that the ftplugin, indent etc. from
+    this repo are sourced first. Then the regular runtime path is added and
+    finally the path to where vader is installed is added (this will be
+    different depending on which plugin manager you use, the path below is where
+    vim-plug puts it).
+
+3.  Sources the vader plugin file so that the `Vader` command can be used.
+
+4.  Enables using filetype specific settings and indentation.
+
+5.  Runs all vader test files found in the current directory and then exits Vim.
+
+6.  Echoes `Success` if all test cases pass, else `Failure`.
+
+For more details, see the [vader][vader] repository.
+
+[vader]: https://github.com/junegunn/vader.vim
+[vim-plug]: https://github.com/junegunn/vim-plug
