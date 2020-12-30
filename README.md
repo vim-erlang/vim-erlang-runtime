@@ -89,6 +89,40 @@ Notes:
 
 ## Development
 
+### File layout
+
+This repository contains the following files and directories:
+
+<!-- If you edit the list, please maintain the alphabetical order. -->
+
+*   [`ftdetect/erlang.vim`]: Script for detecting Erlang files based on file
+    extension. See [`:help ftdetect`].
+
+    File type detection based on content (e.g., when the first line
+    is `#!/usr/bin/escript`) is not in this file. See
+    [`:help new-filetype-scripts`].
+
+*   [`ftplugin/erlang.vim`] File type plugin for Erlang files. See
+    [`:help ftplugin`].
+
+    This file is also distributed with Vim as
+    [`runtime/ftplugin/erlang.vim`][vim-src/runtime/ftplugin/erlang.vim].
+
+*   [`indent/erlang.vim`]: Indentation plugin for Erlang files. See
+    [`:help indent-expression`].
+
+    This file is also distributed with Vim as
+    [`runtime/indent/erlang.vim`][vim-src/runtime/indent/erlang.vim].
+
+*   [`syntax/erlang.vim`]: Syntax highlight plugin for Erlang files. See
+    [`:help syntax`].
+
+    This file is also distributed with Vim as
+    [`runtime/syntax/erlang.vim`][vim-src/runtime/syntax/erlang.vim].
+
+*   [`test`]: Manual and automatic test that help the development and testing of
+    vim-erlang-runtime.
+
 ### Erlang-related files in Vim
 
 The Vim repository contains the following Erlang-related files:
@@ -108,10 +142,10 @@ The Vim repository contains the following Erlang-related files:
     `ftdetect/erlang.vim` in this repository.
 
 *   [`runtime/ftplugin/erlang.vim`][vim-src/runtime/ftplugin/erlang.vim]:
-    Same as `ftplugin/erlang.vim` in this repository.
+    Same as [`ftplugin/erlang.vim`] in this repository.
 
 *   [`runtime/indent/erlang.vim`][vim-src/runtime/indent/erlang.vim]:
-    Same as `indent/erlang.vim` in this repository.
+    Same as [`indent/erlang.vim`] in this repository.
 
 *   [`runtime/makemenu.vim`][vim-src/runtime/makemenu.vim]:
     Allows Erlang to be selected in the syntax menu. See also
@@ -127,7 +161,7 @@ The Vim repository contains the following Erlang-related files:
     `runtime/makemenu.vim`.
 
 *   [`runtime/syntax/erlang.vim`][vim-src/runtime/syntax/erlang.vim]:
-    Same as `syntax/erlang.vim` in this repository.
+    Same as [`syntax/erlang.vim`] in this repository.
 
 *   [`src/testdir/test_filetype.vim`][vim-src/src/testdir/test_filetype.vim]:
     An automatic test for setting file types.
@@ -221,6 +255,18 @@ The command does the following:
 
 For more details, see the [vader][vader] repository.
 
+<!-- If you modify the list below, please maintain the order with `:sort i`. -->
+
+[`:help ftdetect`]: https://vimhelp.org/filetype.txt.html#ftdetect
+[`:help ftplugin`]: https://vimhelp.org/usr_41.txt.html#ftplugin
+[`:help indent-expression`]: https://vimhelp.org/indent.txt.html#indent-expression
+[`:help new-filetype-scripts`]: https://vimhelp.org/filetype.txt.html#new-filetype-scripts
+[`:help syntax`]: https://vimhelp.org/syntax.txt.html#syntax
+[`ftdetect/erlang.vim`]: ftdetect/erlang.vim
+[`ftplugin/erlang.vim`]: ftplugin/erlang.vim
+[`indent/erlang.vim`]: indent/erlang.vim
+[`syntax/erlang.vim`]: syntax/erlang.vim
+[`test`]: test
 [vader]: https://github.com/junegunn/vader.vim
 [vim-plug]: https://github.com/junegunn/vim-plug
 [vim-src/runtime/compiler/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/compiler/erlang.vim
