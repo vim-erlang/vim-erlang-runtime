@@ -87,7 +87,52 @@ Notes:
     -c ':set runtimepath^=~/.vim/bundle/vim-erlang-runtime/'
     ```
 
-## Development and testing the indentation script
+## Development
+
+### Erlang-related files in Vim
+
+The Vim repository contains the following Erlang-related files:
+
+<!-- If you edit the list, please maintain the alphabetical order. -->
+
+*   [`runtime/compiler/erlang.vim`][vim-src/runtime/compiler/erlang.vim]:
+    Allows simple Erlang files to be compiled after calling `:compiler erlang`.
+    `vim-erlang-compiler` has a similar but broader scope.
+
+*   [`runtime/doc/syntax.txt`][vim-src/runtime/doc/syntax.txt]:
+    Contains documentation about configuring `runtime/syntax/erlang.vim`.
+
+*   [`runtime/filetype.vim`][vim-src/runtime/filetype.vim]:
+    Sets the file type to `erlang` if the file name matches either `*.erl`,
+    `*.hrl` or `*.yaws`. The list of patterns is a subset of the patterns in
+    `ftdetect/erlang.vim` in this repository.
+
+*   [`runtime/ftplugin/erlang.vim`][vim-src/runtime/ftplugin/erlang.vim]:
+    Same as `ftplugin/erlang.vim` in this repository.
+
+*   [`runtime/indent/erlang.vim`][vim-src/runtime/indent/erlang.vim]:
+    Same as `indent/erlang.vim` in this repository.
+
+*   [`runtime/makemenu.vim`][vim-src/runtime/makemenu.vim]:
+    Allows Erlang to be selected in the syntax menu. See also
+    `runtime/synmenu.vim`.
+
+*   [`runtime/scripts.vim`][vim-src/runtime/scripts.vim]:
+    Sets the file type to `erlang` if the first line of the file matches
+    `^#! [...]escript`. (It is not trivial what is accepted in the `[...]`
+    part.)
+
+*   [`runtime/synmenu.vim`][vim-src/runtime/synmenu.vim]:
+    Allows Erlang to be selected in the syntax menu. See also
+    `runtime/makemenu.vim`.
+
+*   [`runtime/syntax/erlang.vim`][vim-src/runtime/syntax/erlang.vim]:
+    Same as `syntax/erlang.vim` in this repository.
+
+*   [`src/testdir/test_filetype.vim`][vim-src/src/testdir/test_filetype.vim]:
+    An automatic test for setting file types.
+
+### Development and testing the indentation script
 
 This section is relevant only if you want to be involved in the development of
 the indentation script.
@@ -115,7 +160,7 @@ Note: When the indentation scripts detects a syntax error in test mode (i.e.
 when it was loaded with `F1` from `helper.vim`), it indents the line to column
 40 instead of leaving it as it is. This behavior is useful for testing.
 
-## Running vader tests
+### Running vader tests
 
 The tests for the `include` and `define` options in `test_include_search.vader`
 are run using the [vader][vader] Vim plugin.
@@ -178,3 +223,13 @@ For more details, see the [vader][vader] repository.
 
 [vader]: https://github.com/junegunn/vader.vim
 [vim-plug]: https://github.com/junegunn/vim-plug
+[vim-src/runtime/compiler/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/compiler/erlang.vim
+[vim-src/runtime/doc/syntax.txt]: https://github.com/vim/vim/blob/master/runtime/doc/syntax.txt
+[vim-src/runtime/filetype.vim]: https://github.com/vim/vim/blob/master/runtime/filetype.vim
+[vim-src/runtime/ftplugin/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/ftplugin/erlang.vim
+[vim-src/runtime/indent/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/indent/erlang.vim
+[vim-src/runtime/makemenu.vim]: https://github.com/vim/vim/blob/master/runtime/makemenu.vim
+[vim-src/runtime/scripts.vim]: https://github.com/vim/vim/blob/master/runtime/scripts.vim
+[vim-src/runtime/synmenu.vim]: https://github.com/vim/vim/blob/master/runtime/synmenu.vim
+[vim-src/runtime/syntax/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/syntax/erlang.vim
+[vim-src/src/testdir/test_filetype.vim]: https://github.com/vim/vim/blob/master/src/testdir/test_filetype.vim
