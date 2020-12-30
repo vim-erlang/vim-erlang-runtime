@@ -55,35 +55,9 @@ shipped with Vim for the Erlang programming language.
 
 3.  Run `:PlugInstall`.
 
-## Development and testing the indentation script
+## Tips
 
-This section is relevant only if you want to be involved in the development of
-the indentation script.
-
-The indentation script can be tested in the following way:
-
-1.  Copy `syntax/erlang.vim` into `~/syntax`.
-
-2.  Change to the `test` directory and open `test/test_indent.erl`.
-
-    Note: `test_indent.erl` always shows how the Erlang code is indented by the
-    script – not how it should be.
-
-3.  Source `helper.vim` (`:source helper.vim`)
-
-4.  Press F1 to load the new indentation (`indent/erlang.vim`).
-
-5.  Press F3 to reindent the current line. Press shift-F3 to print a log.
-
-6.  Press F4 to reindent the current buffer.
-
-7.  Press F5 to show the tokens of the current line.
-
-Note: When the indentation scripts detects a syntax error in test mode (i.e.
-when it was loaded with `F1` from `helper.vim`), it indents the line to column
-40 instead of leaving it as it is. This behavior is useful for testing.
-
-## Tip: indentation from the command line
+### Indentation from the command line
 
 The following snippet re-indents all `src/*.?rl` files using the indentation
 shipped with Vim:
@@ -112,6 +86,34 @@ Notes:
     ```bash
     -c ':set runtimepath^=~/.vim/bundle/vim-erlang-runtime/'
     ```
+
+## Development and testing the indentation script
+
+This section is relevant only if you want to be involved in the development of
+the indentation script.
+
+The indentation script can be tested in the following way:
+
+1.  Copy `syntax/erlang.vim` into `~/syntax`.
+
+2.  Change to the `test` directory and open `test/test_indent.erl`.
+
+    Note: `test_indent.erl` always shows how the Erlang code is indented by the
+    script – not how it should be.
+
+3.  Source `helper.vim` (`:source helper.vim`)
+
+4.  Press F1 to load the new indentation (`indent/erlang.vim`).
+
+5.  Press F3 to reindent the current line. Press shift-F3 to print a log.
+
+6.  Press F4 to reindent the current buffer.
+
+7.  Press F5 to show the tokens of the current line.
+
+Note: When the indentation scripts detects a syntax error in test mode (i.e.
+when it was loaded with `F1` from `helper.vim`), it indents the line to column
+40 instead of leaving it as it is. This behavior is useful for testing.
 
 ## Running vader tests
 
