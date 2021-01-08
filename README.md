@@ -3,6 +3,17 @@
 This repository contains the indentation, syntax and ftplugin scripts which are
 shipped with Vim for the Erlang programming language.
 
+## Table of Contents
+
+* [Installation](#installation)
+* [Tips](#tips)
+    * [Indentation from the command line](#indentation-from-the-command-line)
+* [Development](#development)
+    * [File layout](#file-layout)
+    * [Erlang-related files in Vim](#erlang-related-files-in-vim)
+    * [Development and testing the indentation script](#development-and-testing-the-indentation-script)
+    * [Running vader tests](#running-vader-tests)
+
 ## Installation
 
 <details>
