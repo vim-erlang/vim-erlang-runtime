@@ -1,7 +1,8 @@
 # Erlang runtime files for Vim
 
 This repository contains the indentation, syntax and ftplugin scripts which are
-shipped with Vim for the Erlang programming language.
+shipped with Vim for the Erlang programming language. Here you can download the
+newest version and contribute.
 
 ## Table of Contents
 
@@ -11,8 +12,8 @@ shipped with Vim for the Erlang programming language.
 * [Development](#development)
     * [File layout](#file-layout)
     * [Erlang-related files in Vim](#erlang-related-files-in-vim)
-    * [Development and testing the indentation script](#development-and-testing-the-indentation-script)
-    * [Running vader tests](#running-vader-tests)
+    * [Developing and testing the indentation script](#developing-and-testing-the-indentation-script)
+    * [Running Vader tests](#running-vader-tests)
 * [Contributing](#contributing)
 
 ## Installation
@@ -119,18 +120,18 @@ vim -ENn -u NONE \
 
 Notes:
 
--   This can be for example added to a Makefile as a "re-indent rule".
+*   This can be for example added to a Makefile as a "re-indent rule".
 
--   You can use the `expandtab`, `shiftwidth` and `tabstop` options to customize
+*   You can use the `expandtab`, `shiftwidth` and `tabstop` options to customize
     how to use space and tab characters. The command above uses only spaces, and
     one level of indentation is 4 spaces.
 
--   If you would like to use a different version of the indentation script from
-    that one shipped in Vim (e.g. because you have Vim 7.3), then also add the
-    following as the first command parameter:
+*   If you would like to use a different version of the indentation script from
+    that one shipped in Vim, then also add the following as the first command
+    parameter (replace the `/path/to` part):
 
     ```bash
-    -c ':set runtimepath^=~/.vim/bundle/vim-erlang-runtime/'
+    -c ':set runtimepath^=/path/to/vim-erlang-runtime/'
     ```
 
 ## Development
@@ -212,10 +213,7 @@ The Vim repository contains the following Erlang-related files:
 *   [`src/testdir/test_filetype.vim`][vim-src/src/testdir/test_filetype.vim]:
     An automatic test for setting file types.
 
-### Development and testing the indentation script
-
-This section is relevant only if you want to be involved in the development of
-the indentation script.
+### Developing and testing the indentation script
 
 The indentation script can be tested in the following way:
 
@@ -230,9 +228,9 @@ The indentation script can be tested in the following way:
 
 4.  Press F1 to load the new indentation (`indent/erlang.vim`).
 
-5.  Press F3 to reindent the current line. Press shift-F3 to print a log.
+5.  Press F3 to re-indent the current line. Press shift-F3 to print a log.
 
-6.  Press F4 to reindent the current buffer.
+6.  Press F4 to re-indent the current buffer.
 
 7.  Press F5 to show the tokens of the current line.
 
@@ -240,10 +238,10 @@ Note: When the indentation scripts detects a syntax error in test mode (i.e.
 when it was loaded with `F1` from `helper.vim`), it indents the line to column
 40 instead of leaving it as it is. This behavior is useful for testing.
 
-### Running vader tests
+### Running Vader tests
 
 The tests for the `include` and `define` options in `test_include_search.vader`
-are run using the [vader][vader] Vim plugin.
+are run using the [Vader] Vim plugin.
 
 A common pattern to use for test cases is to do the following:
 
@@ -263,7 +261,7 @@ is placed in the `Do` block and the expected output in the `Expect` block. The
 cursor is by default on the first column in the first line, and doing `daw`
 should therefore delete around the first word.
 
-The simplest way to run a vader test file is to open the test file in Vim and
+The simplest way to run a Vader test file is to open the test file in Vim and
 run `:Vader`. To run it from the command line, do `vim '+Vader!*' && echo
 Success || echo Failure`. If the environment variable `VADER_OUTPUT_FILE` is
 set, the results are written to this file.
@@ -282,24 +280,24 @@ vim -N -u NONE \
 
 The command does the following:
 
-1.  Starts Vim with nocompatible set and without sourcing any vimrc.
+1.  Starts Vim with `nocompatible` set and without sourcing any vimrc.
 
 2.  Puts the directory above the current one, i.e. the root directory of this
-    repo, first in the runtimepath, such that the ftplugin, indent etc. from
-    this repo are sourced first. Then the regular runtime path is added and
-    finally the path to where vader is installed is added (this will be
-    different depending on which plugin manager you use, the path below is where
-    vim-plug puts it).
+    repository, first in the `runtimepath`, such that the ftplugin, indent etc.
+    from this repository are sourced first. Then the regular runtime path is
+    added and finally the path to where Vader is installed is added (this will
+    be different depending on which plugin manager you use, the path below is
+    where vim-plug puts it).
 
-3.  Sources the vader plugin file so that the `Vader` command can be used.
+3.  Sources the Vader plugin file so that the `Vader` command can be used.
 
 4.  Enables using filetype specific settings and indentation.
 
-5.  Runs all vader test files found in the current directory and then exits Vim.
+5.  Runs all Vader test files found in the current directory and then exits Vim.
 
 6.  Echoes `Success` if all test cases pass, else `Failure`.
 
-For more details, see the [vader][vader] repository.
+For more details, see the [Vader] repository.
 
 ## Contributing
 
@@ -321,7 +319,7 @@ For more details, see the [vader][vader] repository.
 [`test`]: test
 [`vim-erlang`]: https://github.com/vim-erlang/vim-erlang
 [Pathogen repository]: https://github.com/tpope/vim-pathogen
-[vader]: https://github.com/junegunn/vader.vim
+[Vader]: https://github.com/junegunn/vader.vim
 [vim-erlang-contributing]: https://github.com/vim-erlang/vim-erlang#contributing
 [vim-plug repository]: https://github.com/junegunn/vim-plug
 [vim-src/runtime/compiler/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/compiler/erlang.vim
