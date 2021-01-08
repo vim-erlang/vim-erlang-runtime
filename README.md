@@ -5,55 +5,89 @@ shipped with Vim for the Erlang programming language.
 
 ## Installation
 
-### Installing manually
+<details>
+<summary>Vim's built-in package manager</summary>
+
+This is the recommended installation method if you use at least Vim 8 and you
+don't use another package manager.
+
+Information about Vim's built-in package manager: [`:help packages`].
+
+Installation steps:
+
+1.  Clone this repository (you can replace `foo` with the directory name of your
+    choice):
+
+    ```sh
+    $ git clone https://github.com/vim-erlang/vim-erlang-runtime.git \
+          ~/.vim/pack/foo/start/vim-erlang-runtime
+    ```
+
+2.  Restart Vim.
+</details>
+
+<details>
+<summary>Pathogen</summary>
+
+Information about Pathogen: [Pathogen repository].
+
+Installation steps:
 
 1.  Clone this repository:
 
     ```
-    $ mkdir -p ~/.vim/bundle
-    $ cd ~/.vim/bundle
-    $ git clone https://github.com/vim-erlang/vim-erlang-runtime
+    $ git clone https://github.com/vim-erlang/vim-erlang-runtime.git \
+          ~/.vim/bundle/vim-erlang-runtime
     ```
 
-2.  Add the repository path to `runtimepath` in your `.vimrc`:
+2.  Restart Vim.
+</details>
+
+<details>
+<summary>Vundle</summary>
+
+Information about Vundle: [Vundle repository].
+
+Installation steps:
+
+1.  Add `vim-erlang-runtime` to your plugin list in `.vimrc` by inserting
+    the line that starts with `Plugin`:
 
     ```
-    :set runtimepath^=~/.vim/bundle/vim-erlang-runtime/
+    call vundle#begin()
+      [...]
+      Plugin 'vim-erlang/vim-erlang-runtime'
+      [...]
+    call vundle#end()
     ```
 
-### Installing manually, alternative method
+2.  Restart Vim.
 
-1.  Copy `syntax/erlang.vim` into `~/.vim/syntax/`.
+3.  Run `:PluginInstall`.
+</details>
 
-2.  Copy `indent/erlang.vim` into `~/.vim/indent/`.
+<details>
+  <summary>Vim-Plug</summary>
 
-3.  Copy `ftplugin/erlang.vim` into `~/.vim/ftplugin/`.
+Information about Vim-Plug: [vim-plug repository].
 
-### Installing using vim-plug
+Installation steps:
 
-1.  Install vim-plug using the [instructions][vim-plug].
-
-2.  Add vim-erlang-runtime to your plugin list in `.vimrc` by inserting the
-    following lines:
-
-    ```
-    '' Erlang Runtime
-    Plug 'vim-erlang/vim-erlang-runtime'
-    ```
-
-    between
+1.  Add `vim-erlang-runtime` to your plugin list in `.vimrc` by inserting the
+    line that starts with `Plug`:
 
     ```
-    call plug#begin('~/.vim/plugged')
-    ```
-
-    and
-
-    ```
+    call plug#begin()
+      [...]
+      Plug 'vim-erlang/vim-erlang-runtime'
+      [...]
     call plug#end()
     ```
 
+2.  Restart Vim.
+
 3.  Run `:PlugInstall`.
+</details>
 
 ## Tips
 
@@ -261,14 +295,16 @@ For more details, see the [vader][vader] repository.
 [`:help ftplugin`]: https://vimhelp.org/usr_41.txt.html#ftplugin
 [`:help indent-expression`]: https://vimhelp.org/indent.txt.html#indent-expression
 [`:help new-filetype-scripts`]: https://vimhelp.org/filetype.txt.html#new-filetype-scripts
+[`:help packages`]: https://vimhelp.org/repeat.txt.html#packages
 [`:help syntax`]: https://vimhelp.org/syntax.txt.html#syntax
 [`ftdetect/erlang.vim`]: ftdetect/erlang.vim
 [`ftplugin/erlang.vim`]: ftplugin/erlang.vim
 [`indent/erlang.vim`]: indent/erlang.vim
 [`syntax/erlang.vim`]: syntax/erlang.vim
 [`test`]: test
+[Pathogen repository]: https://github.com/tpope/vim-pathogen
 [vader]: https://github.com/junegunn/vader.vim
-[vim-plug]: https://github.com/junegunn/vim-plug
+[vim-plug repository]: https://github.com/junegunn/vim-plug
 [vim-src/runtime/compiler/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/compiler/erlang.vim
 [vim-src/runtime/doc/syntax.txt]: https://github.com/vim/vim/blob/master/runtime/doc/syntax.txt
 [vim-src/runtime/filetype.vim]: https://github.com/vim/vim/blob/master/runtime/filetype.vim
@@ -279,3 +315,4 @@ For more details, see the [vader][vader] repository.
 [vim-src/runtime/synmenu.vim]: https://github.com/vim/vim/blob/master/runtime/synmenu.vim
 [vim-src/runtime/syntax/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/syntax/erlang.vim
 [vim-src/src/testdir/test_filetype.vim]: https://github.com/vim/vim/blob/master/src/testdir/test_filetype.vim
+[Vundle repository]: https://github.com/VundleVim/Vundle.vim
