@@ -13,6 +13,7 @@ shipped with Vim for the Erlang programming language.
     * [Erlang-related files in Vim](#erlang-related-files-in-vim)
     * [Development and testing the indentation script](#development-and-testing-the-indentation-script)
     * [Running vader tests](#running-vader-tests)
+* [Contributing](#contributing)
 
 ## Installation
 
@@ -300,6 +301,11 @@ The command does the following:
 
 For more details, see the [vader][vader] repository.
 
+## Contributing
+
+*   Please read the [Contributing][vim-erlang-contributing] section of the
+    [`vim-erlang`] README.
+
 <!-- If you modify the list below, please maintain the order with `:sort i`. -->
 
 [`:help ftdetect`]: https://vimhelp.org/filetype.txt.html#ftdetect
@@ -313,8 +319,10 @@ For more details, see the [vader][vader] repository.
 [`indent/erlang.vim`]: indent/erlang.vim
 [`syntax/erlang.vim`]: syntax/erlang.vim
 [`test`]: test
+[`vim-erlang`]: https://github.com/vim-erlang/vim-erlang
 [Pathogen repository]: https://github.com/tpope/vim-pathogen
 [vader]: https://github.com/junegunn/vader.vim
+[vim-erlang-contributing]: https://github.com/vim-erlang/vim-erlang#contributing
 [vim-plug repository]: https://github.com/junegunn/vim-plug
 [vim-src/runtime/compiler/erlang.vim]: https://github.com/vim/vim/blob/master/runtime/compiler/erlang.vim
 [vim-src/runtime/doc/syntax.txt]: https://github.com/vim/vim/blob/master/runtime/doc/syntax.txt
