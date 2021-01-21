@@ -653,6 +653,8 @@ function! s:BeginElementFound(stack, token, curr_vcol, stored_vcol, end_token, s
     else
       return [0, 0]
     endif
+  elseif a:stack == ['first_comma']
+    return [1, a:curr_vcol]
   else
     return [1, s:UnexpectedToken(a:token, a:stack)]
   endif
@@ -1024,7 +1026,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
         let end_token = (token ==# '(' ? ')' :
                         \token ==# '{' ? '}' : 'error')
 
-        if empty(stack)
+        if empty(stack) || stack == ['first_comma']
           " We found the opening paren whose block contains the LTI.
           let mode = 'inside'
         elseif stack[0] ==# end_token
@@ -1094,6 +1096,10 @@ function! s:ErlangCalcIndent2(lnum, stack)
             " }}}
             call s:Log('    "' . token . '" token (whose closing token ' .
                       \'starts LTI) found -> return')
+            return curr_vcol
+          elseif stored_vcol ==# -1 && stack == ['first_comma']
+            call s:Log('    "' . token . '" token (which directly ' .
+                      \'precedes LTI with first_comma) found -> return')
             return curr_vcol
           elseif stored_vcol ==# -1
             " Examples: {{{
@@ -1438,6 +1444,9 @@ function! ErlangIndent()
       let new_col = s:ErlangCalcIndent(v:lnum - 1,
                                       \[ml[2], 'align_to_begin_element'])
     endif
+  elseif currline =~# '^\s*,'
+    call s:Log("  Line type = 'first comma'")
+    let new_col = s:ErlangCalcIndent(v:lnum - 1, ['first_comma'])
   else
     call s:Log("  Line type = 'normal'")
 
