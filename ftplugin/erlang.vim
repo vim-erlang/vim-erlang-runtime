@@ -31,8 +31,6 @@ setlocal commentstring=%%s
 setlocal formatoptions+=ro
 
 if get(g:, 'erlang_extend_path', 1)
-" typical erlang paths
-  let &l:path = join(['include', 'src', 'test', &g:path], ',')
   " typical erlang.mk paths
   let &l:path = join([
         \ 'deps/*/include',
@@ -40,7 +38,7 @@ if get(g:, 'erlang_extend_path', 1)
         \ 'deps/*/test',
         \ 'deps/*/apps/*/include',
         \ 'deps/*/apps/*/src',
-        \ &l:path], ',')
+        \ &g:path], ',')
   " typical rebar3 paths
   let &l:path = join([
         \ 'apps/*/include',
@@ -48,6 +46,10 @@ if get(g:, 'erlang_extend_path', 1)
         \ '_build/default/lib/*/src',
         \ '_build/default/*/include',
         \ &l:path], ',')
+  " typical erlang paths
+  let &l:path = join(['include', 'src', 'test', &l:path], ',')
+
+  set wildignore+=*/.erlang.mk/*,*.beam
 endif
 
 setlocal suffixesadd=.erl,.hrl
