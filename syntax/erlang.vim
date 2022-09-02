@@ -62,6 +62,7 @@ syn match erlangModifier           '\$\%([^\\]\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\
 
 " Operators, separators
 syn match erlangOperator   '==\|=:=\|/=\|=/=\|<\|=<\|>\|>=\|=>\|:=\|++\|--\|=\|!\|<-\|+\|-\|\*\|\/'
+syn match erlangEqualsBinary '=<<'
 syn keyword erlangOperator div rem or xor bor bxor bsl bsr and band not bnot andalso orelse
 syn match erlangBracket    '{\|}\|\[\|]\||\|||'
 syn match erlangPipe       '|'
@@ -76,7 +77,8 @@ syn match erlangGlobalFuncCall '\<\%(\a[[:alnum:]_@]*\%(\s\|\n\|%.*\n\)*\.\%(\s\
 syn match erlangGlobalFuncRef  '\<\%(\a[[:alnum:]_@]*\%(\s\|\n\|%.*\n\)*\.\%(\s\|\n\|%.*\n\)*\)*\a[[:alnum:]_@]*\%(\s\|\n\|%.*\n\)*:\%(\s\|\n\|%.*\n\)*\a[[:alnum:]_@]*\>\%(\%(\s\|\n\|%.*\n\)*/\)\@=' contains=erlangComment,erlangVariable
 
 " Variables, macros, records, maps
-syn match erlangVariable '\<[A-Z_][[:alnum:]_@]*'
+syn match erlangVariable '\<[A-Z][[:alnum:]_@]*'
+syn match erlangAnonymousVariable '\<_[[:alnum:]_@]*'
 syn match erlangMacro    '??\=[[:alnum:]_@]\+'
 syn match erlangMacro    '\%(-define(\)\@<=[[:alnum:]_@]\+'
 syn region erlangQuotedMacro         start=/??\=\s*'/ end=/'/ contains=erlangQuotedAtomModifier
@@ -174,6 +176,7 @@ hi def link erlangModifier Special
 
 " Operators, separators
 hi def link erlangOperator Operator
+hi def link erlangEqualsBinary ErrorMsg
 hi def link erlangRightArrow Operator
 if s:old_style
 hi def link erlangBracket Normal
@@ -191,6 +194,7 @@ hi def link erlangLocalFuncRef Normal
 hi def link erlangGlobalFuncCall Function
 hi def link erlangGlobalFuncRef Function
 hi def link erlangVariable Normal
+hi def link erlangAnonymousVariable erlangVariable
 hi def link erlangMacro Normal
 hi def link erlangQuotedMacro Normal
 hi def link erlangRecord Normal
@@ -203,6 +207,7 @@ hi def link erlangLocalFuncRef Normal
 hi def link erlangGlobalFuncCall Normal
 hi def link erlangGlobalFuncRef Normal
 hi def link erlangVariable Identifier
+hi def link erlangAnonymousVariable erlangVariable
 hi def link erlangMacro Macro
 hi def link erlangQuotedMacro Macro
 hi def link erlangRecord Structure
