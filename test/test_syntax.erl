@@ -251,7 +251,17 @@ f(_X, _) ->
 %%% 7 Types and Function Specifications
 %%% ===========================================================================
 
-% TODO
+-spec func(Opt, M) -> #{ 'status' => S, 'c' => integer() } when
+      Opt :: 'inc' | 'dec',
+        M :: #{ 'status' => S, 'c' => integer() },
+        S :: 'update' | 'keep'.
+
+func(inc, #{ status := update, c := C} = M) -> M#{ c := C + 1};
+func(dec, #{ status := update, c := C} = M) -> M#{ c := C - 1};
+func(_,   #{ status := keep } = M)          -> M.
+
+-type map1() :: #{ binary() => integer() }.
+-type map2() :: #{ <<"list1">> | <<"list2">> => [numbers()] }.
 
 %%% ===========================================================================
 %%% 7.3  Type declarations of user-defined types
@@ -476,6 +486,31 @@ short_circuit() ->
 list_operations() ->
     A ++ A,
     A -- A.
+
+%%% ===========================================================================
+%%% 9.17 Map Expressions
+%%% ===========================================================================
+
+map_expressions() ->
+    M0 = #{},                   % empty map
+    M1 = #{ a => <<"hello">> }, % single association with literals
+    M2 = #{ 1 => 2, b => b },   % multiple associations with literals
+    M3 = #{ A => B },           % single association with variables
+    M4 = #{ {A, B} => f() },    % compound key associated to an evaluated expression
+
+    M0 = #{},
+    M1 = M0#{ a => 0 },
+    M2 = M1#{ a => 1, b => 2 },
+    M3 = M2#{ "function" => fun() -> f() end },
+    M4 = M3#{ a := 2, b := 3 },  % 'a' and 'b' was added in `M1` and `M2`.
+
+    M1 = #{ a => 1, c => 3 },
+    3 = M1#{ c },
+
+    M = #{ a => {1,2}},
+    #{ a := {1,B}} = M,
+
+    M1 = #{ E0 => E1 || K := V <- M0  }.  % map comprehension
 
 %%% ===========================================================================
 %%% 9.18 Bit Syntax Expressions
@@ -845,41 +880,3 @@ io_format_control_sequences() ->
     io:fwrite("~.16X~n", [-31,"0x"]),
     io:fwrite("~.10#~n", [31]),
     io:fwrite("~.16#~n", [-31]).
-
-%%% ===========================================================================
-%%% Maps
-%%% ===========================================================================
-
-%%% http://www.erlang.org/eeps/eep-0043.html
-maps() ->
-    M0 = #{},                   % empty map
-    M1 = #{ a => <<"hello">> }, % single association with literals
-    M2 = #{ 1 => 2, b => b },   % multiple associations with literals
-    M3 = #{ A => B },           % single association with variables
-    M4 = #{ {A, B} => f() },    % compound key associated to an evaluated expression
-
-    M0 = #{},
-    M1 = M0#{ a => 0 },
-    M2 = M1#{ a => 1, b => 2 },
-    M3 = M2#{ "function" => fun() -> f() end },
-    M4 = M3#{ a := 2, b := 3 },  % 'a' and 'b' was added in `M1` and `M2`.
-
-    M1 = #{ a => 1, c => 3 },
-    3 = M1#{ c },
-
-    M = #{ a => {1,2}},
-    #{ a := {1,B}} = M,
-
-    M1 = #{ E0 => E1 || K := V <- M0  }.  % map comprehension
-
--spec func(Opt, M) -> #{ 'status' => S, 'c' => integer() } when
-      Opt :: 'inc' | 'dec',
-        M :: #{ 'status' => S, 'c' => integer() },
-        S :: 'update' | 'keep'.
-
-func(inc, #{ status := update, c := C} = M) -> M#{ c := C + 1};
-func(dec, #{ status := update, c := C} = M) -> M#{ c := C - 1};
-func(_,   #{ status := keep } = M)          -> M.
-
--type map1() :: #{ binary() => integer() }.
--type map2() :: #{ <<"list1">> | <<"list2">> => [numbers()] }.
