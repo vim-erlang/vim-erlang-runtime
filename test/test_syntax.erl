@@ -209,6 +209,7 @@ escape_sequences() ->
 -behaviour(Behaviour).
 -behavior(Behaviour).
 -file(File, Line).
+-feature(maybe_expr, enable).
 -other(File, Line).
 
 macros() ->
@@ -399,6 +400,29 @@ case_example() ->
             ok;
         A when A < 0 ->
             ok
+    end.
+
+%%% ===========================================================================
+%%% 9.9 Maybe
+%%% ===========================================================================
+
+maybe_example_1() ->
+    maybe
+        {ok, A} ?= a(),
+        true = A >= 0,
+        {ok, B} ?= b(),
+        A + B
+    end.
+
+maybe_example_2() ->
+    maybe
+        {ok, A} ?= a(),
+        true = A >= 0,
+        {ok, B} ?= b(),
+        A + B
+    else
+        error -> error;
+        wrong -> error
     end.
 
 %%% ===========================================================================
