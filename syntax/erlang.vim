@@ -62,7 +62,7 @@ syn match erlangModifier           '\$\%([^\\]\|\\\%(\o\{1,3}\|x\x\x\|x{\x\+}\|\
 
 " Operators, separators
 syn match erlangOperator   '==\|=:=\|/=\|=/=\|<\|=<\|>\|>=\|=>\|:=\|++\|--\|=\|!\|<-\|+\|-\|\*\|\/'
-syn match erlangEqualsBinary '=<<'
+syn match erlangEqualsBinary '=<<\%(<\)\@!'
 syn keyword erlangOperator div rem or xor bor bxor bsl bsr and band not bnot andalso orelse
 syn match erlangBracket    '{\|}\|\[\|]\||\|||'
 syn match erlangPipe       '|'

@@ -433,6 +433,9 @@ term_comparisons() ->
     A > A,
     A =:= A,
     A =/= A,
+    A=<<<"binary">>,  % Same as: A =< <<"binary">>
+    A==<<"binary">>  % Same as: A == <<"binary">>
+    A=<<"binary">>,  % Same as: A =< <"binary">> (INVALID)
     ok.
 
 %%% ===========================================================================
