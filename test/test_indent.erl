@@ -928,6 +928,263 @@ f() ->
     ok.
 
 %%% ===========================================================================
+%%% 9.9 Maybe
+%%% ===========================================================================
+
+pattern_matching_examples() ->
+
+    X ?= 2,
+
+    X ?=
+    2,
+
+    {X, Y} ?= A,
+
+    {X,
+     Y} ?= A,
+
+    {X,
+     Y} ?= {A,
+            B},
+
+    Variable ?= 1 +
+    2,
+
+    Variable ?=
+    1 +
+    2,
+
+    Variable ?= (1 +
+                 2),
+
+    Variable ?=
+    (1 +
+     2),
+
+    ok.
+
+% maybe -- with linebreaks
+f() ->
+
+    % maybe with 0 expression (not valid Erlang, but why not behave nicely)
+    maybe end, 
+
+    % maybe with 1 expression
+    maybe
+        A
+    end,
+
+    % maybe with 2 expressions
+    maybe
+        A,
+        B
+    end,
+
+    ok.
+
+% maybe + else -- with linebreaks
+f() ->
+
+    % maybe with 0 branch (not valid Erlang, but why not behave nicely)
+    maybe
+    else
+        T -> T
+    end,
+
+    % maybe with 1 expression
+    maybe
+        A
+    else
+        T -> T
+    end,
+
+    maybe
+        A
+    else
+        T ->
+            T
+    end,
+
+    % maybe with 2 expressions
+    maybe
+        A,
+        B
+    else
+        T -> T
+    end,
+
+    maybe
+        A,
+        B
+    else
+        T ->
+            T
+    end,
+
+    ok.
+
+maybe__tokens_else_kw() ->
+
+    % maybe with 1 expression
+    maybe A
+    end,
+
+    % maybe with 2 expressions
+    maybe A,
+          B
+    end,
+
+    ok.
+
+% maybe + else -- with linebreaks
+maybe_else__tokens_else_kw() ->
+
+    % maybe with 0 expression (not valid Erlang, but why not behave nicely)
+    maybe 
+    else T -> T
+    end,
+
+    % maybe with 1 expression
+    maybe A
+    else T -> T
+    end,
+
+    maybe A
+    else T ->
+             T
+    end,
+
+    % maybe with 2 expressions
+    maybe A,
+          B
+    else T -> T
+    end,
+
+    maybe A,
+          B
+    else T ->
+             T
+    end,
+
+    ok.
+
+% No newline before 'else', no newline else 'else'
+f() ->
+
+    % maybe with 0 expression (not valid Erlang, but why not behave nicely)
+    maybe else T -> T
+    end,
+
+    % maybe with 1 expression
+    maybe A else T -> T
+    end,
+
+    maybe A else T ->
+                     T
+    end,
+
+    % maybe with 2 expressions
+    maybe A,
+          B else T -> T
+    end,
+
+    maybe A,
+          B else T -> T,
+                      T
+    end,
+
+    ok.
+
+% No newline before 'else', newline else 'else'
+f() ->
+
+    % maybe with 0 expression (not valid Erlang, but why not behave nicely)
+    maybe else
+              T -> T
+    end,
+
+    % maybe with 1 expression
+    maybe A else
+                T -> T
+    end,
+
+    maybe A else
+                T ->
+            T % weird
+    end,
+
+    % maybe with 2 expressions
+    maybe A,
+          B else
+                T -> T
+    end,
+
+    maybe A,
+          B else
+                T -> T,
+                     T
+    end,
+
+    ok.
+
+% maybe -- one-liners
+f() ->
+    maybe A  end,
+    maybe A, B end,
+
+    % half-liners
+    maybe A  end, maybe A end,
+    maybe A, B end, maybe A ,B end,
+    ok.
+
+% maybe + else -- one-liners
+f() ->
+
+    maybe else T -> T end,
+    maybe A else T -> T end,
+    maybe A, B else T -> T end,
+
+    % half-liners
+    maybe else T -> T end, maybe else T -> T end,
+    maybe A else T -> T end, maybe A else T -> T end,
+    maybe A, B else T -> T end, maybe A, B else T -> T end,
+    ok.
+
+% maybe + catch expression
+f() ->
+    ok, maybe
+            catch X
+        else
+            T ->
+                catch X;
+            T ->
+                catch X
+        end.
+
+% tricky scenarios which may catch some heuristics
+f() ->
+    maybe
+        A,
+        "maybe"
+    else
+        T -> T
+    end.
+
+f() ->
+    maybe
+        A,
+        "maybe"
+    else
+        T -> T end,
+    ok.
+
+f() ->
+    ok, maybe
+        else
+            T -> T
+        end.
+
+%%% ===========================================================================
 %%% 9.10 Send
 %%% ===========================================================================
 
@@ -1224,6 +1481,18 @@ f() ->
     receive A -> A after T -> T end, receive A -> A after T -> T end,
     receive A -> A; B -> B after T -> T end, receive A -> A; B -> B after T -> T end,
     ok.
+
+% receive + catch expression
+f() ->
+    ok, receive
+            A ->
+                catch X
+        after
+            T ->
+                catch X;
+            T ->
+                catch X
+        end.
 
 % tricky scenarios which may catch some heuristics
 f() ->
