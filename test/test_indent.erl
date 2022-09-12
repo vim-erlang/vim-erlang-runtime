@@ -1105,6 +1105,103 @@ receive_after__tokens_after_kw() ->
 
     ok.
 
+% No newline before 'after', no newline after 'after'
+f() ->
+
+    % receive with 0 branch
+    receive after T -> T
+    end,
+
+    % receive with 1 branch
+    receive A -> A after T -> T
+    end,
+
+    receive A ->
+                A after T ->
+                            T
+    end,
+
+    % receive with 2 branches
+    receive A -> A;
+            B -> B after T -> T
+    end,
+
+    receive A ->
+                A;
+            B ->
+                B after T -> T
+    end,
+
+    receive A -> A,
+                 A;
+            B -> B,
+                 A after T -> T,
+                              T
+    end,
+
+    receive A ->
+                A,
+                A;
+            B ->
+                B,
+                B after T -> T,
+                             T
+    end,
+
+    ok.
+
+% No newline before 'after', newline after 'after'
+f() ->
+
+    % receive with 0 branch
+    receive after
+                T -> T
+    end,
+
+    % receive with 1 branch
+    receive A -> A after
+                       T -> T
+    end,
+
+    receive A ->
+                A after
+                      T ->
+            T % weird
+    end,
+
+    % receive with 2 branches
+    receive A -> A;
+            B -> B after
+                       T -> T
+    end,
+
+    receive A ->
+                A;
+            B ->
+                B after
+                      T -> T
+    end,
+
+    receive A -> A,
+                 A;
+            B -> B,
+                 A after
+                       T -> T,
+                            T
+    end,
+
+    receive A ->
+                A,
+                A;
+            B ->
+                B,
+                B after
+                      T -> T,
+                           T
+    end,
+
+    ok.
+
 % receive -- one-liners
 f() ->
     receive A -> A end,
