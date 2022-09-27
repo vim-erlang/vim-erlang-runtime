@@ -5,7 +5,7 @@
 " Contributors: Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
 "               Eduardo Lopez (http://github.com/tapichu)
 "               Arvid Bjurklint (http://github.com/slarwise)
-" Last Update:  2021-Jan-08
+" Last Update:  2021-Nov-22
 " License:      Vim license
 " URL:          https://github.com/vim-erlang/vim-erlang-runtime
 
