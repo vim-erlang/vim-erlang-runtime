@@ -210,6 +210,11 @@ escape_sequences() ->
 -behavior(Behaviour).
 -file(File, Line).
 -feature(maybe_expr, enable).
+
+% Specified in https://www.erlang.org/doc/man/escript.
+-mode(compile).
+
+% Unknown attribute (not highlighted).
 -other(File, Line).
 
 macros() ->
