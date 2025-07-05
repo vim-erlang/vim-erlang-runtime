@@ -246,10 +246,16 @@ export(Functions).
 
 -module(syntax_test).
 % Support lack of () around it, see https://github.com/erlang/otp/issues/9502
+
 -module syntax_test.
 % Triple-quoted documentation strings.
+
 -moduledoc """
 A module for basic arithmetic.
+""".
+
+-moduledoc """
+A module for basic "arithmetic".
 """.
 
 -moduledoc "A module for basic arithmetic".

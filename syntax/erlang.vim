@@ -132,10 +132,10 @@ syn region erlangString            start=/"/ end=/"/ contains=erlangStringModifi
 syn region erlangStringTripleQuoted matchgroup=String start=/"""/ end=/\%(^\s*\)\@<="""/ keepend
 
 " Documentation
-syn region erlangDocString          start=/^-\%(module\)\=doc\s*\~\="""/ end=/\%(^\s*\)\@<="""\.$/ contains=@erlangDocStringCluster keepend
-syn region erlangDocString          start=/^-\%(module\)\=doc\s*<<"""/ end=/\%(^\s*\)\@<=""">>\.$/ contains=@erlangDocStringCluster keepend
 syn region erlangDocString          start=/^-\%(module\)\=doc\s*\~\="/ end=/"\.$/                  contains=@erlangDocStringCluster keepend
 syn region erlangDocString          start=/^-\%(module\)\=doc\s*<<"/ end=/">>\.$/                  contains=@erlangDocStringCluster keepend
+syn region erlangDocString          start=/^-\%(module\)\=doc\s*\~\="""/ end=/\%(^\s*\)\@<="""\.$/ contains=@erlangDocStringCluster keepend
+syn region erlangDocString          start=/^-\%(module\)\=doc\s*<<"""/ end=/\%(^\s*\)\@<=""">>\.$/ contains=@erlangDocStringCluster keepend
 syn cluster erlangDocStringCluster contains=erlangInnerDocAttribute,erlangDocStringDelimiter
 syn region erlangDocStringDelimiter matchgroup=erlangString start=/"/ end=/"/ contains=@erlangDocStringContained contained
 syn region erlangDocStringDelimiter matchgroup=erlangString start=/"""/ end=/"""/ contains=@erlangDocStringContained contained
