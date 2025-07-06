@@ -24,11 +24,6 @@
 " To use the old highlighting style, add this to your .vimrc:
 "
 "     let g:erlang_old_style_highlight = 1
-"
-" To highlight further module attributes, add them to
-" ~/.vim/after/syntax/erlang.vim:
-"
-"     syn keyword erlangAttribute myattr1 myattr2 contained
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
