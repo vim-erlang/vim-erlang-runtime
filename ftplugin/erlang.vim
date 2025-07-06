@@ -6,7 +6,7 @@
 "               Eduardo Lopez (http://github.com/tapichu)
 "               Arvid Bjurklint (http://github.com/slarwise)
 "               Paweł Zacharek (http://github.com/subc2)
-" Last Update:  2022-Sep-28
+" Last Update:  2023-Dec-20
 " License:      Vim license
 " URL:          https://github.com/vim-erlang/vim-erlang-runtime
 
@@ -96,26 +96,22 @@ if !exists('*ErlangFoldText')
   endfunction
 endif
 
+" The following lines enable the macros/matchit.vim plugin for extended
+" matching with the % key.
+let b:match_ignorecase = 0
+let b:match_words =
+  \ '\<\%(begin\|case\|fun\|if\|maybe\|receive\|try\)\>' .
+  \ ':\<\%(after\|catch\|else\|of\)\>' .
+  \ ':\<end\>,' .
+  \ '^\l[A-Za-z0-9_@]*' .
+  \ ':^\%(\%(\t\| \{' . shiftwidth() .
+  \ '}\)\%([^\t\ %][^%]*\)\?\)\?;\s*\%(%.*\)\?$\|\.[\t\ %]\|\.$'
+let b:match_skip = 's:comment\|string\|erlangmodifier\|erlangquotedatom'
+
 let b:undo_ftplugin = "setlocal keywordprg< foldmethod< foldexpr< foldtext<"
       \ . " comments< commentstring< formatoptions< suffixesadd< include<"
       \ . " define<"
-
-" The following lines enable the macros/matchit.vim plugin for
-" extended matching with the % key.
-if exists("loaded_matchit")
-  let s:sw = &sw
-  if exists('*shiftwidth')
-    let s:sw = shiftwidth()
-  endif
-
-  let b:match_words =
-    \ '\<\%(begin\|case\|fun\|if\|maybe\|receive\|try\)\>' .
-    \ ':\<\%(after\|catch\|else\|of\)\>' .
-    \ ':\<end\>,' .
-    \ '^\l[A-Za-z0-9_@]*' .
-    \ ':^\%(\%(\t\| \{' . s:sw . '}\)\%([^\t\ %][^%]*\)\?\)\?;\s*\%(%.*\)\?$\|\.[\t\ %]\|\.$'
-  let b:match_skip = 's:comment\|string\|erlangmodifier\|erlangquotedatom'
-endif
+      \ . " | unlet b:match_ignorecase b:match_words b:match_skip"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
