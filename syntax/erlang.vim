@@ -30,6 +30,33 @@ if exists("b:current_syntax")
     finish
 endif
 
+if !exists('g:main_syntax')
+  " This is an Erlang source file, and this is the main execution of
+  " syntax/erlang.vim.
+  let g:main_syntax = 'erlang'
+elseif g:main_syntax == 'erlang'
+  " This is an Erlang source file, and this is an inner execution of
+  " syntax/erlang.vim. For example:
+  "
+  " 1.  The main execution of syntax/erlang.vim included syntax/markdown.vim
+  "     because "g:erlang_use_markdown_for_docs == 1".
+  "
+  " 2.  syntax/markdown.vim included syntax/erlang.vim because
+  "     "g:markdown_fenced_languages == ['erlang']". This is the inner
+  "     execution of syntax/erlang.vim.
+  "
+  " To avoid infinite recursion with Markdown and Erlang including each other,
+  " and to avoid the inner syntax/erlang.vim execution messing up the
+  " variables of the outer erlang.vim execution, we finish executing the inner
+  " erlang.vim.
+  "
+  " In the inner execution, we already have the Erlang syntax items included,
+  " so the highlighting of Erlang within Markdown within Erlang will be
+  " acceptable. It won't highlight Markdown inside Erlang inside Markdown
+  " inside Erlang.
+  finish
+endif
+
 let s:cpo_save = &cpo
 set cpo&vim
 
@@ -50,7 +77,12 @@ let s:old_style = (exists("g:erlang_old_style_highlight") &&
 "
 " *   "g:erlang_use_markdown_for_docs == 0" (default): Disable Markdown
 "     highlighting in docstrings.
-if exists("g:erlang_use_markdown_for_docs")
+"
+" If "g:main_syntax" is not 'erlang', this is not an Erlang source file but
+" for example a Markdown file, and syntax/markdown.vim is including
+" syntax/erlang.vim. To avoid infinite recursion with Markdown and Erlang
+" including each other, we disable sourcing syntax/markdown.vim in this case.
+if exists("g:erlang_use_markdown_for_docs") && g:main_syntax == 'erlang'
   let s:use_markdown = g:erlang_use_markdown_for_docs
 else
   let s:use_markdown = 0
@@ -364,8 +396,11 @@ hi def link erlangExtra Statement
 hi def link erlangSignal Statement
 endif
 
-
 let b:current_syntax = "erlang"
+
+if g:main_syntax ==# 'erlang'
+  unlet g:main_syntax
+endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
